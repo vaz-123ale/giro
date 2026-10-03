@@ -1,0 +1,20 @@
+# Workspace Anchor do GIRO — SOMENTE rede local (solana-test-validator em 127.0.0.1).
+# Devnet/mainnet não estão configuradas de propósito (regra do projeto: exigem autorização separada).
+[toolchain]
+anchor_version = "1.2.0"   # conferido em 03/10/2026 (última versão)
+solana_version = "4.1.2"   # versão recomendada pelo Anchor 1.2.0
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+giro_acordos = "CVAQPvyjepuDP9j5df22ipp9E7XWVxej1T26rb4NvEMV"
+
+[provider]
+cluster = "localnet"
+wallet = "../data/carteiras-teste/emissor.json"
+
+[test.validator]
+bind_address = "127.0.0.1"
+url = "http://127.0.0.1:8899"

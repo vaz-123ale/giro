@@ -1,0 +1,45 @@
+{
+  "name": "giro-local",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "dev:rede": "node scripts/dev.mjs --rede=simulado",
+    "dev:rede-local": "node scripts/dev.mjs --rede=localnet",
+    "dev:devnet": "node scripts/dev.mjs --rede=devnet",
+    "dev:web": "vite",
+    "dev:api": "node --experimental-strip-types server/index.ts",
+    "build": "tsc --noEmit && vite build",
+    "test": "node --experimental-strip-types --test --test-concurrency=4 tests/*.test.ts",
+    "start": "node --experimental-strip-types server/index.ts",
+    "verificar": "node --experimental-strip-types --no-warnings scripts/verificar-local.mjs",
+    "relatorio:integracao": "node --experimental-strip-types --no-warnings scripts/relatorio-integracao.mjs",
+    "solana:vetores": "node --experimental-strip-types --no-warnings scripts/gerar-vetores-paridade.mjs",
+    "solana:cliente": "node scripts/gerar-cliente-solana.mjs",
+    "senha": "node --experimental-strip-types --no-warnings scripts/definir-senha.mjs",
+    "publico": "node scripts/publico.mjs",
+    "demo": "npm run build && node --experimental-strip-types --no-warnings apresentacao/ferramentas/montar-demo.mjs",
+    "demo:prints": "node apresentacao/ferramentas/capturar-prints.mjs"
+  },
+  "dependencies": {
+    "@solana-program/compute-budget": "0.19.0",
+    "@solana-program/system": "0.15.0",
+    "@solana-program/token": "0.17.0",
+    "@solana/kit": "8.4.0",
+    "lucide-react": "^0.468.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "sas-lib": "1.0.10"
+  },
+  "devDependencies": {
+    "@codama/nodes-from-anchor": "1.5.6",
+    "@codama/renderers-js": "2.5.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "codama": "1.11.0",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0"
+  }
+}

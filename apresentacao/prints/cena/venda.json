@@ -1,0 +1,21 @@
+{
+ "saleId": "65fbdb8f-62cc-4ec4-9ec8-0a69fa1edb5d",
+ "distribution": [
+  {
+   "kind": "commission",
+   "recipient": "Pedro",
+   "amount": 800
+  },
+  {
+   "kind": "commitment",
+   "recipient": "João",
+   "amount": 2000,
+   "remainingAfter": 58000
+  },
+  {
+   "kind": "seller",
+   "recipient": "Maria",
+   "amount": 7200
+  }
+ ]
+}

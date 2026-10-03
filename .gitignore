@@ -1,0 +1,29 @@
+# Dependências e builds
+node_modules/
+dist/
+solana/target/
+solana/test-ledger/
+solana/.anchor/
+
+# DADOS E SEGREDOS — nunca versionar
+data/
+backups/
+*.sqlite
+*.sqlite-*
+acesso.json
+solana/keys/
+*keypair*.json
+carteiras-teste/
+.env
+.env.*
+
+# Ferramentas baixadas (cloudflared portátil)
+ferramentas/
+
+# Registros internos de auditoria (contêm despejos de dados e logs brutos)
+auditoria/historico/
+
+# Sistema
+*.log
+.DS_Store
+Thumbs.db

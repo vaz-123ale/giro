@@ -1,0 +1,237 @@
+{
+ "at": "2026-10-03T17:36:49.360Z",
+ "steps": [
+  {
+   "name": "Tipos (tsc)",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "Testes automáticos",
+   "ok": true,
+   "detail": "ℹ pass 288 ℹ fail 0"
+  },
+  {
+   "name": "Build",
+   "ok": true,
+   "detail": ""
+  },
+  {
+   "name": "API local na cópia dos dados",
+   "ok": true,
+   "detail": "http://127.0.0.1:3018"
+  },
+  {
+   "name": "Navegador: 34 telas (computador 1366 px e celular 390 px)",
+   "ok": true,
+   "detail": "sem erros, sem rolagem horizontal, botões e campos com nome"
+  }
+ ],
+ "pages": [
+  {
+   "route": "inicio",
+   "width": 1366,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "receber",
+   "width": 1366,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "receber/vendas",
+   "width": 1366,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "receber/caixa",
+   "width": 1366,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "organizar/contas",
+   "width": 1366,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "organizar/metas",
+   "width": 1366,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "organizar/sugestoes",
+   "width": 1366,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "organizar/adicionar",
+   "width": 1366,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "organizar/resumo",
+   "width": 1366,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "compromissos",
+   "width": 1366,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "equipe",
+   "width": 1366,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "confianca",
+   "width": 1366,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "mais",
+   "width": 1366,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "mais/notificacoes",
+   "width": 1366,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "mais/acessibilidade",
+   "width": 1366,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "mais/preferencias",
+   "width": 1366,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "inicio",
+   "width": 390,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "receber",
+   "width": 390,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "receber/vendas",
+   "width": 390,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "receber/caixa",
+   "width": 390,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "organizar/contas",
+   "width": 390,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "organizar/metas",
+   "width": 390,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "organizar/sugestoes",
+   "width": 390,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "organizar/adicionar",
+   "width": 390,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "organizar/resumo",
+   "width": 390,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "compromissos",
+   "width": 390,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "equipe",
+   "width": 390,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "confianca",
+   "width": 390,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "mais",
+   "width": 390,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "mais/notificacoes",
+   "width": 390,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "mais/acessibilidade",
+   "width": 390,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "mais/preferencias",
+   "width": 390,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "/confirmar/000000000000000000000000000000000000000000000000",
+   "width": 390,
+   "ok": true,
+   "problems": []
+  },
+  {
+   "route": "/turno/000000000000000000000000000000000000000000000000",
+   "width": 390,
+   "ok": true,
+   "problems": []
+  }
+ ],
+ "ok": true
+}

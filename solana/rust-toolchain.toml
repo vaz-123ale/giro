@@ -1,0 +1,4 @@
+# Fixado na Fase 0 (03/10/2026): versão instalada pelo rustup no WSL.
+[toolchain]
+channel = "1.99.0"
+components = ["rustfmt", "clippy"]

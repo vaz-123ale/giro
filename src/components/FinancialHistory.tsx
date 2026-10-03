@@ -1,0 +1,7 @@
+import {AreaIcon} from './AreaIcon';
+import {useState} from 'react';
+import type {State} from '../domain/models';
+import {financialHistory} from '../domain/history';
+import {money} from '../domain/finance';
+import {usePageSearch} from './PageSearch';
+export function FinancialHistory({state,go,onAgreement}:{state:State;go:(route:string)=>void;onAgreement:(id:string)=>void}){const query=usePageSearch(),[category,setCategory]=useState(''),rows=financialHistory(state,query).filter(r=>!category||r.category===category);return <section className="panel"><div className="section-title"><h2><AreaIcon name="historico"/>Histórico financeiro</h2><label>Tipo de registro<select value={category} onChange={e=>setCategory(e.target.value)}><option value="">Todos</option>{['Venda','Recebimento','Participação','Compromisso','Pagamento','Planejamento','Caixa','Colaborador'].map(c=><option key={c}>{c}</option>)}</select></label></div>{rows.map(r=><article className="history-item" key={r.id}><div className="section-title"><strong>{r.title}</strong>{r.amount!==undefined&&<strong>{money(r.amount)}</strong>}</div><small>{r.at.length===10?r.at.split('-').reverse().join('/')+' · Horário não registrado no histórico antigo':new Date(r.at).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})}</small><p>{r.description}</p>{r.route&&<button className="text-button" onClick={()=>r.commitmentId?onAgreement(r.commitmentId):go(r.route!)}>Ver detalhes</button>}</article>)}{!rows.length&&<p>Nenhum registro corresponde à pesquisa.</p>}</section>;}

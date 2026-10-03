@@ -1,0 +1,43 @@
+import {configureAccount} from './account-service.ts';
+import {randomUUID} from 'node:crypto';
+import type {Plan,State,Sale} from '../src/domain/models.ts';
+import {allocation} from '../src/domain/finance.ts';
+import {summary} from '../src/domain/finance.ts';
+import {requireAmount,validDate} from '../src/domain/validation.ts';
+import {inputRecord} from './input.ts';
+function event(state:State,plan:Plan,type:NonNullable<State['planEvents']>[number]['type'],before:number,saleId?:string){(state.planEvents??=[]).push({id:randomUUID(),planId:plan.id,name:plan.name,type,at:new Date().toISOString(),before,after:type==='deleted'?0:plan.amount,saleId,targetAfter:plan.target,paidAfter:plan.accountPaid??0,kind:plan.kind??'goal'});}
+function fields(value:Record<string,unknown>){
+ if(typeof value.name!=='string'||!value.name.trim()||value.name.trim().length>120)throw new Error('Informe o nome da caixinha (até 120 caracteres).');
+ requireAmount(value.target);requireAmount(value.amount,true);if(value.amount>value.target)throw new Error('O reservado não pode superar a meta.');
+ if(value.priority!==undefined&&value.priority!==null&&(!Number.isInteger(value.priority)||Number(value.priority)<1||Number(value.priority)>999))throw new Error('Prioridade inválida.');
+ if(value.targetDate&&!validDate(value.targetDate))throw new Error('Data-meta inválida.');
+ if(!['manual','suggested','automatic'].includes(String(value.mode)))throw new Error('Escolha acompanhamento manual, reserva automática ou sugestão.');
+ if(value.mode!=='manual'&&(typeof value.rateBps!=='number'||!Number.isInteger(value.rateBps)||value.rateBps<=0||value.rateBps>10000))throw new Error('O percentual deve ser maior que zero e até 100%.');
+ return {name:value.name.trim(),target:value.target,amount:value.amount,priority:value.priority==null?undefined:Number(value.priority),targetDate:value.targetDate?String(value.targetDate):null,mode:value.mode,rateBps:value.mode==='manual'?0:Number(value.rateBps)} as Pick<Plan,'name'|'target'|'amount'|'priority'|'targetDate'|'mode'|'rateBps'>;
+}
+export function createPlan(state:State,value:unknown){const input=inputRecord(value);if(input.kind!==undefined&&!['account','goal'].includes(String(input.kind)))throw Error('Tipo inválido.');if(input.kind==='account'&&!validDate(input.targetDate))throw Error('Informe o vencimento da conta.');const data=fields(input);if(data.amount>summary(state).free)throw Error('Saldo livre insuficiente para a reserva inicial.');const plan:Plan={id:randomUUID(),...data,status:data.amount===data.target?'completed':'active',demo:false,createdAt:new Date().toISOString()};if(input.kind)plan.kind=input.kind as 'account'|'goal';if(plan.kind==='account'){configureAccount(state,plan,input);plan.status='active';}state.plans.push(plan);event(state,plan,'created',0);state.demo=false;return plan;}
+export function changePlan(state:State,value:unknown){
+ const input=inputRecord(value);const plan=state.plans.find(p=>p.id===input.id&&!p.demo);if(!plan)throw new Error('Caixinha não encontrada.');
+ if(plan.archivedAt)throw Error('Conta arquivada: historico preservado.');
+ if(input.action==='delete'&&plan.kind==='account'){const before=plan.amount;plan.archivedAt=new Date().toISOString();plan.amount=0;if(plan.recurrenceId){const rule=state.recurringAccounts?.find(r=>r.id===plan.recurrenceId);if(rule)rule.active=false;}event(state,plan,'deleted',before);return;}
+ if(input.action==='delete'){(state.archivedPlans??=[]).push({...structuredClone(plan),archivedAt:new Date().toISOString()});event(state,plan,'deleted',plan.amount);state.plans=state.plans.filter(p=>p.id!==plan.id);for(const s of state.sales)for(const suggestion of s.planningSuggestions??[])if(suggestion.planId===plan.id&&suggestion.status==='pending')suggestion.status='dismissed';return;}
+ if(input.action==='pause'){if(plan.status!=='active')throw new Error('A caixinha não está ativa.');plan.status='paused';event(state,plan,'paused',plan.amount);return;}
+ if(input.action==='resume'){if(plan.archivedAt||plan.accountStatus==='paid')throw Error('Conta arquivada ou quitada.');plan.status=plan.kind!=='account'&&plan.amount===plan.target?'completed':'active';event(state,plan,'resumed',plan.amount);return;}
+ if(input.action==='edit'){if(plan.kind==='account'&&!validDate(input.targetDate))throw Error('Informe o vencimento da conta.');const data=fields(input);if(data.amount>plan.amount&&data.amount-plan.amount>summary(state).free)throw Error('Saldo livre insuficiente para aumentar a reserva.');if(plan.kind==='account'){if((plan.accountPaid??0)+data.amount>data.target!)throw Error('Valor pago mais reserva supera o valor da conta.');if(plan.accountStatus==='paid'&&(data.target!==plan.target||data.amount!==0||data.targetDate!==plan.targetDate))throw Error('Competencia quitada preserva valor e data; crie outra para novas condicoes.');if(input.category!==undefined&&(typeof input.category!=='string'||input.category.length>80))throw Error('Categoria invalida.');}
+ const before=plan.amount;Object.assign(plan,data);if(plan.kind==='account'){if(input.category!==undefined)plan.category=String(input.category);plan.accountStatus=plan.accountPaid===plan.target?'paid':plan.accountPaid?'partial':plan.amount?'planned':'created';if(plan.recurrenceId&&plan.accountStatus!=='paid'){const rule=state.recurringAccounts?.find(r=>r.id===plan.recurrenceId);if(rule){rule.name=plan.name;rule.category=plan.category??rule.category;rule.amount=plan.target!;}}}if(plan.kind!=='account'&&plan.amount===plan.target)plan.status='completed';else if(plan.status!=='paused')plan.status=plan.accountStatus==='paid'?'completed':'active';event(state,plan,'edited',before);return;}
+ throw new Error('Ação de planejamento inválida.');
+}
+export function reserveSuggestion(state:State,value:unknown){
+ const input=inputRecord(value);const plan=state.plans.find(p=>p.id===input.planId&&!p.demo&&p.status==='active');const sale=state.sales.find(s=>s.id===input.saleId&&!s.demo&&s.paidAt);const suggestion=sale?.planningSuggestions?.find(s=>s.planId===input.planId&&s.status==='pending');
+ if(!plan||!sale||!suggestion)throw new Error('Sugestão indisponível ou já reservada.');
+ const free=summary(state).free;const amount=Math.min(suggestion.amount,Math.max(0,(plan.target??0)-plan.amount-(plan.accountPaid??0)),free);
+ if(amount<=0)throw new Error('Não há saldo livre para esta reserva.');
+ const before=plan.amount;plan.amount+=amount;suggestion.status='reserved';suggestion.reservedAmount=amount;if(plan.kind!=='account'&&plan.amount===plan.target)plan.status='completed';if(plan.kind==='account'&&!plan.accountPaid)plan.accountStatus='planned';event(state,plan,'reserved',before,sale.id);
+}
+export function updateSettings(state:State,value:unknown){const input=inputRecord(value);requireAmount(input.minimumWeeklyFree,true);state.settings={minimumWeeklyFree:input.minimumWeeklyFree};}
+export function contributePlan(state:State,value:unknown){const v=inputRecord(value),p=state.plans.find(p=>p.id===v.id&&!p.demo&&!p.archivedAt);if(!p||p.status==='paused')throw Error('Meta ou conta indisponível.');requireAmount(v.amount);if(typeof v.requestId!=='string'||!v.requestId.trim())throw Error('Identificador necessário.');if(state.planEvents?.some(e=>e.id===v.requestId))throw Error('Aporte já registrado.');if(v.amount>Math.max(0,(p.target??0)-p.amount-(p.accountPaid??0)))throw Error('Aporte supera o restante do objetivo.');if(v.amount>summary(state).free)throw Error('Saldo disponível insuficiente.');const before=p.amount;p.amount+=v.amount;if(p.kind!=='account'&&p.amount===p.target)p.status='completed';if(p.kind==='account'&&!p.accountPaid)p.accountStatus='planned';(state.planEvents??=[]).push({id:v.requestId,planId:p.id,name:p.name,type:'reserved',at:new Date().toISOString(),before,after:p.amount,targetAfter:p.target,paidAfter:p.accountPaid??0,kind:p.kind??'goal'});}
+export function reserveAutomatic(state:State,sale:Sale){
+ if(sale.demo||!sale.paidAt)return;
+ const projected=state.sales.some(s=>s.id===sale.id)?state:{...state,demo:false,sales:[sale,...state.sales]};let available=summary(projected).free;
+ for(const p of state.plans.filter(p=>!p.demo&&!p.archivedAt&&p.status==='active'&&p.mode==='automatic').sort((a,b)=>(a.priority??999)-(b.priority??999)||a.id.localeCompare(b.id))){const amount=allocation(sale.amount,p.rateBps??0,Math.min(available,Math.max(0,(p.target??0)-p.amount-(p.accountPaid??0))));if(!amount)continue;const before=p.amount;p.amount+=amount;available-=amount;if(p.kind!=='account'&&p.amount===p.target)p.status='completed';if(p.kind==='account'&&!p.accountPaid)p.accountStatus='planned';event(state,p,'reserved',before,sale.id);}
+}

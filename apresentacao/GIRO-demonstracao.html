@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GIRO — Demonstração</title>
+<style>
+:root{--ink:#0f1a33;--muted:#4d5a6e;--green:#0b7a43;--deep:#063d29;--mint:#e6f6ec;--rose:#fde7ea;--line:#e3e8ef;--amber:#fff1d6;--violet:#efe9fc;--blue:#e6effc;color-scheme:light}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0d1f17;font-family:'Segoe UI',system-ui,Arial,sans-serif;color:var(--ink)}
+.deck{position:relative;width:100vw;height:100vh;overflow:hidden}
+.slide{position:absolute;inset:0;margin:auto;width:1600px;height:900px;background:#fff;display:none;padding:56px 72px 64px;transform-origin:center center;overflow:hidden}
+.slide.active{display:flex;flex-direction:column}
+.slide h1{font-size:64px;line-height:1.05;margin:0 0 18px;letter-spacing:-1.5px}
+.slide h2{font-size:44px;line-height:1.12;margin:0 0 14px;letter-spacing:-1px}
+.slide h3{font-size:24px;margin:0 0 8px}
+.slide p,.slide li{font-size:24px;line-height:1.45;color:var(--muted)}
+.eyebrow{font-size:18px!important;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green)!important;margin:0 0 10px}
+.brand{position:absolute;right:56px;bottom:26px;display:flex;align-items:center;gap:14px;font-size:16px;color:#7a8799}
+.brand img{height:28px}
+.num{position:absolute;left:72px;bottom:26px;font-size:16px;color:#7a8799}
+.cover{background:linear-gradient(120deg,#e6f6ec 0%,#f5fbf7 55%,#ffffff 100%);justify-content:center}
+.cover .logo{width:300px;margin-bottom:28px}
+.cover h1{font-size:76px;max-width:1100px}
+.cover .tag{font-size:30px;max-width:1000px}
+.pill{display:inline-block;background:var(--mint);color:var(--deep);font-weight:650;border-radius:999px;padding:8px 18px;font-size:18px;margin:4px 8px 4px 0}
+.grid{display:grid;gap:24px}
+.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+.card{border:1px solid var(--line);border-radius:22px;padding:26px 28px;background:#fff}
+.card h3{font-size:26px;color:var(--ink)}
+.card p{font-size:20px;margin:6px 0 0}
+.card.mint{background:var(--mint);border-color:#cfe9da}.card.rose{background:var(--rose);border-color:#f6cfd5}.card.amber{background:var(--amber);border-color:#f3dfb2}.card.violet{background:var(--violet);border-color:#ddd1f7}.card.blue{background:var(--blue);border-color:#cddcf6}
+.big{font-size:56px;font-weight:800;color:var(--deep);letter-spacing:-1px;line-height:1}
+.stat .big{display:block;margin-bottom:8px}
+.flow{display:flex;align-items:stretch;gap:12px;margin:26px 0}
+.flow div{flex:1;border-radius:18px;background:var(--mint);padding:20px 16px;text-align:center;font-weight:700;font-size:22px;color:var(--deep);position:relative}
+.flow div small{display:block;font-weight:400;font-size:16px;color:var(--muted);margin-top:6px}
+.flow div:not(:last-child):after{content:'→';position:absolute;right:-14px;top:50%;transform:translateY(-50%);color:var(--green);font-size:24px;z-index:1}
+.split{display:flex;height:54px;border-radius:14px;overflow:hidden;margin:14px 0}
+.split span{display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:20px}
+.step{flex-direction:row!important;gap:44px;padding-top:48px}
+.step .text{flex:0 0 470px;display:flex;flex-direction:column}
+.step .shots{flex:1;display:flex;gap:18px;align-items:center;align-self:stretch;justify-content:center;min-width:0}
+.shot{border-radius:14px;box-shadow:0 18px 50px #0f1a3326;border:1px solid var(--line);max-width:100%;max-height:760px;object-fit:contain;background:#fff}
+.shots.two{flex-direction:column}.shots.two .shot{max-height:385px;max-width:100%}
+.shot.phone{max-height:760px;border-radius:26px}
+.step ul{padding-left:24px;margin:8px 0}
+.step li{font-size:21px;margin:6px 0}
+.say{margin-top:auto;background:var(--deep);color:#fff;border-radius:18px;padding:18px 22px;font-size:21px;line-height:1.4}
+.say b{color:#9be7bf}
+.badge{display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;border-radius:50%;background:var(--green);color:#fff;font-weight:800;font-size:22px;margin-right:12px;vertical-align:middle}
+table{border-collapse:collapse;width:100%;font-size:19px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--muted)}
+th{color:var(--ink);font-size:18px;background:#f6faf8}
+td b{color:var(--ink)}
+.timeline{display:grid;grid-template-columns:repeat(2,1fr);gap:10px 40px;margin-top:10px}
+.timeline div{display:flex;gap:14px;align-items:flex-start;font-size:20px;color:var(--muted)}
+.timeline b{color:var(--ink)}
+.timeline span{flex:0 0 44px;height:44px;border-radius:50%;background:var(--mint);color:var(--deep);display:grid;place-items:center;font-weight:800}
+.quote{font-size:40px!important;line-height:1.3!important;color:var(--ink)!important;font-weight:650;max-width:1300px}
+.ok{color:var(--green);font-weight:700}.warn{color:#9a5b00;font-weight:700}
+code{background:#eef4f1;border-radius:6px;padding:2px 8px;font-size:.9em;color:var(--deep)}
+.nav{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:5}
+.nav button{border:0;border-radius:999px;background:#ffffffd9;color:var(--deep);font:600 15px 'Segoe UI',sans-serif;padding:10px 16px;cursor:pointer}
+.nav button:focus-visible{outline:3px solid #9be7bf}
+.progress{position:fixed;left:0;top:0;height:4px;background:#2fbf71;z-index:5;transition:width .2s}
+@media(prefers-reduced-motion:reduce){.progress{transition:none}}
+@media print{
+ @page{size:1600px 900px;margin:0}
+ html,body{background:#fff;height:auto}
+ .deck{height:auto;overflow:visible}
+ .slide{display:flex!important;position:relative;transform:none!important;page-break-after:always;break-after:page;margin:0}
+ .nav,.progress{display:none}
+}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<main class="deck" id="deck" aria-live="polite">
+
+<section class="slide cover" aria-label="Capa">
+ <img class="logo" src="logo_giro.png" alt="GIRO — Carteira inteligente">
+ <h1>Receitas programáveis e confiança comercial para pequenos negócios</h1>
+ <p class="tag">Defina as regras uma vez — cada venda já nasce organizada, e cada compromisso cumprido vira histórico verificável.</p>
+ <p><span class="pill">Demonstração do protótipo</span><span class="pill">Tudo rodando localmente</span><span class="pill">Dados fictícios</span></p>
+</section>
+
+<section class="slide" aria-label="O problema">
+ <p class="eyebrow">O problema</p>
+ <h2>Vender não significa ter o dinheiro livre</h2>
+ <div class="grid g4" style="margin:26px 0">
+  <div class="card stat"><span class="big">61%</span><p>usam a conta pessoal para pagar a empresa</p></div>
+  <div class="card stat"><span class="big">30%</span><p>controlam em planilhas</p></div>
+  <div class="card stat"><span class="big">25%</span><p>ainda anotam em caderno</p></div>
+  <div class="card stat"><span class="big">10%</span><p>não têm controle algum</p></div>
+ </div>
+ <p style="font-size:18px">Fonte: Sebrae, Hábitos Financeiros dos Pequenos Negócios (2026), citado no documento do projeto.</p>
+ <div class="grid g2" style="margin-top:12px">
+  <div class="card rose"><h3>Dinheiro confuso</h3><p>R$ 2.000 na conta, mas parte já é do fornecedor, do ajudante e do próximo estoque.</p></div>
+  <div class="card amber"><h3>Confiança que não viaja</h3><p>“Pode vender para ela, ela sempre paga.” — anos de bom histórico que não acompanham o vendedor para um novo fornecedor.</p></div>
+ </div>
+</section>
+
+<section class="slide" aria-label="Proposta de valor">
+ <p class="eyebrow">Proposta de valor</p>
+ <h2>Uma carteira inteligente, não um ERP</h2>
+ <div class="grid g3" style="margin-top:22px">
+  <div class="card mint"><h3>1. Saber quanto está livre</h3><p>Quanto entrou, quanto já tem destino e quanto realmente é seu — em linguagem simples.</p></div>
+  <div class="card blue"><h3>2. Acordos que se cumprem</h3><p>Fornecedor e vendedor aceitam uma regra (ex.: 20% das vendas até quitar R$ 600). Cada venda amortiza sozinha e nunca passa do que falta.</p></div>
+  <div class="card violet"><h3>3. Confiança verificável</h3><p>Cada acordo concluído gera um comprovante. O histórico positivo passa a pertencer ao vendedor.</p></div>
+ </div>
+ <div class="grid g2" style="margin-top:24px">
+  <div class="card"><h3>Organizar ≠ Comprometer</h3><p><b>Planejamento</b> é pessoal: editável, pausável. <b>Compromisso</b> é bilateral: só muda com aceite da outra parte.</p></div>
+  <div class="card"><h3>Sem jargão</h3><p>O vendedor não vê token, blockchain, PDA ou hash. Vê “Livre para usar”, “Já tem destino” e “Acordos concluídos”.</p></div>
+ </div>
+</section>
+
+<section class="slide" aria-label="Como funciona">
+ <p class="eyebrow">Como funciona</p>
+ <h2>Receita → regras → distribuição → saldo realmente livre → confiança</h2>
+ <div class="flow"><div>Venda<small>dinheiro ou digital</small></div><div>Regras<small>acordos, equipe, metas</small></div><div>Distribuição<small>automática e limitada</small></div><div>Obrigações<small>quanto falta pagar</small></div><div>Livre<small>o que é seu hoje</small></div><div>Confiança<small>acordos cumpridos</small></div></div>
+ <h3 style="font-size:28px;margin-top:10px">Exemplo da demonstração: venda de R$ 100</h3>
+ <div class="split" role="img" aria-label="Pedro 8 reais, João 20 reais, reposição de estoque 10 reais, livre 62 reais">
+  <span style="flex:8;background:#8b6bd6">8</span><span style="flex:20;background:#e06a74">20</span><span style="flex:10;background:#5fbf8c">10</span><span style="flex:62;background:#0b8a46">R$ 62 livres</span>
+ </div>
+ <div class="grid g4"><p><b style="color:#8b6bd6">● Pedro</b> 8% — comissão do turno ativo</p><p><b style="color:#e06a74">● João</b> 20% — acordo aceito, até quitar</p><p><b style="color:#2f9e6a">● Estoque</b> 10% — reserva automática</p><p><b style="color:#0b8a46">● Maria</b> o restante é livre</p></div>
+</section>
+
+<section class="slide" aria-label="Mapa do site">
+ <p class="eyebrow">Mapa do site</p>
+ <h2>Sete áreas, uma ideia cada</h2>
+ <table>
+  <tr><th>Área</th><th>Para quê</th><th>Principais telas</th></tr>
+  <tr><td><b>Início</b></td><td>Resumo: livre, entrou hoje, já tem destino</td><td>Meu dinheiro, ações rápidas, próximos compromissos, atividades</td></tr>
+  <tr><td><b>Receber</b></td><td>Registrar ou receber dinheiro</td><td>Registrar venda, venda em dinheiro, “para onde vai cada venda”, vendas, a receber, caixa</td></tr>
+  <tr><td><b>Organizar</b></td><td>Decidir para onde vai o próprio dinheiro</td><td>Contas, metas, sugestões, renegociar, adicionar/importar, resumo</td></tr>
+  <tr><td><b>Compromissos</b></td><td>Acordos com outras pessoas</td><td>Filtros, fornecedores e colaboradores, novo compromisso, detalhes</td></tr>
+  <tr><td><b>Equipe</b></td><td>Quem trabalha e quanto tem a receber</td><td>Turnos de hoje, escala, check-in, pagamentos, comprovantes</td></tr>
+  <tr><td><b>Confiança</b></td><td>Histórico de compromissos cumpridos</td><td>Comprovantes, baixar/verificar histórico, fornecedor e trabalhador</td></tr>
+  <tr><td><b>Mais</b></td><td>O restante, sem poluir</td><td>Contatos, notificações, histórico, acessibilidade, configurações</td></tr>
+  <tr><td><b>Links da outra parte</b></td><td>Fornecedor e trabalhador participam</td><td>Convite (aceitar/recusar), confirmar recebimento, meu turno</td></tr>
+ </table>
+</section>
+
+<section class="slide" aria-label="Plano de demonstração">
+ <p class="eyebrow">Plano de demonstração · ~10 minutos</p>
+ <h2>A história de Maria, João e Pedro</h2>
+ <div class="timeline">
+  <div><span>1</span><p><b>Início</b> — quanto está livre hoje (30 s)</p></div>
+  <div><span>8</span><p><b>Vendas e a receber</b> — data da venda ≠ pagamento (30 s)</p></div>
+  <div><span>2</span><p><b>Notificações</b> — o que precisa de atenção (20 s)</p></div>
+  <div><span>9</span><p><b>Organizar</b> — contas, metas e sugestão de % (1 min)</p></div>
+  <div><span>3</span><p><b>Cadastrar fornecedor e criar compromisso</b> (1 min)</p></div>
+  <div><span>10</span><p><b>Importar documento</b> com revisão (40 s)</p></div>
+  <div><span>4</span><p><b>João aceita</b> pelo convite (40 s)</p></div>
+  <div><span>11</span><p><b>Compromissos</b> — filtros e situação (40 s)</p></div>
+  <div><span>5</span><p><b>Equipe</b> — escala, check-in, turno (1 min)</p></div>
+  <div><span>12</span><p><b>Pagamento confirmado pelas duas partes</b> (40 s)</p></div>
+  <div><span>6</span><p><b>Para onde vai cada venda</b> (40 s)</p></div>
+  <div><span>13</span><p><b>Confiança</b> — comprovante e histórico verificável (1 min)</p></div>
+  <div><span>7</span><p><b>Venda em dinheiro e caixa</b> (1 min)</p></div>
+  <div><span>14</span><p><b>Acessibilidade e celular</b> (30 s)</p></div>
+ </div>
+</section>
+
+<section class="slide" aria-label="Como funcionam os cadastros">
+ <p class="eyebrow">Cadastros</p>
+ <h2>Como os cadastros funcionam</h2>
+ <table>
+  <tr><th>Cadastro</th><th>Onde</th><th>O que pede</th><th>Regra importante</th></tr>
+  <tr><td><b>Pessoa / fornecedor</b></td><td>Mais → Fornecedores e contatos · ou dentro do novo compromisso</td><td>Nome, tipo, celular e observação (opcionais)</td><td>Dados ficam só no computador</td></tr>
+  <tr><td><b>Compromisso</b></td><td>Compromissos → + Novo compromisso (5 etapas)</td><td>Com quem → valor → % das vendas → prazo e prioridade → revisar</td><td>Só passa a valer depois do aceite da outra parte</td></tr>
+  <tr><td><b>Colaborador</b></td><td>Equipe → Cadastrar colaborador</td><td>Nome e remuneração: %, valor fixo, diária ou nenhuma</td><td>Comissão só vale com turno ativo; escala e check-in opcionais</td></tr>
+  <tr><td><b>Conta / meta</b></td><td>Organizar → Adicionar</td><td>Nome, valor, vencimento ou data-meta, repetição, modo de reserva</td><td>Regra pessoal: editar, pausar ou excluir quando quiser</td></tr>
+  <tr><td><b>Venda</b></td><td>Receber → Registrar venda / Venda em dinheiro</td><td>Valor, meio, data da venda, data do pagamento</td><td>Distribui na hora do pagamento, sem passar do que falta</td></tr>
+  <tr><td><b>Importação</b></td><td>Organizar → Adicionar · Novo compromisso</td><td>Arquivo CSV/TXT ou texto colado</td><td>Nada é salvo sem revisão</td></tr>
+ </table>
+</section>
+
+<section class="slide step" aria-label="Passo 1: Início">
+ <div class="text"><p class="eyebrow">Passo 1 · Início</p><h2><span class="badge">1</span>Quanto é meu hoje?</h2>
+  <ul><li><b>Livre para usar:</b> R$ 315,40</li><li><b>Entrou hoje:</b> R$ 670,00 (abre os pagamentos recebidos)</li><li><b>Já tem destino:</b> R$ 354,60 (toque para ver o detalhamento)</li><li><b>Meu dinheiro:</b> gráfico do que é livre, planejado e de terceiros</li><li>Ações rápidas e próximo compromisso</li></ul>
+  <div class="say">“Maria vendeu R$ 670 hoje, mas <b>R$ 315 são realmente dela</b>. O resto já tem destino.”</div></div>
+ <div class="shots"><img class="shot" src="prints/01-inicio.png" alt="Tela Início com saldo livre, entrou hoje, já tem destino e gráfico Meu dinheiro"></div>
+</section>
+
+<section class="slide step" aria-label="Passo 2: Notificações">
+ <div class="text"><p class="eyebrow">Passo 2 · Notificações</p><h2><span class="badge">2</span>O que precisa de atenção</h2>
+  <ul><li>Vencimentos próximos e atrasos</li><li>Respostas de convites e confirmações</li><li>Previsão: quando o ritmo de vendas não basta</li><li>“Marcar todas como lidas” e “Ver todas”</li></ul>
+  <div class="say">“O GIRO <b>avisa antes</b> do vencimento — não inventa dinheiro nem muda acordos sozinho.”</div></div>
+ <div class="shots"><img class="shot" src="prints/02-notificacoes.png" alt="Painel de notificações aberto"></div>
+</section>
+
+<section class="slide step" aria-label="Passo 3: Fornecedor e compromisso">
+ <div class="text"><p class="eyebrow">Passo 3 · Cadastro</p><h2><span class="badge">3</span>Fornecedor e compromisso</h2>
+  <ul><li>Cadastrar a pessoa (só nome é obrigatório)</li><li>Assistente em 5 etapas: com quem, quanto, % das vendas, prazo e prioridade, revisão</li><li>O sistema bloqueia regras acima de 100% das vendas</li><li>Ao final, gera um <b>convite local</b> para a outra parte</li></ul>
+  <div class="say">“Maria propõe: <b>20% das vendas até quitar R$ 600</b> com João.”</div></div>
+ <div class="shots two"><img class="shot" src="prints/19-contatos.png" alt="Fornecedores e contatos cadastrados"><img class="shot" src="prints/13-novo-compromisso.png" alt="Assistente de novo compromisso"></div>
+</section>
+
+<section class="slide step" aria-label="Passo 4: Aceite">
+ <div class="text"><p class="eyebrow">Passo 4 · A outra parte</p><h2><span class="badge">4</span>O fornecedor aceita</h2>
+  <ul><li>O convite mostra só a proposta — nenhum outro dado do negócio</li><li>Aceitar ou recusar; a resposta vira notificação</li><li>Mudanças futuras são <b>pedidos</b>: a outra parte decide</li><li>Na demonstração: Ana Embalagens ainda está decidindo</li></ul>
+  <div class="say">“<b>Ninguém altera o acordo sozinho.</b> É isso que dá valor ao histórico.”</div></div>
+ <div class="shots"><img class="shot" src="prints/14-convite-fornecedor.png" alt="Página do convite vista pelo fornecedor"></div>
+</section>
+
+<section class="slide step" aria-label="Passo 5: Equipe">
+ <div class="text"><p class="eyebrow">Passo 5 · Equipe</p><h2><span class="badge">5</span>Turno, escala e check-in</h2>
+  <ul><li>Pedro: 8% enquanto o turno está ativo — sem escolher o nome a cada venda</li><li><b>Escala</b>: dias em que cada pessoa trabalha; “Turnos de hoje”</li><li><b>Check-in</b>: o trabalhador toca “Iniciar meu turno”, Maria confirma</li><li>Diárias, valor fixo e comprovantes de pagamento</li></ul>
+  <div class="say">“Fica registrado <b>por que</b> cada valor foi para cada pessoa.”</div></div>
+ <div class="shots"><img class="shot" src="prints/15-equipe.png" alt="Equipe com turnos de hoje, escala e link de check-in" style="max-width:68%"><img class="shot phone" src="prints/16-checkin-trabalhador.png" alt="Celular do trabalhador com botão Iniciar meu turno" style="max-width:28%"></div>
+</section>
+
+<section class="slide step" aria-label="Passo 6: Para onde vai cada venda">
+ <div class="text"><p class="eyebrow">Passo 6 · Receber</p><h2><span class="badge">6</span>Para onde vai cada venda</h2>
+  <ul><li>Digite um valor e veja a divisão antes de vender</li><li>Usa o <b>mesmo motor</b> da venda real, numa simulação — nada é gravado</li><li>Respeita turnos, acordos aceitos, prioridades e reservas automáticas</li><li>Acordo quitado para de receber</li></ul>
+  <div class="say">“De R$ 100: <b>R$ 20 João, R$ 8 Pedro, R$ 10 estoque, R$ 62 livres.</b>”</div></div>
+ <div class="shots"><img class="shot" src="prints/04-para-onde-vai.png" alt="Simulação Para onde vai cada venda"></div>
+</section>
+
+<section class="slide step" aria-label="Passo 7: Venda em dinheiro e caixa">
+ <div class="text"><p class="eyebrow">Passo 7 · Dinheiro físico</p><h2><span class="badge">7</span>Venda em dinheiro e caixa</h2>
+  <ul><li>Botão grande “Venda em dinheiro”: valor e pronto</li><li>O GIRO calcula quanto <b>separar</b> para cada um</li><li>Caixa: esperado, comprometido e livre em espécie</li><li>Dívida só baixa quando a entrega é confirmada</li></ul>
+  <div class="say">“Blockchain não resolve dinheiro físico — <b>o GIRO organiza</b> e registra a entrega.”</div></div>
+ <div class="shots two"><img class="shot" src="prints/05-venda-dinheiro.png" alt="Formulário de venda em dinheiro"><img class="shot" src="prints/06-caixa.png" alt="Caixa em dinheiro com esperado, comprometido e livre"></div>
+</section>
+
+<section class="slide step" aria-label="Passo 8: Vendas">
+ <div class="text"><p class="eyebrow">Passo 8 · Histórico de vendas</p><h2><span class="badge">8</span>Venda hoje, pagamento depois</h2>
+  <ul><li>Data da venda ≠ data do pagamento</li><li>Venda pendente aparece em “A receber”</li><li>Quando o cliente paga, a comissão continua com quem vendeu — mesmo fora do turno</li><li>Comprovante de cada venda</li></ul>
+  <div class="say">“Pedro vendeu terça, o cliente pagou quinta: <b>a comissão é do Pedro</b>.”</div></div>
+ <div class="shots"><img class="shot" src="prints/07-vendas.png" alt="Histórico de vendas recebidas e pendentes"></div>
+</section>
+
+<section class="slide step" aria-label="Passo 9: Organizar">
+ <div class="text"><p class="eyebrow">Passo 9 · Organizar</p><h2><span class="badge">9</span>Contas pessoais</h2>
+  <ul><li>Pago, reservado e falta cobrir</li><li>Repete: todo mês, a cada 15 dias, toda semana</li><li>Pagar com saldo, registrar pagamento, adicionar à reserva</li><li>Resumo consolidado de tudo</li></ul>
+  <div class="say">“Reservar não é pagar: <b>o GIRO separa os dois</b>.”</div></div>
+ <div class="shots two"><img class="shot" src="prints/08-contas.png" alt="Contas com valores pago, reservado e falta cobrir"><img class="shot" src="prints/11-resumo.png" alt="Resumo consolidado de Organizar"></div>
+</section>
+
+<section class="slide step" aria-label="Passo 9b: Metas e sugestão">
+ <div class="text"><p class="eyebrow">Passo 9 · Metas</p><h2>Sugestão que o vendedor aceita</h2>
+  <ul><li>Meta de estoque com reserva automática de 10%</li><li>O GIRO calcula: no ritmo dos últimos 7 dias, seriam ~32,5%</li><li>Um toque: “Usar 32,5% nas próximas vendas”</li><li>Se nem 100% bastar, ele diz claramente</li></ul>
+  <div class="say">“Regra pessoal <b>Maria muda quando quiser</b>; acordo com João só com aceite dele.”</div></div>
+ <div class="shots"><img class="shot" src="prints/09-metas-sugestao.png" alt="Meta com sugestão de percentual"></div>
+</section>
+
+<section class="slide step" aria-label="Passo 10: Importar documento">
+ <div class="text"><p class="eyebrow">Passo 10 · Importação</p><h2><span class="badge">10</span>Importar documento</h2>
+  <ul><li>CSV, TXT ou texto colado de boleto/PDF</li><li>“Foram encontrados 4 itens” — editar, marcar, desmarcar</li><li>Detecta contas que se repetem e sugere “todo mês”</li><li>Nada é salvo sem revisão</li></ul>
+  <div class="say">“O GIRO <b>automatiza a digitação</b>, não a decisão.”</div></div>
+ <div class="shots"><img class="shot" src="prints/10-importar.png" alt="Revisão dos itens encontrados no documento"></div>
+</section>
+
+<section class="slide step" aria-label="Passo 11: Compromissos">
+ <div class="text"><p class="eyebrow">Passo 11 · Compromissos</p><h2><span class="badge">11</span>Todos os acordos</h2>
+  <ul><li>Filtros por tipo, situação, proposta e período</li><li>Fornecedores e colaboradores separados</li><li>Original, pago e saldo restante; selo da proposta</li><li>Detalhes: histórico, pedidos de mudança, pagamentos</li></ul>
+  <div class="say">“Ana <b>aguardando aceite</b>, Sol <b>concluída</b>, João <b>parcialmente pago</b>.”</div></div>
+ <div class="shots"><img class="shot" src="prints/12-compromissos.png" alt="Lista de compromissos com filtros"></div>
+</section>
+
+<section class="slide step" aria-label="Passo 12: Confirmação pelas duas partes">
+ <div class="text"><p class="eyebrow">Passo 12 · Prova do dinheiro físico</p><h2><span class="badge">12</span>Confirmado pelas duas partes</h2>
+  <ul><li>Maria registra a entrega em dinheiro</li><li>Envia o link: “Você recebeu R$ 94,00?”</li><li>João responde <b>Recebi</b> ou <b>Não recebi</b> — uma vez só</li><li>Se não recebeu, Maria é avisada para rever o caixa</li></ul>
+  <div class="say">“Pagamento em dinheiro ganha <b>o mesmo nível de verificação</b> quando as duas partes confirmam.”</div></div>
+ <div class="shots"><img class="shot phone" src="prints/17-confirmar-recebimento.png" alt="Celular do fornecedor confirmando o recebimento"></div>
+</section>
+
+<section class="slide step" aria-label="Passo 13: Confiança">
+ <div class="text"><p class="eyebrow">Passo 13 · GIRO Confiança</p><h2><span class="badge">13</span>Histórico que acompanha o vendedor</h2>
+  <ul><li>Fatos, não notas: concluídos, no prazo, parceiros, recorrentes</li><li>Cada acordo concluído tem um <b>código de comprovante</b></li><li>“Baixar meu histórico” (com opção de ocultar nomes) e imprimir</li><li>“Verificar histórico recebido”: detecta qualquer alteração</li></ul>
+  <div class="say">“Hoje a confiança fica na memória de quem conhece você. <b>No GIRO, ela vai junto.</b>”</div></div>
+ <div class="shots"><img class="shot" src="prints/18-confianca.png" alt="Tela Confiança com comprovantes e histórico"></div>
+</section>
+
+<section class="slide step" aria-label="Passo 14: Acessibilidade e celular">
+ <div class="text"><p class="eyebrow">Passo 14 · Para todos</p><h2><span class="badge">14</span>Acessível e no celular</h2>
+  <ul><li>Tamanho do texto: padrão, grande, muito grande</li><li>Alto contraste e reduzir animações</li><li>Funciona no celular com barra inferior</li><li>Leitor de tela: rótulos, foco visível, títulos em ordem</li></ul>
+  <div class="say">“Baixíssima carga cognitiva — <b>independentemente da idade</b>.”</div></div>
+ <div class="shots"><img class="shot" src="prints/20-acessibilidade.png" alt="Página de acessibilidade" style="max-width:58%"><img class="shot phone" src="prints/21-celular-inicio.png" alt="Início no celular" style="max-width:19%"><img class="shot phone" src="prints/22-celular-receber.png" alt="Receber no celular" style="max-width:19%"></div>
+</section>
+
+<section class="slide" aria-label="O que é real hoje">
+ <p class="eyebrow">Transparência</p>
+ <h2>O que já funciona e o que vem depois</h2>
+ <div class="grid g3" style="margin-top:20px">
+  <div class="card mint"><h3>✅ Funciona hoje (local)</h3><p>Motor de distribuição, acordos com aceite, turnos e escala, caixa físico, contas e metas, importação, comprovantes e verificação do histórico.</p><p><b>258 testes</b> e <b>34 telas</b> verificadas automaticamente.</p></div>
+  <div class="card amber"><h3>🧪 Simulado</h3><p>Pagamento digital e QR (sem dinheiro real).</p><p>Links da outra parte abrem neste computador, sem login ou assinatura.</p></div>
+  <div class="card blue"><h3>🔜 Próximas etapas</h3><p>Programa Solana no validador local → prova registrada (attestation) → Solana Pay. Depois: Pix/cartão por parceiro, leitura de PDF/imagem, app.</p><p>Cada uma com autorização.</p></div>
+ </div>
+ <p style="margin-top:24px">Privacidade: na rede iria só o necessário — chave do acordo (hash), valores, situação e o código do comprovante. <b>Nenhum nome, telefone ou CPF</b> (verificado em teste).</p>
+</section>
+
+<section class="slide" aria-label="Por que Solana">
+ <p class="eyebrow">Por que blockchain, e só onde faz sentido</p>
+ <h2>A planilha de Maria não precisa de blockchain</h2>
+ <p class="quote" style="margin-top:20px">Ela passa a ter valor quando Maria e João precisam compartilhar <span class="ok">uma regra</span> e <span class="ok">uma prova</span> sem depender da palavra de um deles — nem do próprio GIRO.</p>
+ <div class="grid g3" style="margin-top:30px">
+  <div class="card"><h3>Regra compartilhada</h3><p>Ninguém altera o acordo unilateralmente.</p></div>
+  <div class="card"><h3>Execução automática</h3><p>Cada venda amortiza a dívida numa única transação.</p></div>
+  <div class="card"><h3>Prova verificável</h3><p>Compromisso cumprido vira evidência que pertence ao vendedor.</p></div>
+ </div>
+</section>
+
+<section class="slide cover" aria-label="Encerramento">
+ <img class="logo" src="logo_giro.png" alt="GIRO">
+ <p class="quote">Hoje o pequeno vendedor recebe primeiro e tenta organizar o dinheiro depois. <span class="ok">No GIRO, ele define as regras uma vez e cada venda já nasce organizada.</span></p>
+ <p class="quote" style="font-size:32px!important;margin-top:24px">Cada compromisso cumprido ajuda a construir um histórico verificável que acompanha o vendedor para a próxima negociação.</p>
+</section>
+
+<section class="slide" aria-label="GIRO funcionando na prática">
+ <p class="eyebrow">Na prática</p>
+ <h2>GIRO funcionando na prática</h2>
+ <div style="display:flex;align-items:center;gap:16px;margin-top:12px;flex:1">
+  <div class="card" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:12px;height:545px"><h3 style="align-self:flex-start"><span class="badge" style="background:var(--deep)">1</span>Home</h3><img src="prints/cena/recorte-1-inicio.png" alt="Início: Livre para usar R$ 72,00, Entrou hoje R$ 100,00, Já tem destino R$ 28,00" style="max-width:100%;max-height:370px;object-fit:contain;border:1px solid var(--line);border-radius:12px"><p class="pill" style="margin-top:auto;font-size:21px;text-align:center">Quanto está realmente livre</p></div>
+  <span aria-hidden="true" style="color:#f2b53a;font-size:40px">➜</span>
+  <div class="card" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:12px;height:545px"><h3 style="align-self:flex-start"><span class="badge" style="background:var(--deep)">2</span>Compromisso com João</h3><img src="prints/cena/recorte-2-compromisso.png" alt="Compromisso com João: R$ 600,00, saldo R$ 600,00, vencimento 10/10/2026, aceito, regra 20% do valor bruto, prioridade alta" style="max-width:100%;max-height:370px;object-fit:contain;border:1px solid var(--line);border-radius:12px"><p class="pill" style="margin-top:auto;font-size:21px;text-align:center">Regra aceita entre as partes</p></div>
+  <span aria-hidden="true" style="color:#f2b53a;font-size:40px">➜</span>
+  <div class="card" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:12px;height:545px"><h3 style="align-self:flex-start"><span class="badge" style="background:var(--deep)">3</span>Venda + resultado</h3><img src="prints/cena/recorte-3-venda.png" alt="Venda de R$ 100,00: Pedro R$ 8,00, João R$ 20,00, livre R$ 72,00; saldo do acordo com João R$ 580,00" style="max-width:100%;max-height:370px;object-fit:contain;border:1px solid var(--line);border-radius:12px"><p class="pill" style="margin-top:auto;font-size:19px;text-align:center;padding:6px 16px">Cada venda atualiza automaticamente o acordo</p></div>
+ </div>
+ <p style="margin:14px 0 30px;background:#fff4dc;border:1px solid #f3dfb2;border-radius:999px;padding:14px 26px;color:var(--ink)">⚠ Se o ritmo das vendas não for suficiente para o prazo, <b style="color:#6b4500">o GIRO avisa e permite propor uma renegociação.</b></p>
+</section>
+
+</main>
+<nav class="nav" aria-label="Navegação dos slides"><button id="prev" aria-label="Slide anterior">‹ Anterior</button><button id="counter" aria-label="Tela cheia">1 / 1</button><button id="next" aria-label="Próximo slide">Próximo ›</button></nav>
+<script>
+const slides=[...document.querySelectorAll('.slide')];let current=0;
+slides.forEach((s,i)=>{if(!s.classList.contains('cover')){const n=document.createElement('span');n.className='num';n.textContent=`${i+1} / ${slides.length}`;s.appendChild(n);const b=document.createElement('span');b.className='brand';b.innerHTML='<img src="logo_giro.png" alt=""> Demonstração local · dados fictícios';s.appendChild(b);}});
+function fit(){const k=Math.min(innerWidth/1600,innerHeight/900);slides.forEach(s=>s.style.transform=`scale(${k})`);}
+function show(i){current=Math.max(0,Math.min(slides.length-1,i));slides.forEach((s,n)=>s.classList.toggle('active',n===current));document.getElementById('counter').textContent=`${current+1} / ${slides.length}`;document.getElementById('progress').style.width=`${(current+1)/slides.length*100}%`;history.replaceState(null,'','#'+(current+1));}
+addEventListener('resize',fit);
+addEventListener('keydown',e=>{if(['ArrowRight','PageDown',' ','Enter'].includes(e.key)){e.preventDefault();show(current+1);}if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();show(current-1);}if(e.key==='Home')show(0);if(e.key==='End')show(slides.length-1);if(e.key.toLowerCase()==='f')document.documentElement.requestFullscreen?.();});
+document.getElementById('next').onclick=()=>show(current+1);document.getElementById('prev').onclick=()=>show(current-1);
+document.getElementById('counter').onclick=()=>document.documentElement.requestFullscreen?.();
+fit();show((parseInt(location.hash.slice(1))||1)-1);
+</script>
+</body>
+</html>

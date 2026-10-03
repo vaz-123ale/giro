@@ -1,0 +1,352 @@
+================================================================================
+ GIRO — PLANO DE IMPLEMENTAÇÃO COM SOLANA REAL
+ Versão 1 · 03/10/2026 · Documento de planejamento (nada aqui foi executado)
+================================================================================
+
+ Base técnica já pronta no projeto: src/domain/integration.ts (contratos),
+ server/config.ts (trava "só local"), npm run relatorio:integracao.
+
+--------------------------------------------------------------------------------
+ 0. REGRAS QUE ESTE PLANO SEGUE (resumo da regra do projeto)
+--------------------------------------------------------------------------------
+
+ - Tudo começa e é validado no solana-test-validator LOCAL (127.0.0.1) dpois de validar você implemengta real.
+ - Devnet: só com autorização explícita e separada. Mainnet: fora deste plano.
+ - Quando estiver pronto Eu vou usar dinheiro real para testar  tudo
+ - Nenhum dado pessoal na rede (nomes, telefone, CPF, observações, valores de
+   caixa físico). Só o mínimo para executar e verificar o acordo.
+ - O sistema atual (SQLite) continua funcionando igual. A Solana entra como
+   camada opcional, desligada por padrão (GIRO_SOLANA_CLUSTER=disabled).
+ - Nenhum teste existente pode quebrar (hoje: 258 aprovados + 34 telas).
+
+ PONTOS QUE PRECISAM DA SUA AUTORIZAÇÃO ANTES DE COMEÇAR (downloads):
+   [A1] Ativar WSL2 + Ubuntu no Windows (Anchor não roda nativo no Windows).
+   [A2] Instalar Rust, Solana CLI (Agave) e Anchor (via AVM) dentro do WSL.
+   [A3] Instalar pacotes npm: @solana/kit, @solana-program/token,
+        @solana/attestation, @solana/pay, codama (gerador de cliente).
+   [A4] Baixar e compilar o código-fonte do Solana Attestation Service (SAS)
+        para carregá-lo no validador local.
+   [A5] (futuro, separado) Devnet.
+ Nenhum desses passos envia código ou dados do GIRO para fora; são downloads de
+ ferramentas. Mesmo assim, a regra pede para avisar e esperar o "pode".
+
+--------------------------------------------------------------------------------
+ 1. O QUE A SOLANA RESOLVE NO GIRO (e o que NÃO resolve)
+--------------------------------------------------------------------------------
+
+ Do documento do projeto:
+   "A blockchain não é necessária para a planilha financeira de Maria. Ela passa
+    a ter valor quando Maria e João precisam compartilhar uma regra e uma prova
+    sem depender exclusivamente da palavra de um deles ou da própria GIRO."
+
+ Portanto, na rede ficam SÓ quatro coisas:
+   1. O ACORDO (regra aceita pelas duas carteiras): valor original, quanto já foi
+      quitado, saldo restante, % das vendas, prioridade, prazo, situação.
+   2. A EXECUÇÃO: numa venda paga com token, UMA transação divide o valor entre
+      fornecedor(es), comissão e vendedor, e atualiza o saldo do acordo.
+   3. O PAGAMENTO EM DINHEIRO CONFIRMADO PELAS DUAS PARTES: registro assinado
+      pelo vendedor E pelo fornecedor (a confirmação que hoje é por link local).
+   4. A PROVA DE CONCLUSÃO: attestation (SAS) com a impressão digital do
+      comprovante que já geramos em src/domain/proof.ts.
+
+ Fica FORA da rede (continua no SQLite local): contatos, nomes, telefones,
+ caixa físico, contas e metas pessoais (Organizar), equipe e diárias, histórico
+ detalhado, importação de documentos, preferências.
+
+ O GIRO NÃO guarda dinheiro (não custodial): o token vai direto da carteira do
+ cliente para as carteiras de destino na mesma transação.
+
+--------------------------------------------------------------------------------
+ 2. ARQUITETURA ESCOLHIDA (e por quê)
+--------------------------------------------------------------------------------
+
+ 2.1 Híbrido "local primeiro, rede como prova"
+   - O SQLite continua sendo a fonte da experiência do vendedor (rápido, offline,
+     com dados pessoais protegidos).
+   - Cada evento que a rede precisa conhecer vira um item de "fila de envio"
+     local (outbox) com estado: pendente → enviado → confirmado | falhou.
+   - Um reconciliador compara ledgerSnapshot() (src/domain/integration.ts) com
+     as contas on-chain e aponta divergências. Nada é sobrescrito sozinho.
+   Por quê: se a rede local cair ou ainda não estiver instalada, o GIRO continua
+   funcionando; a prova é adicionada quando a rede confirma.
+
+ 2.2 Programa Anchor próprio: "giro_acordos"
+   Ferramentas (pesquisadas em out/2026): Anchor 1.x (1.2.0 é a versão
+   verificada atual), cliente TypeScript gerado com Codama para @solana/kit,
+   testes com LiteSVM (padrão do Anchor 1.x) + solana-test-validator/Surfpool
+   para integração.
+
+ 2.3 Token de teste local
+   - Mint SPL "BRL-T" (2 casas decimais: 1 unidade = 1 centavo, igual ao GIRO,
+     que já trabalha em centavos inteiros).
+   - Criado só no validador local; distribuído para carteiras de teste.
+   - Usar token_interface (funciona com Token e Token-2022).
+
+ 2.4 Assinaturas
+   - Produção (futuro): cada pessoa assina na própria carteira (Phantom,
+     Solflare… via Wallet Standard). O GIRO nunca guarda chave de ninguém.
+   - Fase local: carteiras de teste (solana-keygen) guardadas em pasta ignorada,
+     usadas pelo servidor local SÓ para simular Maria, João, Pedro e o cliente
+     na demonstração. Isso deve ser dito com transparência na banca.
+
+ 2.5 Solana Pay (transaction request)
+   - GET  /api/solana-pay/:cobranca  → { label, icon }
+   - POST /api/solana-pay/:cobranca  { account } → { transaction, message }
+     A transação contém a instrução settle_sale do programa + uma "reference"
+     (chave pública aleatória, somente leitura) para localizar e validar o
+     pagamento depois (findReference / validação no servidor).
+   - Limitação local: celular de verdade não alcança 127.0.0.1. Na fase local o
+     pagamento é feito por uma carteira de teste no próprio PC. Expor para celular
+     exigiria URL pública/túnel = serviço externo = autorização.
+
+ 2.6 Attestation (SAS — Solana Attestation Service)
+   - Programa oficial: 22zoJMtdu4tQc2PzL74ZUT7FrwgB1Udec8DdW4yw4BdG
+   - Hierarquia: Credential (emissor + assinantes) → Schema (formato) →
+     Attestation (registro, com nonce e validade opcional; expiry 0 = não expira).
+   - SDK TypeScript: @solana/attestation (cliente oficial); guias da comunidade
+     usam sas-lib + gill. Rust: crate solana-attestation.
+   - Local: compilar o SAS a partir do código-fonte e carregar no validador com
+       solana-test-validator --reset --bpf-program 22zoJMtdu4tQc2PzL74ZUT7FrwgB1Udec8DdW4yw4BdG sas.so
+     ("solana program dump" do mainnet também funciona, mas lê de RPC externo →
+     precisa de autorização).
+   - Schema "giro-acordo-concluido-v1", campos:
+       agreement_key   [u8;32]  hash do código do acordo (já calculado hoje)
+       record_hash     [u8;32]  SHA-256 do comprovante (src/domain/proof.ts)
+       completed_at    i64
+       on_time         bool
+     Sem nomes e sem valores (os valores ficam no arquivo do histórico; a rede só
+     confirma que aquele arquivo bate com o que foi atestado).
+   - Quem emite: credential "GIRO" com assinante = chave emissora do GIRO.
+     Para reduzir a dependência do GIRO, o attestation aponta o agreement_key;
+     qualquer pessoa pode conferir na conta do acordo (assinada pelas duas
+     carteiras) que ele está "Concluído".
+
+--------------------------------------------------------------------------------
+ 3. PROGRAMA "giro_acordos" — CONTAS, INSTRUÇÕES E REGRAS
+--------------------------------------------------------------------------------
+
+ 3.1 Contas (PDAs)
+   SellerState   seeds ["seller", vendedor]
+     vendedor: Pubkey · committed_bps: u16 (soma dos % ativos+pendentes ≤ 10000)
+     active_count: u8 · bump
+   Agreement     seeds ["agreement", vendedor, agreement_key]
+     vendedor, fornecedor: Pubkey · mint: Pubkey · agreement_key: [u8;32]
+     original, paid: u64 (centavos) · rate_bps: u16 · priority: u16
+     due_ts: i64 · status: Proposed | Active | Completed | Rejected | Cancelled
+     version: u32 · created_ts, completed_ts: i64 · pending_change: Option<Terms>
+     bump
+   OffchainPayment seeds ["cash", agreement, nonce]   (pagamento em dinheiro)
+     amount: u64 · paid_ts: i64 · assinado por vendedor E fornecedor
+
+ 3.2 Instruções
+   propose(terms)            assina: vendedor     → status Proposed
+   accept()                  assina: fornecedor   → Active (checa capacidade)
+   reject()                  assina: fornecedor   → Rejected (fecha e devolve aluguel)
+   propose_change(terms)     assina: qualquer parte → guarda pending_change
+   decide_change(aceita?)    assina: a OUTRA parte → aplica ou descarta; version+1
+   settle_sale(amount, commissions[])
+       assina: cliente (dono da conta de token de origem)
+       contas fixas: vendedor, mint, conta do cliente, conta do vendedor,
+                     token_program, seller_state
+       remaining_accounts: pares (Agreement PDA, conta de token do fornecedor)
+                           ordenados por prioridade; + contas dos comissionados
+       efeito: transfer_checked para cada destino e paid += parte; o resto vai
+               para o vendedor; Completed quando paid == original; emite eventos.
+   record_offchain_payment(amount, nonce)
+       assina: vendedor E fornecedor → paid += amount (nunca acima do restante)
+   cancel_proposal()         assina: vendedor, só antes do aceite
+
+ 3.3 Regra de divisão (IDÊNTICA ao motor atual em src/domain/finance.ts)
+   1. valores fixos por venda; 2. comissões percentuais; 3. acordos por
+   prioridade (menor número primeiro), depois data de criação, depois id;
+   4. o que sobra é do vendedor.
+   parte = min( floor(valor × bps / 10000), restante_do_acordo, ainda_disponível )
+   - Nunca destina mais do que falta (ex.: faltam R$ 3 → transfere R$ 3, conclui).
+   - Soma dos % aceitos ≤ 100% (checado em accept com SellerState).
+   - Aritmética só com checked_add/checked_sub/checked_mul (u128 no meio).
+
+ 3.4 Limites técnicos a respeitar
+   - Transação ≈ 1232 bytes / limite de contas: na v1 limitar a, por exemplo,
+     4 acordos ativos + 2 comissionados por venda; acima disso usar Address
+     Lookup Tables (v2).
+   - Pedir compute budget explícito em settle_sale e medir nos testes.
+   - Contas de token de destino: criar ATA de forma idempotente antes (no cliente).
+
+ 3.5 Segurança (checklist mínimo)
+   - Account<'info, T> e Signer<'info> em tudo; UncheckedAccount só com /// CHECK.
+   - Validar seeds/bump de cada Agreement recebido em remaining_accounts, e que
+     agreement.vendedor == vendedor da venda e agreement.mint == mint.
+   - Validar dono da conta de token do fornecedor == agreement.fornecedor.
+   - has_one / constraints para status (só Active recebe parte da venda).
+   - Testes negativos para cada regra (assinatura errada, conta trocada, PDA
+     falso, overflow, acordo concluído, venda com valor zero).
+   - Autoridade de upgrade do programa: chave local; em rede pública, multisig
+     (fora deste plano).
+
+--------------------------------------------------------------------------------
+ 4. COMO O GIRO ATUAL SE LIGA À SOLANA (mapa)
+--------------------------------------------------------------------------------
+
+   GIRO hoje (local)                         Solana (fase local)
+   ----------------------------------------- ------------------------------------
+   Convite + aceite (link local)             propose + accept (2 carteiras)
+   Pedido de mudança / decisão               propose_change + decide_change
+   Venda digital "simulada"                  settle_sale via Solana Pay (BRL-T)
+   Venda em dinheiro + entrega + confirmação record_offchain_payment (2 assinaturas)
+   Comprovante (SHA-256, proof.ts)           attestation SAS "giro-acordo-concluido-v1"
+   ledgerSnapshot() / attestationPayloads()  contas Agreement / attestations
+   Verificar histórico recebido (arquivo)    + consulta on-chain dos códigos
+
+ Novos módulos no projeto (propostos):
+   solana/                      workspace Anchor (programs/giro_acordos, tests)
+   solana/clients/giro/         cliente TS gerado pelo Codama (não editar à mão)
+   server/chain/                adaptador: outbox, envio, reconciliação
+   server/chain/wallets/        carteiras de TESTE (ignoradas; nunca versionar)
+   tests/chain-*.test.ts        testes que só rodam com GIRO_SOLANA_CLUSTER=localnet
+
+ Na tela do vendedor: nenhum jargão. Só um selo discreto "Registrado ✓" no
+ acordo e no comprovante quando a rede local confirmar (regra 14).
+
+--------------------------------------------------------------------------------
+ 5. FASES, ENTREGAS E CRITÉRIOS DE ACEITE
+--------------------------------------------------------------------------------
+
+ FASE 0 — Ambiente (depende de A1 e A2)                         ~1 dia
+   Passos (no Ubuntu/WSL):
+     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+     sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
+     cargo install --git https://github.com/otter-sec/anchor avm --force
+     avm install 1.2.0 && avm use 1.2.0
+     solana config set --url localhost
+     solana-keygen new --outfile server/chain/wallets/emissor.json
+   Aceite: rustc, solana, anchor --version respondem; solana-test-validator sobe
+   em 127.0.0.1; programa "olá" de exemplo faz deploy LOCAL e responde.
+   Fixar versões: rust-toolchain.toml, Anchor.toml ([toolchain] anchor_version),
+   package.json com versões exatas.
+
+ FASE 1 — Programa giro_acordos v1 + testes                      ~4–6 dias
+   - Contas e instruções da seção 3 (sem SAS ainda).
+   - Testes LiteSVM espelhando os cenários que já existem em TypeScript:
+     não destinar acima do restante; prioridade; capacidade ≤ 100%; aceite das
+     duas partes; mudança só com decisão da outra parte; conclusão; dinheiro com
+     duas assinaturas.
+   - TESTE DE PARIDADE (o mais importante): para 200+ vendas geradas aleatória-
+     mente, o resultado do programa == calculateDistribution() do GIRO, centavo
+     por centavo.
+   Aceite: anchor test verde; paridade 100%; testes negativos de segurança.
+
+ FASE 2 — Cliente + adaptador + outbox                           ~3–4 dias
+   - Codama gera o cliente TS a partir do IDL (Anchor 1.x gera IDL na compilação).
+   - server/chain/: fila local de envio, reenvio idempotente, reconciliação.
+   - Liga com GIRO_SOLANA_CLUSTER=localnet (já aceito por server/config.ts);
+     com "disabled", nada muda (os 258 testes atuais continuam passando).
+   Aceite: jornada do documento (tests/jornada-local-api.test.ts) roda com a rede
+   ligada e o acordo on-chain bate com o SQLite; relatório de reconciliação ok.
+
+ FASE 3 — Solana Pay local                                        ~2–3 dias
+   - Mint BRL-T, carteiras de teste com saldo, endpoint de transaction request,
+     confirmação por reference, registro da venda só após confirmação na rede.
+   - Substitui o "digital simulado" quando a rede está ligada.
+   Aceite: venda de R$ 100 → R$ 20 João, R$ 8 Pedro, R$ 72 Maria NA REDE LOCAL,
+   saldo do acordo 600 → 580, e a tela do GIRO mostra o mesmo.
+
+ FASE 4 — Attestation local (depende de A4)                       ~2–3 dias
+   - SAS compilado e carregado no validador; credential "GIRO"; schema v1.
+   - Na conclusão: cria attestation com agreement_key + record_hash.
+   - "Verificar histórico recebido" passa a conferir também na rede local.
+   Aceite: alterar um centavo no arquivo do histórico → verificação falha;
+   arquivo íntegro → cada acordo aparece "atestado na rede".
+
+ FASE 5 — Ensaio da demonstração (tudo local)                     ~1 dia
+   - npm run demo com rede local ligada; roteiro atualizado; prints novos.
+   - npm run verificar inclui os testes de rede.
+
+ FASE 6 — Devnet (SOMENTE com autorização A5)                      ~1–2 dias
+   - Mesmo programa, mesmo token de TESTE, faucet; nenhum dado pessoal.
+   - Fora deste plano: mainnet, auditoria externa, multisig, Pix/cartão (PSP).
+
+--------------------------------------------------------------------------------
+ 6. TESTES E VALIDAÇÃO NO PC (pirâmide)
+--------------------------------------------------------------------------------
+
+   LiteSVM ......... unidade do programa (rápido, dentro do processo)
+   Mollusk ......... instruções isoladas, medição de compute units
+   solana-test-validator / Surfpool ... integração com servidor GIRO + SAS
+   npm test ........ os 258 testes atuais (rede desligada) — devem continuar verdes
+   npm run verificar  (estendido) ..... + testes de rede quando habilitada
+
+ Regra: toda funcionalidade on-chain tem um teste que compara com o motor local.
+
+--------------------------------------------------------------------------------
+ 7. RISCOS E COMO MITIGAR
+--------------------------------------------------------------------------------
+
+   Windows/WSL ............. usar WSL2 Ubuntu; projeto acessível pelos dois lados;
+                             scripts de rede só no WSL.
+   Mudança de versões ...... fixar versões; ecossistema mudou em 2026 (Anchor 1.x,
+                             pacote TS @anchor-lang/core, repositório otter-sec,
+                             @solana/kit no lugar de @solana/web3.js).
+   Limite de contas/tx ..... teto de acordos por venda na v1; ALT na v2.
+   Arredondamento .......... sempre para baixo; sobra vai para o vendedor; teste
+                             de paridade garante igualdade com o GIRO.
+   Chaves de teste vazarem . pasta ignorada, só rede local, sem valor real.
+   Privacidade ............. só hashes, valores do acordo e situação; teste
+                             automático já existe (tests/somente-local.test.ts).
+   Dinheiro físico ......... blockchain não move espécie: registro com 2
+                             assinaturas, como no documento.
+   Pix/cartão .............. não são nativos da Solana; só via parceiro (PSP),
+                             evolução futura com autorização.
+   Dependência do emissor .. attestation aponta a conta do acordo assinada pelas
+                             duas carteiras; o emissor não pode inventar conclusão.
+
+--------------------------------------------------------------------------------
+ 8. CHECKLIST FINAL "PRONTO PARA DEMONSTRAR COM SOLANA LOCAL"
+--------------------------------------------------------------------------------
+
+ [ ] Autorizações A1–A4 registradas
+ [ ] Versões fixadas e documentadas
+ [ ] Programa com testes LiteSVM + paridade 100% com o motor do GIRO
+ [ ] Testes de segurança negativos passando
+ [ ] Cliente Codama gerado e adaptador com outbox/reconciliação
+ [ ] Solana Pay local: R$ 100 → 20 / 8 / 72 confirmados na rede local
+ [ ] Dinheiro físico com 2 assinaturas
+ [ ] Attestation local na conclusão + verificação do histórico na rede
+ [ ] Nenhum dado pessoal on-chain (teste automático)
+ [ ] Rede desligada → sistema idêntico ao atual (258 testes + 34 telas)
+ [ ] Roteiro e slides atualizados; dizer na banca o que é rede LOCAL e token de TESTE
+
+--------------------------------------------------------------------------------
+ 9. REFERÊNCIAS PESQUISADAS (out/2026)
+--------------------------------------------------------------------------------
+
+ Anchor
+   Instalação ........ https://www.anchor-lang.com/docs/installation
+   Changelog 1.x ..... https://www.anchor-lang.com/docs/updates/changelog
+   Releases .......... https://github.com/solana-foundation/anchor/releases
+   Transfer de tokens  https://www.anchor-lang.com/docs/tokens/basics/transfer-tokens
+ Solana
+   Dependências ...... https://solana.com/docs/intro/installation/dependencies
+   CPI para tokens ... https://solana.com/docs/tokens/advanced/cpi
+   Validador local ... https://docs.anza.xyz/cli/examples/test-validator
+   IDLs .............. https://solana.com/developers/guides/advanced/idls
+   Codama (clientes) . https://solana.com/docs/programs/codama/clients
+                       https://github.com/codama-idl/codama
+   Testes ............ https://solana.com/docs/programs/testing/mollusk
+                       https://solana.com/docs/tools/litesvm/typescript/examples/program-testing
+                       https://github.com/solana-foundation/solana-dev-skill/blob/main/skill/references/testing.md
+ Solana Pay
+   Transaction request https://solana.com/docs/tools/solana-pay/quickstart/transaction-requests
+   Com programa próprio https://www.quicknode.com/guides/solana-development/solana-pay/beyond-pay-custom-programs
+ Solana Attestation Service
+   Docs .............. https://solana.com/docs/tools/attestations
+   Repositório ....... https://github.com/solana-foundation/solana-attestation-service
+   Guia TS (gill) .... https://github.com/pratikbuilds/sas-ts-guide
+   Exemplo privacidade https://github.com/RecruiterLog/sas-identity-reference
+   Anúncio ........... https://solana.com/news/solana-attestation-service
+ Segurança
+   Checklist ......... https://www.zealynx.io/blogs/solana-security-checklist
+   Recursos .......... https://github.com/az0mb13/awesome-solana-security
+
+ Observação: versões e comandos acima foram conferidos nas fontes em out/2026.
+ Antes da Fase 0, conferir de novo — o ecossistema Solana muda rápido.
+================================================================================
