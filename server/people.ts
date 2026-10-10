@@ -4,6 +4,7 @@ import type {State} from '../src/domain/models.ts';
 import {createContact} from './invitation-service.ts';
 import {createMember} from './team-service.ts';
 import {issueCheckin} from './shift-request-service.ts';
+import {changeMember} from './team-service.ts';
 import {inputRecord} from './input.ts';
 
 /**
@@ -69,6 +70,24 @@ export class People {
  }
  resetPassword(id:string){const p=this.byId(id);if(!p)throw Error('Pessoa não encontrada.');const password=temporaryPassword();const salt=randomBytes(16);
   this.db.prepare('UPDATE people SET salt=?, hash=?, must_change=1 WHERE id=?').run(salt.toString('hex'),hashOf(password,salt).toString('hex'),id);return {login:p.login,password};}
+ /**
+  * Exclui a pessoa: conta, contato(s) com o mesmo nome sem acordos e o lugar na equipe.
+  * Recusa se houver acordo ativo ou quitado (o histórico pertence às duas partes). Na equipe, com vendas
+  * registradas, a pessoa é DESATIVADA (não conta mais nos 100%) em vez de apagada.
+  */
+ remove(state:State,id:string){
+  const p=this.byId(id);if(!p)throw Error('Pessoa não encontrada.');
+  const norm=(t:string)=>t.trim().normalize('NFKC').toLocaleLowerCase('pt-BR');
+  const theirs=state.commitments.filter(c=>!c.demo&&c.contactId===p.contactId);
+  if(theirs.some(c=>['active','accepted','completed'].includes(c.status)))throw Error(`${p.name} tem acordo ativo ou quitado. Para preservar o histórico, não dá para excluir.`);
+  state.commitments=state.commitments.filter(c=>!theirs.includes(c));
+  state.invitations=(state.invitations??[]).filter(i=>!theirs.some(c=>c.id===i.commitmentId));
+  const used=new Set(state.commitments.map(c=>c.contactId).filter(Boolean));const others=new Set(this.list().filter(x=>x.id!==id).map(x=>x.contactId));
+  state.contacts=(state.contacts??[]).filter(c=>!(c.id===p.contactId||(norm(c.name)===norm(p.name)&&!used.has(c.id)&&!others.has(c.id))));
+  let member='';if(p.memberId&&state.members.some(m=>m.id===p.memberId)){try{changeMember(state,{id:p.memberId,action:'delete'});member='removida da equipe';}catch{changeMember(state,{id:p.memberId,action:'disable'});member='desativada na equipe (tinha vendas registradas)';}}
+  this.db.prepare('DELETE FROM people WHERE id=?').run(id);
+  return {name:p.name,removedAgreements:theirs.length,member};
+ }
  setPhoto(id:string,photo:unknown){this.db.prepare('UPDATE people SET photo=? WHERE id=?').run(validPhoto(photo),id);}
  business(){let r=this.db.prepare('SELECT * FROM business_profile WHERE id=1').get() as {name:string|null;photo:string|null;slug:string}|undefined;
   if(!r){const slug=randomBytes(5).toString('hex');this.db.prepare('INSERT INTO business_profile VALUES (1,NULL,NULL,?)').run(slug);r={name:null,photo:null,slug};}return r;}

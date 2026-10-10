@@ -59,6 +59,8 @@ const server=createServer(async(req,res)=>{
   if(reqPath==='/api/pessoas'&&method==='GET')return json(200,{business:{...people.business(),photo:undefined},people:people.list().map(p=>({...p,photo:undefined,hasPhoto:!!p.photo,wallet:chain?.wallets?.role(walletRoleOf(p))??null}))});
   if(reqPath==='/api/pessoas'&&method==='POST'){const input=await readBody();let created:ReturnType<typeof people.create>|undefined;update(s=>{created=people.create(s,input);});
    return json(200,{login:created!.person.login,password:created!.password,name:created!.person.name,profile:`/perfil/${created!.person.slug}`});}
+  const personRemove=reqPath.match(/^\/api\/pessoas\/([0-9a-f-]{36})\/excluir$/)?.[1];
+  if(personRemove&&method==='POST'){let r:ReturnType<typeof people.remove>|undefined;update(s=>{r=people.remove(s,personRemove);});return json(200,r);}
   const personAction=reqPath.match(/^\/api\/pessoas\/([0-9a-f-]{36})\/(senha|abastecer)$/);
   if(personAction&&method==='POST'){const p=people.byId(personAction[1]);if(!p)throw Error('Pessoa não encontrada.');
    if(personAction[2]==='senha')return json(200,people.resetPassword(p.id));

@@ -68,6 +68,13 @@ test('Pessoas: contas das colegas, perfis com foto, acordos próprios e venda di
   const negocio=await crisS.ok(`perfis/${list.business.slug}`);assert.equal(negocio.stats.active,1);
   // 7. Cris (cliente) não vê os acordos de outras pessoas como "meus".
   assert.equal((await crisS.ok('eu')).agreements.length,0);
+  // 7b. Excluir: quem não tem acordo sai (conta + contato); quem tem acordo ativo é protegido.
+  const ids=Object.fromEntries((await dona.ok('pessoas')).people.map((x:{login:string;id:string})=>[x.login,x.id]));
+  assert.equal((await dona.call(`pessoas/${ids.ana}/excluir`,{})).status,400,'acordo ativo protege o histórico');
+  assert.equal((await crisS.call(`pessoas/${ids.cris}/excluir`,{})).status,403,'só a dona exclui');
+  const del=await dona.ok(`pessoas/${ids.cris}/excluir`,{});assert.equal(del.name,'Cris Cliente');
+  assert.equal((await as().call('login',{usuario:'cris',senha:cris.password})).status,400,'conta apagada não entra');
+  assert.equal((await dona.ok('state')).contacts.some((c:{name:string})=>c.name==='Cris Cliente'),false,'contato removido');
   // 8. Sem login, perfis e fotos ficam fechados.
   assert.equal((await as().call('perfis')).status,401);assert.equal((await as().call(`fotos/${ana.profile.split('/')[2]}`)).status,401);
  }finally{const ended=new Promise<void>(done=>child.once('exit',()=>done()));child.kill();await ended;await rm(directory,{recursive:true,force:true});}
