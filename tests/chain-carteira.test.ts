@@ -77,7 +77,12 @@ test(`${DEVNET?'DEVNET REAL — ':''}MODO CARTEIRA + LOGIN: negócio, fornecedor
   await ok('invitations/decision',{token:invitation.token,decision:'accept',acknowledged:true},false);
   // 4. Negócio assina cadastro + proposta; João assina o aceite — cada um na própria carteira.
   log('// 4. Negócio assina cadastro + proposta; João assina o acei');
-  assert.ok(await signAll('chain/assinaturas',id=>`chain/assinaturas/${id}`,negocio)>=2);
+  // Negócio assina TUDO de uma vez (cadastro + proposta numa só transação/aprovação).
+  await ok('chain/sync',{});const pend=(await ok('chain/assinaturas')).items.length;assert.ok(pend>=2,`pendentes do negócio: ${pend}`);
+  const {lotes}=await ok('chain/assinaturas/lote/transacao',{account:negocio.address});assert.equal(lotes.length,1,'cabe em uma transação');
+  const sigs:string[]=[];for(const l of lotes)sigs.push(await sendSigned(l.transaction,negocio));
+  assert.equal((await ok('chain/assinaturas/lote/assinada',{lotes:lotes.map((l:{ids:number[]},i:number)=>({ids:l.ids,signature:sigs[i]}))})).confirmed,pend);
+  assert.equal((await ok('chain/assinaturas')).items.length,0,'nada mais pendente do negócio');
   assert.equal(await signAll(`rede/${invitation.token}`,id=>`rede/${invitation.token}/${id}`,joao),1);
   // Item do fornecedor NÃO pode ser assinado pelo painel do negócio, nem com a carteira errada.
   let row=(await ok('chain/reconcile')).rows.find((r:{commitmentId:string})=>r.commitmentId===invitation.commitmentId);

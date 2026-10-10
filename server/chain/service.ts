@@ -67,7 +67,11 @@ export class ChainService {
   const blocked=new Set<string>();let anyBlocked=false;
   for(const item of pendingItems(this.db)){
    const key=eventKey(item.event);
-   if(item.event.type==='register_seller'?false:key?blocked.has(key)||blocked.has('*'):anyBlocked)continue;
+   if(item.event.type==='register_seller'?false:key?blocked.has(key)||blocked.has('*'):anyBlocked){
+    // Mesmo esperando, o que é assinado SEMPRE pelo negócio já aparece na lista (dá para assinar tudo junto, em ordem).
+    if(this.walletMode&&['propose','record_offchain_payment'].includes(item.event.type)&&!item.error?.startsWith(WAIT))noteAttempt(this.db,item.id,`${WAIT}vendedor Aguarda assinatura de: vendedor`);
+    if(key)blocked.add(key);continue;
+   }
    try{const signature=await this.adapter.send(item.event);markItem(this.db,item.id,'confirmado',{signature});this.lastError=null;}
    catch(e){
     if(e instanceof ChainNeedsSignature){noteAttempt(this.db,item.id,`${WAIT}${e.party} ${e.message}`);anyBlocked=true;blocked.add(key??'*');continue;}
@@ -152,6 +156,30 @@ export class ChainService {
   const {net}=this.requireWalletMode();const input=inputRecord(value);if(!isAddress(input.account))throw Error('Conecte a carteira.');
   const {item,expected}=this.signable(id,token);if(!expected||expected!==input.account)throw Error('Conecte a carteira vinculada a este cadastro.');
   return {transaction:await net.transactionFor(item.event,String(input.account)),label:EVENT_LABEL[item.event.type]};
+ }
+ /** Lote: todas as assinaturas pendentes do negócio, em grupos de até 4 por transação (cabe no limite de tamanho). */
+ async signingBatch(value:unknown){
+  const {net}=this.requireWalletMode();const input=inputRecord(value);if(!isAddress(input.account))throw Error('Conecte a carteira.');
+  if(this.wallets!.seller()!==input.account)throw Error('Conecte a carteira vinculada ao negócio.');
+  const items=pendingItems(this.db).filter(i=>waitingFor(i)==='vendedor');if(!items.length)throw Error('Nada para assinar agora.');
+  const groups:typeof items[]=[];for(const i of items){const g=groups.at(-1);if(g&&g.length<4)g.push(i);else groups.push([i]);}
+  const lotes=[];for(const g of groups)lotes.push({ids:g.map(i=>i.id),labels:g.map(i=>EVENT_LABEL[i.event.type]),transaction:await net.transactionForMany(g.map(i=>i.event),String(input.account))});
+  return {lotes};
+ }
+ /** Confere cada lote na rede e dá baixa em todos os itens dele. */
+ async signedBatch(value:unknown){
+  const {net}=this.requireWalletMode();const input=inputRecord(value);if(!Array.isArray(input.lotes))throw Error('Lotes inválidos.');
+  const seller=this.wallets!.seller()!;let confirmed=0;
+  for(const lote of input.lotes as {ids:unknown;signature:unknown}[]){
+   if(!Array.isArray(lote.ids)||typeof lote.signature!=='string')throw Error('Lote inválido.');
+   const items=pendingItems(this.db).filter(i=>(lote.ids as number[]).includes(i.id)&&waitingFor(i)==='vendedor');
+   for(let t=0;t<20;t++){
+    let ok=true;for(const i of items)if(!await net.verifySigned(i.event,seller,lote.signature)){ok=false;break;}
+    if(ok){for(const i of items){markItem(this.db,i.id,'confirmado',{signature:lote.signature});confirmed++;}break;}
+    await new Promise(r=>setTimeout(r,1500));
+   }
+  }
+  await this.sync();return {confirmed};
  }
  /** A carteira enviou: confere na rede (carteira certa, instrução certa, sucesso) e só então dá baixa. */
  async signed(id:number,value:unknown,token?:string){

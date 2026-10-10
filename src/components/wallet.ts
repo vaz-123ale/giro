@@ -32,3 +32,9 @@ export async function signAndSend(wallet:StandardWallet,account:WalletAccount,tr
  const [r]=await (wallet.features['solana:signAndSendTransaction'].signAndSendTransaction as (i:{account:WalletAccount;transaction:Uint8Array;chain:string})=>Promise<{signature:Uint8Array}[]>)({account,transaction:fromBase64(transactionBase64),chain});
  return base58(r.signature);
 }
+/** Várias transações de uma vez: a carteira mostra UMA aprovação e envia todas. Devolve as assinaturas (base58), na mesma ordem. */
+export async function signAndSendMany(wallet:StandardWallet,account:WalletAccount,transactionsBase64:string[],chain:string){
+ const f=wallet.features['solana:signAndSendTransaction'].signAndSendTransaction as (...i:{account:WalletAccount;transaction:Uint8Array;chain:string}[])=>Promise<{signature:Uint8Array}[]>;
+ const out=await f(...transactionsBase64.map(t=>({account,transaction:fromBase64(t),chain})));
+ return out.map(r=>base58(r.signature));
+}

@@ -162,6 +162,19 @@ export class SolanaAdapter implements ChainAdapter {
   if(e.type==='propose')await this.chain.ensureTokenAccountsFor([this.need(e.supplierRole,'fornecedor'),who.address]);
   return this.compile(who.address,await this.instructions(e,createNoopSigner(who.address)));
  });}
+ /**
+  * Várias ações da MESMA carteira numa transação só (uma aprovação na Phantom). A ordem é mantida:
+  * ex.: cadastro do negócio antes das propostas. Todas precisam ser da carteira `account`.
+  */
+ transactionForMany(events:ChainEvent[],account:string){return this.guard(async()=>{
+  await this.prepare();const ixs:Instruction[]=[];const signer=createNoopSigner(address(account));
+  for(const e of events){
+   const who=await this.signerOf(e);if(who.address!==account)throw new ChainRuleError('Unauthorized','Há um item que é de outra carteira.');
+   if(e.type==='propose')await this.chain.ensureTokenAccountsFor([this.need(e.supplierRole,'fornecedor'),who.address]);
+   ixs.push(...await this.instructions(e,signer));
+  }
+  return this.compile(address(account),ixs,Math.min(1_400_000,120_000*events.length+60_000));
+ });}
  private async compile(feePayer:Address,ixs:Instruction[],units=200_000){
   const {value:blockhash}=await this.chain.rpc.getLatestBlockhash().send();
   const message=pipe(createTransactionMessage({version:0}),m=>setTransactionMessageFeePayer(feePayer,m),m=>setTransactionMessageLifetimeUsingBlockhash(blockhash,m),

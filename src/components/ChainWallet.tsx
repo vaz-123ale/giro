@@ -1,6 +1,6 @@
 import {useCallback,useEffect,useState} from 'react';
 import {Wallet} from 'lucide-react';
-import {connect,discoverWallets,signAndSend,signMessage,type StandardWallet,type WalletAccount} from './wallet';
+import {connect,discoverWallets,signAndSend,signAndSendMany,signMessage,type StandardWallet,type WalletAccount} from './wallet';
 
 interface Pending {id:number;type:string;label:string;agreement?:string;counterparty?:string;amount?:string}
 interface Info {cluster:string;walletMode:boolean;chain?:string;token:string;maxSaleCents:number;wallet:string|null;needsWallet:boolean;items:Pending[];bindScope:string;agreement?:string}
@@ -38,13 +38,21 @@ export function ChainWallet({token}:{token?:string}){
   const r=await call<{confirmed:boolean}>(`${url}/assinada`,{signature});
   return r.confirmed?`${p.label}: registrado na rede ✓`:'Enviado. A rede ainda está confirmando; atualize em alguns segundos.';
  });
+ /** Painel do negócio: tudo o que é do negócio numa aprovação só (até 4 por transação). */
+ const signAll=()=>run(async()=>{
+  if(!wallet||!account)throw Error('Conecte a carteira primeiro.');
+  const {lotes}=await call<{lotes:{ids:number[];labels:string[];transaction:string}[]}>('/api/chain/assinaturas/lote/transacao',{account:account.address});
+  const signatures=await signAndSendMany(wallet,account,lotes.map(l=>l.transaction),info.chain!);
+  const r=await call<{confirmed:number}>('/api/chain/assinaturas/lote/assinada',{lotes:lotes.map((l,i)=>({ids:l.ids,signature:signatures[i]}))});
+  return r.confirmed?`${r.confirmed} assinatura(s) registrada(s) na rede ✓`:'Enviado. A rede ainda está confirmando; atualize em alguns segundos.';
+ });
  const real=info.cluster==='mainnet';
  return <section className={`panel chain-wallet${real?' real-money':''}`} aria-labelledby="chain-wallet-title">
   <h2 id="chain-wallet-title"><Wallet size={22} aria-hidden="true"/> {token?'Sua carteira':'Carteira do negócio'}</h2>
   <p className="muted">Rede: <b>{real?'Solana (dinheiro REAL)':info.cluster==='devnet'?'Solana Devnet (TESTE, sem valor)':info.cluster}</b> · token <b>{info.token}</b>{info.maxSaleCents>0&&<> · teto por venda <b>R$ {(info.maxSaleCents/100).toFixed(2).replace('.',',')}</b></>}</p>
   <p>{info.wallet?<>Carteira vinculada: <code>{short(info.wallet)}</code></>:token?'Para registrar este acordo na rede, conecte a SUA carteira. O GIRO nunca recebe sua chave.':'Conecte a carteira do negócio. É ela que assina propostas e pagamentos em dinheiro.'}</p>
   {!account&&<button className="primary" disabled={busy} onClick={doConnect}>{info.wallet?'Conectar carteira':'Conectar e vincular carteira'}</button>}
-  {info.items.length>0?<><h3>Para assinar ({info.items.length})</h3><ul className="sign-list">{info.items.map(p=><li key={p.id}><span><strong>{p.label}</strong><small>{[p.agreement,p.counterparty,p.amount].filter(Boolean).join(' · ')}</small></span><button className="secondary" disabled={busy||!account} onClick={()=>sign(p)}>Assinar na carteira</button></li>)}</ul></>:<p className="muted">Nada para assinar agora.</p>}
+  {info.items.length>0?<><h3>Para assinar ({info.items.length})</h3>{!token&&info.items.length>1&&<button className="primary big-action" disabled={busy||!account} onClick={signAll}>Assinar tudo de uma vez ({info.items.length}) — uma aprovação</button>}<ul className="sign-list">{info.items.map(p=><li key={p.id}><span><strong>{p.label}</strong><small>{[p.agreement,p.counterparty,p.amount].filter(Boolean).join(' · ')}</small></span><button className="secondary" disabled={busy||!account} onClick={()=>sign(p)}>Assinar na carteira</button></li>)}</ul></>:<p className="muted">Nada para assinar agora.</p>}
   {message&&<p className="success" role="status">{message}</p>}{error&&<p className="error" role="alert">{error}</p>}
   {real&&<p className="note">Atenção: transações na mainnet movem dinheiro real e não podem ser desfeitas. Confira o valor na sua carteira antes de aprovar.</p>}
  </section>;

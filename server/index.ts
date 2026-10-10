@@ -107,6 +107,8 @@ const server=createServer(async(req,res)=>{
   if(chain&&route.pathname==='/api/chain/carteira'&&req.method==='GET')return json(200,{...chain.walletInfo(),...(route.searchParams.get('endereco')?{message:chain.bindMessage(route.searchParams.get('endereco')!,'o negócio')}:{})});
   if(chain&&route.pathname==='/api/chain/carteira'&&req.method==='POST')return json(200,chain.bindSeller(await readJson()));
   if(chain&&route.pathname==='/api/chain/assinaturas'&&req.method==='GET')return json(200,chain.pendingSignatures());
+  if(chain&&route.pathname==='/api/chain/assinaturas/lote/transacao'&&req.method==='POST')return json(200,await chain.signingBatch(await readJson()));
+  if(chain&&route.pathname==='/api/chain/assinaturas/lote/assinada'&&req.method==='POST')return json(200,await chain.signedBatch(await readJson(40000)));
   const sellerSign=route.pathname.match(/^\/api\/chain\/assinaturas\/(\d+)\/(transacao|assinada)$/);
   if(chain&&sellerSign&&req.method==='POST')return json(200,sellerSign[2]==='transacao'?await chain.signingTransaction(Number(sellerSign[1]),await readJson()):await chain.signed(Number(sellerSign[1]),await readJson()));
   const linkNet=route.pathname.match(/^\/api\/rede\/([a-f0-9]{48})(?:\/(carteira|mensagem)|\/(\d+)\/(transacao|assinada))?$/);
