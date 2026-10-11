@@ -43,6 +43,11 @@ const server=createServer(async(req,res)=>{
  const json=(status:number,value:unknown)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
  try {
   if(req.headers.origin&&!config.allowedOrigins.includes(req.headers.origin)) return json(403,{error:'Origem não permitida.'});
+  // Links CURTOS para caber no QR (o endereço do túnel pode ser longo): 16 primeiros caracteres do token da cobrança.
+  const shortCode=req.url?.match(/^\/(c|api\/sp)\/([a-f0-9]{16})(\/verificar)?$/);
+  if(shortCode){const full=read().paymentRequests?.find(p=>p.token.startsWith(shortCode[2]))?.token;if(!full)return json(404,{error:'Cobrança não encontrada.'});
+   if(shortCode[1]==='c'){res.writeHead(302,{Location:`/pagar/${full}`});return res.end();}
+   req.url=`/api/solana-pay/${full}${shortCode[3]??''}`;}
   const reqPath=new URL(req.url??'/','http://localhost').pathname;
   const method=req.method??'GET';
   const readBody=async(limit=16000)=>{let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>limit)throw Error('Solicitação muito grande.');}return JSON.parse(raw||'{}');};
@@ -101,7 +106,7 @@ const server=createServer(async(req,res)=>{
   if(checkinToken&&req.method==='GET')return json(200,checkinView(read(),checkinToken));
   // Solana Pay (transaction request): GET = rótulo; POST {account} = transação para a carteira assinar. Só com a rede local.
   const payToken=req.url?.match(/^\/api\/solana-pay\/([a-f0-9]{48})$/)?.[1];
-  if(payToken&&chain&&req.method==='GET')return json(200,{label:'GIRO · rede local de teste',icon:`${config.publicUrl??`http://127.0.0.1:${config.port}`}/logo_giro.png`});
+  if(payToken&&chain&&req.method==='GET')return json(200,{label:`GIRO · ${chain.cluster==='mainnet'?'pagamento':chain.cluster==='devnet'?'Devnet (teste, sem valor)':'rede local de teste'}`,icon:`${config.publicUrl??`http://127.0.0.1:${config.port}`}/logo_giro.png`});
   if(payToken&&chain&&req.method==='POST'){let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>4000)return json(413,{error:'Solicitação muito grande.'});}return json(200,await chain.solanaPayTransaction(payToken,JSON.parse(raw||'{}')));}
   // Carteiras reais (redes públicas): o negócio assina pelo painel; cada fornecedor só pelo próprio link (token).
   const readJson=async(limit=8000)=>{let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>limit)throw Error('Solicitação muito grande.');}return JSON.parse(raw||'{}');};
