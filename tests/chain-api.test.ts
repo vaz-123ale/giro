@@ -119,6 +119,9 @@ test('Rede desligada (padrão): rotas da rede respondem que está desligada e na
   assert.deepEqual(await ok('chain/status'),{enabled:false,cluster:'disabled'});
   assert.equal((await call('chain/reconcile')).status,409);
   const requestId=crypto.randomUUID();const state:State=await ok('payments/create',{requestId});const p=state.paymentRequests!.find(x=>x.requestId===requestId)!;
+  // Link curto da cobrança (cabe no QR mesmo com endereço longo): /c/<16> leva à página de pagamento.
+  const short=await fetch(`http://127.0.0.1:3022/c/${p.token.slice(0,16)}`,{redirect:'manual'});assert.equal(short.status,302);assert.equal(short.headers.get('location'),`/pagar/${p.token}`);
+  assert.equal((await fetch('http://127.0.0.1:3022/c/0000000000000000',{redirect:'manual'})).status,404);
   await ok('payments/amount',{id:p.id,amount:5000});const view=await ok('payments/confirm',{token:p.token,acknowledged:true});
   assert.equal(view.paid,true);assert.equal('chain' in view,false);
  }finally{await stop();}
