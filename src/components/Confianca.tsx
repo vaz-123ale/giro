@@ -18,7 +18,7 @@ export function ConfiancaCard({name,stats,rows=[],attested=0,compact,anon}:{name
  return <section className={`confianca-card${compact?' compact':''}`} aria-label={`GIRO Confiança de ${name}`}>
   <header className="confianca-head">
    <img src="/logo_giro.png" alt="" className="confianca-logo"/>
-   <div><h2>GIRO <span>Confiança</span></h2><p>Histórico verificável de acordos de {name}</p></div>
+   <div><h2 data-no-translate>GIRO <span>Confiança</span></h2><p>Histórico verificável de acordos de {name}</p></div>
    <span className="confianca-seal" aria-hidden="true"><ShieldCheck size={30}/></span>
   </header>
   <div className="confianca-tiles">{tiles.map(t=><div key={t.label} className={`confianca-tile tone-${t.tone}`}><span className="tile-icon">{t.icon}</span><small>{t.label}</small><strong>{t.value}</strong><i style={{width:`${Math.max(6,t.bar)}%`}}/></div>)}</div>

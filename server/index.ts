@@ -10,8 +10,8 @@ import {createPayment,amountPayment,confirmPayment,paymentView,stallSale} from '
 import {registerDaily,payDaily} from './daily-service.ts';
 import {startChain} from './chain/service.ts';
 import {AccessControl} from './auth.ts';
-import {People,type Person} from './people.ts';
-import {myView,photoOf,profile,profiles,publicProfile} from './profile-service.ts';
+import {People,roleNames,type Person} from './people.ts';
+import {myView,photoOf,profile,profiles,publicProfile,experienceOf} from './profile-service.ts';
 import {memberRoleOf} from './chain/events.ts';
 import {roleFor} from './chain/keys.ts';
 import {createServer} from 'node:http';
@@ -95,14 +95,33 @@ const server=createServer(async(req,res)=>{
   if(profileSlug&&method==='GET')return json(200,profile(read(),people,profileSlug,await marks()));
   const photoSlug=reqPath.match(/^\/api\/fotos\/([a-f0-9]{10})$/)?.[1];
   if(photoSlug&&method==='GET'){const ph=photoOf(people,photoSlug);if(!ph)return json(404,{error:'Sem foto.'});res.writeHead(200,{'Content-Type':ph.type,'Cache-Control':'private, max-age=60','X-Content-Type-Options':'nosniff'});return res.end(ph.data);}
+  // Vagas "Procuro ajudante".
+  const vagaAct=reqPath.match(/^\/api\/vagas\/([a-f0-9]{12})\/(interesse|fechar)$/);
+  if(reqPath==='/api/vagas'||vagaAct){
+   const viewer=who?.kind==='pessoa'?people.byId(who.id):undefined;if(!who)return json(401,{error:'Entre na sua conta.'});
+   const ownerKey=who.kind==='dona'?'dona':viewer?.role==='fornecedor'?viewer.id:null;const state=read();
+   const exp=(id:string)=>{const p=people.byId(id);if(!p)return null;const e=experienceOf(state,p);return {name:p.name,slug:p.slug,roleLabel:roleNames[p.role as keyof typeof roleNames]??p.role,contact:people.job(p.id)?.contact??null,...e};};
+   if(reqPath==='/api/vagas'&&method==='POST'){if(!ownerKey)throw Error('Só a barraca e os fornecedores publicam vagas.');const id=people.createVaga(ownerKey,ownerKey==='dona'?people.business().name??'Barraca':viewer!.name,await readBody());return json(200,{id});}
+   if(vagaAct&&vagaAct[2]==='fechar'&&method==='POST'){if(!ownerKey)throw Error('Sem permissão.');people.closeVaga(vagaAct[1],ownerKey);return json(200,{ok:true});}
+   if(vagaAct&&vagaAct[2]==='interesse'&&method==='POST'){if(!viewer||!['ajudante','cliente'].includes(viewer.role))throw Error('Entre com uma conta de equipe ou comprador para demonstrar interesse.');return json(200,{interested:people.toggleInterest(vagaAct[1],viewer.id)});}
+   if(reqPath==='/api/vagas'&&method==='GET'){const me=viewer?exp(viewer.id):null;
+    return json(200,{me,vagas:people.vagas().map(v=>{const mine=ownerKey!==null&&v.owner===ownerKey;const ok=(e:{months:number;days:number}|null)=>!!e&&e.months>=v.minMonths&&e.days>=v.minDays;
+     return {id:v.id,title:v.title,note:v.note,ownerName:v.ownerName,minMonths:v.minMonths,minDays:v.minDays,createdAt:v.createdAt,mine,
+      ...(mine?{candidates:v.interested.map(exp).filter(Boolean).map(c=>({...c!,eligible:ok(c)}))}:{}),
+      ...(viewer?{interested:v.interested.includes(viewer.id),eligible:ok(me)}:{}),count:v.interested.length};})});}
+  }
+  // Quem busca trabalho: a barraca e os fornecedores veem (com o perfil de confiança).
+  if(reqPath==='/api/trabalho'&&method==='GET'){const viewer=who?.kind==='pessoa'?people.byId(who.id):undefined;if(who?.kind!=='dona'&&viewer?.role!=='fornecedor')return json(403,{error:'Só a barraca e os fornecedores veem quem busca trabalho.'});
+   return json(200,people.jobSeekers().map(p=>({name:p.name,roleLabel:roleNames[p.role as keyof typeof roleNames]??p.role,slug:p.slug,photo:p.photo?`/api/fotos/${p.slug}`:null,...p.job})));}
   if(reqPath.startsWith('/api/eu')){
    if(who?.kind!=='pessoa')return json(403,{error:'Entre com o usuário da sua conta.'});const me=people.byId(who.id)!;
-   if(reqPath==='/api/eu'&&method==='GET'){const w=chain?.wallets?.role(walletRoleOf(me))??null;return json(200,{...myView(read(),me,await marks()),wallet:chain?.walletInfo(),myWallet:w,balance:await chain?.walletBalance(w)??null,invite:people.personalCode(me.id),referrals:people.referrals(me.id)});}
+   if(reqPath==='/api/eu'&&method==='GET'){const w=chain?.wallets?.role(walletRoleOf(me))??null;return json(200,{...myView(read(),me,await marks()),job:people.job(me.id),wallet:chain?.walletInfo(),myWallet:w,balance:await chain?.walletBalance(w)??null,invite:people.personalCode(me.id),referrals:people.referrals(me.id)});}
    // Assinaturas da colega (só os acordos dela), tudo de uma vez.
    const contactIds=[me.contactId,...(read().contacts??[]).filter(c=>c.memberId&&c.memberId===me.memberId).map(c=>c.id)].filter((x):x is string=>!!x);
    if(reqPath==='/api/eu/assinaturas'&&method==='GET')return json(200,{items:chain?chain.personPending(contactIds):[],wallet:chain?.walletInfo()});
    if(reqPath==='/api/eu/assinaturas/lote/transacao'&&method==='POST'){if(!chain)throw Error('Rede desligada.');return json(200,await chain.personSigningBatch(contactIds,await readBody()));}
    if(reqPath==='/api/eu/assinaturas/lote/assinada'&&method==='POST'){if(!chain)throw Error('Rede desligada.');return json(200,await chain.personSignedBatch(contactIds,await readBody(40000)));}
+   if(reqPath==='/api/eu/trabalho'&&method==='POST'){if(!['ajudante','cliente'].includes(me.role))throw Error('Só contas da equipe ou de comprador podem anunciar que buscam trabalho.');people.setJob(me.id,await readBody());return json(200,{ok:true,job:people.job(me.id)});}
    if(reqPath==='/api/eu/senha'&&method==='POST'){const input=await readBody();people.changePassword(me.id,input.atual,input.nova);return json(200,{ok:true});}
    if(reqPath==='/api/eu/foto'&&method==='POST'){people.setPhoto(me.id,(await readBody(400000)).photo);return json(200,{ok:true});}
    if(reqPath==='/api/eu/carteira/mensagem'&&method==='GET'){if(!chain)throw Error('Rede desligada.');return json(200,{message:chain.bindMessage(new URL(req.url??'/','http://localhost').searchParams.get('endereco')??'',`a conta ${me.login}`)});}
@@ -133,10 +152,10 @@ const server=createServer(async(req,res)=>{
   if(route.pathname==='/api/demo'&&req.method==='GET'){const f=join(config.dataDir,'demo.json');return existsSync(f)&&process.env.GIRO_DEMO_PUBLICA==='sim'?json(200,JSON.parse(readFileSync(f,'utf8'))):json(404,{error:'Sem demonstração.'});}
   // QR fixo da barraca (público): informações da barraca e cobrança com valor definido pelo comprador.
   if(route.pathname==='/api/barraca'&&req.method==='GET'){const b=people.business();const st=chain?await chain.status():{enabled:false,cluster:'disabled'};
-   return json(200,{name:b.name??'Barraca',photo:b.photo?`/api/publico/${b.slug}/foto`:null,slug:b.slug,maxCents:stallMax(),chain:st.enabled&&st.cluster!=='simulado'?st.cluster:null});}
+   return json(200,{buyer:who?.kind==='pessoa'?people.byId(who.id)?.name??null:null,name:b.name??'Barraca',photo:b.photo?`/api/publico/${b.slug}/foto`:null,slug:b.slug,maxCents:stallMax(),chain:st.enabled&&st.cluster!=='simulado'?st.cluster:null});}
   if(route.pathname==='/api/barraca/venda'&&req.method==='POST'){const ip=String(req.headers['x-forwarded-for']??req.socket.remoteAddress??'?').split(',').pop()!.trim();
    const now=Date.now(),hits=(stallHits.get(ip)??[]).filter(t=>now-t<60000);if(hits.length>=10)return json(429,{error:'Muitas tentativas. Espere um minuto.'});hits.push(now);stallHits.set(ip,hits);
-   const input=await readJson();let token='';update(s=>{token=stallSale(s,input,stallMax());});return json(200,{token});}
+   const input=await readJson();let token='';update(s=>{token=stallSale(s,input,stallMax(),who?.kind==='pessoa'?who.id:undefined);});return json(200,{token});}
   if(chain&&route.pathname==='/api/chain/saldo'&&req.method==='GET')return json(200,await chain.walletBalance(chain.wallets?.seller())??null);
   if(chain&&route.pathname==='/api/chain/carteira'&&req.method==='GET')return json(200,{...chain.walletInfo(),...(route.searchParams.get('endereco')?{message:chain.bindMessage(route.searchParams.get('endereco')!,'o negócio')}:{})});
   if(chain&&route.pathname==='/api/chain/carteira'&&req.method==='POST')return json(200,chain.bindSeller(await readJson()));

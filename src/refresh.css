@@ -114,7 +114,7 @@ main[data-page="equipe"] h3{font-size:20px!important}
 .my-profile h2{margin:0 0 4px}
 .my-profile .form-actions{display:flex;gap:10px;flex-wrap:wrap}
 
-@media (max-width:700px){.login-choice{grid-template-columns:1fr}.trust-nums{grid-template-columns:repeat(2,1fr)}main[data-page] header h1{font-size:24px!important}}
+@media (max-width:700px){.login-choice{grid-template-columns:1fr 1fr}.trust-nums{grid-template-columns:repeat(2,1fr)}main[data-page] header h1{font-size:24px!important}}
 
 .my-profile .avatar-fallback{width:96px;height:96px;border-radius:50%;background:var(--g-deep);color:#fff;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;flex:none}
 /* Importar dívidas */
@@ -142,3 +142,35 @@ main[data-page="equipe"] h3{font-size:20px!important}
 .profile-menu-head strong{font-size:17px;display:block}
 .profile-menu .primary,.profile-menu .secondary{width:100%;justify-content:center}
 .logo-home{background:none!important;border:0!important;padding:0!important;cursor:pointer;min-height:auto!important;box-shadow:none!important}
+/* Perfis diferentes por tipo de conta */
+.role-badge{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:6px 12px;border-radius:999px;background:#e9f6ef;color:#064c3c;margin-bottom:6px}
+.role-badge img{width:20px;height:20px}
+.profile-head.role-fornecedor{border-top:6px solid #064c3c!important}
+.profile-head.role-ajudante{border-top:6px solid #e08a00!important}.role-ajudante .role-badge{background:#fff1d6;color:#9a5b00}
+.profile-head.role-cliente{border-top:6px solid #6d28d9!important}.role-cliente .role-badge{background:#efe7ff;color:#5b21b6}
+.worker-hero{background:linear-gradient(135deg,#9a5b00,#e08a00)!important}.worker-hero small{color:#ffe7b3!important}
+.buyer-hero{background:linear-gradient(135deg,#4c1d95,#7c3aed)!important}.buyer-hero small{color:#e4d6ff!important}
+.buyer-pay{background:#fff!important;color:#13261f!important;font-weight:800}
+.purchase-list{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.purchase-list li{display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:12px 16px;border:1px solid var(--g-line);border-radius:14px}
+.purchase-list strong{font-size:18px}.pl-date{color:var(--g-muted);min-width:90px}
+.job-card textarea{width:100%;border:1.5px solid #cfdcd5;border-radius:12px;padding:10px;font:inherit;font-size:16px}
+.job-card label{display:grid;gap:6px;margin:10px 0}
+/* Vagas */
+.vaga{border:1px solid var(--g-line);border-radius:18px;padding:16px;margin-top:14px;display:grid;gap:8px;background:#fff}
+.vaga-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}.vaga-top small{display:block}
+.vaga-form{display:grid;gap:10px;max-width:none}.vaga-form textarea{width:100%;border:1.5px solid #cfdcd5;border-radius:12px;padding:10px;font:inherit}
+.vaga-rules{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.candidates{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.candidates li{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;padding:12px 14px;border-radius:14px;border:1px solid var(--g-line)}
+.candidates li.ok{background:#f2fbf6}.candidates small{display:block}
+.elig{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px;width:fit-content}
+.elig.ok{background:#e3f6ea;color:#0b5e3a}.elig.no{background:#fff1d6;color:#9a5b00}
+.area-switch{margin:0 0 18px}
+/* Idioma */
+.lang-switch{display:inline-flex;border:1.5px solid var(--g-line);border-radius:999px;overflow:hidden;background:#fff;flex:none}
+.lang-switch button{border:0!important;background:none!important;padding:8px 12px!important;min-height:38px!important;font-weight:700;color:var(--g-muted)!important;border-radius:0!important;box-shadow:none!important;font-size:14px!important}
+.lang-switch button.on{background:var(--g-deep)!important;color:#fff!important}
+.lang-switch.big button{padding:12px 22px!important;font-size:16px!important}
+.login-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.stall-lang{max-width:460px;margin:0 auto;padding-top:14px;display:flex;justify-content:flex-end}

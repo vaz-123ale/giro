@@ -10,8 +10,8 @@ async function resizePhoto(file:File){
  return c.toDataURL('image/jpeg',0.85);
 }
 export function MeuPerfil(){
- const [b,setB]=useState<{name:string|null;slug:string}>();const [nome,setNome]=useState('');const [v,setV]=useState(0);const [error,setError]=useState('');const [temFoto,setTemFoto]=useState(true);
- const load=useCallback(()=>fetch('/api/pessoas').then(r=>r.json()).then(d=>{setB(d.business);setNome(d.business?.name??'');}).catch(()=>{}),[]);
+ const [b,setB]=useState<{name:string|null;slug:string;login?:string|null}>();const [nome,setNome]=useState('');const [user,setUser]=useState('');const [v,setV]=useState(0);const [error,setError]=useState('');const [temFoto,setTemFoto]=useState(true);
+ const load=useCallback(()=>fetch('/api/pessoas').then(r=>r.json()).then(d=>{setB(d.business);setNome(d.business?.name??'');setUser(d.business?.login??'');}).catch(()=>{}),[]);
  useEffect(()=>{void load();},[load]);
  if(!b)return null;
  const salvar=async(body:unknown,msg:string)=>{setError('');const r=await fetch('/api/negocio',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -25,6 +25,9 @@ export function MeuPerfil(){
     <form onSubmit={e=>{e.preventDefault();void salvar({name:nome},'Nome da barraca salvo!');}} style={{display:'flex',gap:10,flexWrap:'wrap',alignItems:'end',margin:0}}>
      <label style={{flex:1,minWidth:200}}>Nome da barraca<input value={nome} onChange={e=>setNome(e.target.value)} maxLength={120} placeholder="Ex.: Banca da Maria"/></label>
      <button className="primary">Salvar nome</button></form>
+    <form onSubmit={e=>{e.preventDefault();void salvar({login:user},'Usuário da barraca salvo!');}} style={{display:'flex',gap:10,flexWrap:'wrap',alignItems:'end',margin:'12px 0 0'}}>
+     <label style={{flex:1,minWidth:200}}>Usuário da barraca (para entrar)<input value={user} onChange={e=>setUser(e.target.value.toLowerCase().replace(/[^a-z0-9._-]/g,''))} maxLength={32} placeholder="ex.: bancadamaria"/></label>
+     <button className="primary">Salvar usuário</button></form>
     <div className="form-actions" style={{marginTop:12}}>
      <label className="secondary photo-button"><Camera size={18} aria-hidden="true"/> Trocar foto<input type="file" accept="image/*" hidden onChange={async e=>{const f=e.target.files?.[0];if(f)await salvar({photo:await resizePhoto(f)},'Foto atualizada!');}}/></label>
      <a className="primary" href={`/p/${b.slug}`} target="_blank" rel="noopener"><ExternalLink size={16} aria-hidden="true"/> Ver meu perfil público</a>
