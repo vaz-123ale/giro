@@ -65,5 +65,5 @@ export interface ReceiptConfirmation { id:string; token:string; paymentId:string
 /** Pedido de início/fim de turno feito pelo próprio trabalhador; só vale após confirmação do vendedor. */
 export interface ShiftRequest { id:string; memberId:string; name:string; type:'start'|'end'; at:string; state:'waiting'|'confirmed'|'refused'; decidedAt?:string }
 /** Escala: dias da semana (0=domingo … 6=sábado). checkinToken: link local de check-in do trabalhador. */
-export interface Member { schedule?:number[]; checkinToken?:string }
+export interface Member { schedule?:number[]; checkinToken?:string; workLocation?:string }
 export interface State { receiptConfirmations?:ReceiptConfirmation[]; shiftRequests?:ShiftRequest[] }

@@ -2,6 +2,14 @@
 
 Registro organizado do que o GIRO faz, separado por quem usa. Atualizado a cada versão nova.
 
+## Atualização visual — outubro de 2026
+
+- **Barraca:** o app principal mantém sua organização. Os dados reais do grupo continuam na base existente.
+- **Fornecedor:** cabeçalho âmbar, navegação distribuída, indicadores maiores e cartões de acordos e pendências com hierarquia visual mais clara, seguindo a referência fornecida. Foto e nome no canto superior direito abrem Alterar perfil, Ver perfil público e Sair.
+- **Equipe/comprador:** cabeçalho azul, cartões de vagas, trabalho e compras com ícones, espaçamento e tamanhos consistentes. Meu trabalho reúne barraca, local quando informado, escala, horas encerradas e comissão gerada por turno. Confirmações pendentes de comissão aparecem apenas para a pessoa correta.
+- **Nos dois apps:** adaptação para celular, barra de progresso dos acordos acessível, estados vazios ilustrados com ícones e menu de perfil que fecha ao clicar fora ou pressionar Esc. Textos disponíveis também em inglês.
+- O cenário fictício, o roteiro e a narração da gravação continuam locais, sem substituir os dados do grupo ou a demonstração padrão do Render.
+
 ---
 
 ## 🧺 Conta da barraca (quem vende)
