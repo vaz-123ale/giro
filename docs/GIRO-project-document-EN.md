@@ -138,7 +138,7 @@ GIRO treats the supplier–vendor agreement as the product: accepted by both sid
 
 Working prototype, pre-revenue. **GIRO won 1st place at WoHackathon**, where the first version was created. During the Colosseum (Crypto World's Fair, Solana track) we built all of the Solana integration:
 
-- web app in Portuguese with a phone-friendly layout (no native app yet);
+- web app in Portuguese and English (PT/EN switch) with a phone-friendly layout (no native app yet);
 - Anchor program (Rust) on Solana Devnet: agreements accepted by both sides, changes only with mutual approval, automatic sale splitting, and confirmation or dispute of cash payments;
 - Solana Pay checkout with an atomic split in a BRL stablecoin (BRZ; test mint on Devnet);
 - each person signs with their own wallet (Phantom, Solflare), with a one-approval "sign all";
@@ -147,10 +147,74 @@ Working prototype, pre-revenue. **GIRO won 1st place at WoHackathon**, where the
 - document import (PDF, CSV and text), always reviewed before saving;
 - 288 automated tests and 1,165 parity vectors that guarantee the app's split rule and the on-chain program agree to the cent.
 
-**Live demo:** <https://giro-demo-oyy1.onrender.com> (user `dona`, password `giro-demo-2026`; fictional data, simulated chain).
+**Live demo:** <https://giro-demo-oyy1.onrender.com> (fictional data, simulated chain; test accounts in section 12).
 **Open source (MIT):** <https://github.com/vaz-123ale/giro>
 
-## 12. Design decisions and open questions
+## 12. October 2026 updates
+
+Everything below was added after the stall QR code and the split by account type. It was tested only with fictional data (colleagues role-playing suppliers, made-up company IDs, no real money). The pilot is still the next step.
+
+### Three account types, each with its own app
+
+On the sign-in screen, the person chooses which account to enter with. GIRO checks that the account really is of that type; if not, it says which option to choose (e.g. *"This account belongs to a supplier. Choose Supplier to sign in"*). Each account only sees what belongs to it.
+
+| Account | Who | Color | Menu |
+|---|---|---|---|
+| **My stall** | the vendor | green | Home, Receive, Organize, Commitments, Team, Trust |
+| **Supplier** | sells goods to the stall | amber | Dashboard, Agreements, My trust, Stalls, Helpers, Account |
+| **Team or buyer** | helper or customer | blue | Jobs, My work, My purchases, Account |
+
+### Test accounts (public demo)
+
+Demo: <https://giro-demo-oyy1.onrender.com>. Fictional data (vendor Maria, supplier João, helper Lia), simulated Solana, reset on every restart. The sign-in screen lists the three accounts with a **Fill in** button.
+
+| Choose on sign-in | Username | Password | What opens |
+|---|---|---|---|
+| My stall | `dona` | `giro-demo-2026` | Stall app (green) |
+| Supplier | `joao` | `giro-demo-2026` | Supplier app (amber), with the R$ 600 agreement at 20% of sales |
+| Team or buyer | `lia` | `giro-demo-2026` | Team/buyer app (blue): jobs, work and purchases |
+
+### Stall (vendor)
+
+- **Fixed stall QR code:** printed once and left at the stall. The buyer points the camera, types the amount and pays, with no new code per sale. The agreed split with suppliers and helpers still applies; there is a per-purchase limit and an attempt limit against abuse. If the buyer is signed in, the purchase goes to their history.
+- **Debt import:** from **PDF, Excel (.xlsx) or CSV**, with a review table before saving, a help box and a CSV template. Each imported debt creates the contact and sends the agreement invitation.
+- **Stall username:** the stall can have its own username, set in *My profile*.
+- **Profile menu at the top:** photo, *Edit profile*, *View public profile* and *Log out*.
+- **Visual refresh:** clearly separated cards, larger text, new icons, a visible *Back* button, clear confirmations, filters in *Commitments*, and the GIRO logo returning to *Home*.
+
+### Supplier (own app)
+
+- **Dashboard:** receivable, already received, active agreements, *Needs you* (agreements to accept, cash payments to confirm) and recent agreements.
+- **Agreements:** every agreement with a progress bar, % of sales, due date and a "registered on Solana" badge.
+- **My trust:** the supplier's own GIRO Confiança card (agreements kept, confirmed by both sides) with a share button.
+- **Stalls:** the stalls' trust before selling on credit, plus trust profiles.
+- **Helpers:** post a job (*Looking for a helper*) and see who is looking for work.
+- **Account:** photo, public profile, password, Solana wallet and an invite code for other stalls.
+
+### Team or buyer (own app)
+
+- **Jobs (home screen):** helper jobs with the person's experience checked by GIRO, *I'm interested* and *Looking for work*.
+- **My work:** shift (start/end), commission, amount received, cash payments to confirm and agreements.
+- **My purchases:** purchases paid through the stall QR while signed in, total spent and the stalls' trust.
+- **Account:** photo, public profile, password, wallet and an invite for friends.
+
+### Helper jobs with verified experience
+
+Stalls and suppliers post *Looking for a helper* with rules: minimum **months** of experience and minimum **days worked**. People click *I'm interested*. GIRO checks their experience from the **commissions they actually received** (days worked, months, total) and shows *"Meets the rules"* or *"Does not meet the rules yet"*. Experience is not self-declared: it comes from the history. There is also a *Looking for work* list with summary, contact, trust profile link and a WhatsApp button.
+
+### Site in English
+
+PT / EN switch at the top of every screen and on sign-in (saved in the browser), or add `?lang=en` to the address. "GIRO" and "GIRO Confiança" stay in Portuguese, and amounts use the US format in English.
+
+### Addresses
+
+| Address | Purpose | Note |
+|---|---|---|
+| <https://giro-demo-oyy1.onrender.com> | Public demo | Always online; fictional data |
+| <https://desktop-jg2rfmg.tail00f1d9.ts.net> | Group's fixed link | Needs the team computer running |
+| <https://github.com/vaz-123ale/giro> | Source code | MIT license |
+
+## 13. Design decisions and open questions
 
 **What if a due date is close and the debt isn't paid?** GIRO cannot create money or change an accepted agreement. It detects the risk early and shows what must happen. Example: R$ 600 left, due in 5 days, recent revenue R$ 200/day (R$ 1,000 projected): about 60% of projected revenue would be needed. If it is the vendor's own rule, they can raise the percentage. If it is an agreement with the supplier, GIRO proposes a change ("from 30% to 60%") that the supplier accepts or rejects. If even 100% would not be enough, GIRO says so clearly and suggests renegotiating the date.
 
@@ -166,14 +230,14 @@ Working prototype, pre-revenue. **GIRO won 1st place at WoHackathon**, where the
 
 **Smart document import.** Users can send documents they already have (PDFs, images, statements, bills, reports, spreadsheets). GIRO reads them and identifies amounts due, due dates, recurring suppliers and fixed bills, but **never saves anything without the user's review**. Example: "3 commitments found: supplier João, R$ 600, due 10/08; rent, R$ 900, due 10/10; electricity, R$ 184.70, due 10/14. Review and add?" It can also suggest recurring commitments. Import automates data entry; it never makes financial decisions alone.
 
-## 13. Technologies
+## 14. Technologies
 
 - **Blockchain:** Solana (Devnet), Anchor/Rust, SPL Token (BRZ), Solana Pay, Wallet Standard, Solana Attestation Service, @solana/kit, Codama.
 - **Application:** Node.js, TypeScript, React, Vite, SQLite.
 - **Development tools:** WSL/Ubuntu, Git/GitHub, Render (public demo), Tailscale (group test).
 - **AI tools:** Claude Code as a coding assistant, an image-generation tool for the pitch illustrations, and Kokoro (open-source text-to-speech) for the video narration.
 
-## 14. Team
+## 15. Team
 
 Four Brazilian women:
 
@@ -184,7 +248,7 @@ Four Brazilian women:
 
 We currently work on GIRO part-time, alongside our studies and jobs, and plan to go full-time if funded.
 
-## 15. Prior work disclosure
+## 16. Prior work disclosure
 
 The concept and the first version of the app (without blockchain) came from **WoHackathon**, where GIRO won 1st place. All Solana work was built during the Colosseum period (September 14 – October 12, 2026).
 
