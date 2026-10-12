@@ -117,3 +117,28 @@ main[data-page="equipe"] h3{font-size:20px!important}
 @media (max-width:700px){.login-choice{grid-template-columns:1fr}.trust-nums{grid-template-columns:repeat(2,1fr)}main[data-page] header h1{font-size:24px!important}}
 
 .my-profile .avatar-fallback{width:96px;height:96px;border-radius:50%;background:var(--g-deep);color:#fff;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;flex:none}
+/* Importar dívidas */
+.help-box{background:#f4faf6;border:1px solid var(--g-line);border-radius:16px;padding:4px 14px;margin:12px 0}
+.help-box ol{margin:8px 0 6px 18px;display:grid;gap:6px;font-size:15px}
+.debt-table-wrap{overflow-x:auto;margin-top:14px}
+.debt-table{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:15px}
+.debt-table th{text-align:left;font-size:13px;color:var(--g-muted);padding:0 6px}
+.debt-table td{background:#fff;padding:6px;border-top:1px solid var(--g-line);border-bottom:1px solid var(--g-line)}
+.debt-table td:first-child{border-left:1px solid var(--g-line);border-radius:12px 0 0 12px;text-align:center}
+.debt-table td:last-child{border-right:1px solid var(--g-line);border-radius:0 12px 12px 0}
+.debt-table input,.debt-table select{min-height:40px!important;width:100%;padding:6px 8px}
+.debt-table input[type=checkbox]{width:20px;min-height:20px!important}
+.debt-table tr.off td{opacity:.5}
+.debt-results{list-style:none;padding:0;display:grid;gap:8px;margin-top:14px}
+.debt-results li{padding:10px 14px;border-radius:12px;font-size:15px}
+.debt-results li.ok{background:#e3f6ea;color:#0b5e3a}.debt-results li.erro{background:#fff0ed;color:#aa382e}
+/* Menu do perfil no topo */
+.profile-menu-wrap{position:relative}
+.profile-button .profile-photo{width:36px;height:36px;border-radius:50%;object-fit:cover}
+.profile-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:60;background:#fff;border:1px solid var(--g-line);border-radius:18px;box-shadow:0 18px 40px rgba(6,76,60,.18);padding:16px;min-width:260px;display:grid;gap:10px}
+.profile-menu-head{display:flex;align-items:center;gap:12px}
+.profile-menu-head img,.profile-menu-head .pm-initial{width:56px;height:56px;border-radius:50%;object-fit:cover;flex:none}
+.profile-menu-head .pm-initial{background:var(--g-deep);color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800}
+.profile-menu-head strong{font-size:17px;display:block}
+.profile-menu .primary,.profile-menu .secondary{width:100%;justify-content:center}
+.logo-home{background:none!important;border:0!important;padding:0!important;cursor:pointer;min-height:auto!important;box-shadow:none!important}

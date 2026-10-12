@@ -94,6 +94,16 @@ test('Pessoas: contas das colegas, perfis com foto, acordos próprios e venda di
   assert.equal((await as().call('barraca/venda',{amount:barraca.maxCents+1})).status,400,'valor máximo');
   const {token}=await as().ok('barraca/venda',{amount:1500});assert.match(token,/^[a-f0-9]{48}$/);
   const cobranca=await as().ok(`payments/${token}`);assert.equal(cobranca.amount,1500);assert.equal(cobranca.paid,false);
+  // 7e. Importar dívidas (PDF/Excel revisado): cria fornecedor e ajudante e propõe os acordos; linha inválida não derruba as outras.
+  const imp=await dona.ok('dividas/importar',{items:[
+   {name:'Hortifruti Boa Terra',type:'fornecedor',amount:60000,due:shiftDate(today(),30),rateBps:1500},
+   {name:'Lia Ajudante',type:'ajudante',amount:20000,due:shiftDate(today(),20),rateBps:500},
+   {name:'Sem Valor',type:'fornecedor',amount:0,due:shiftDate(today(),20),rateBps:500}]});
+  assert.deepEqual(imp.results.map((r:{ok:boolean})=>r.ok),[true,true,false]);assert.match(imp.results[0].link,/^\/convite\//);
+  const depois:State=imp.state;
+  assert.ok(depois.contacts!.some(c=>c.name==='Lia Ajudante'&&c.type==='collaborator'&&c.memberId),'ajudante vira membro da equipe');
+  assert.equal(depois.commitments.find(c=>c.supplier==='Hortifruti Boa Terra')!.status,'awaiting_acceptance');
+  assert.equal((await crisS.call('dividas/importar',{items:[]})).status,403,'só a barraca importa');
   // 8. Sem login, perfis e fotos ficam fechados.
   assert.equal((await as().call('perfis')).status,401);assert.equal((await as().call(`fotos/${ana.profile.split('/')[2]}`)).status,401);
  }finally{const ended=new Promise<void>(done=>child.once('exit',()=>done()));child.kill();await ended;await rm(directory,{recursive:true,force:true});}

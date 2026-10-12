@@ -32,7 +32,8 @@
     "pdfjs-dist": "4.10.38",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "sas-lib": "1.0.10"
+    "sas-lib": "1.0.10",
+    "xlsx": "0.18.5"
   },
   "devDependencies": {
     "@codama/nodes-from-anchor": "1.5.6",
