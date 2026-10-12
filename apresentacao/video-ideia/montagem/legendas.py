@@ -28,8 +28,8 @@ CENAS = [
     (150, 160, ["Solana supports low-cost transactions and programmable payment rules.",
                 "Future compatible payments could be split automatically.", "It verifies records—not fruit deliveries."]),
     (160, 175, ["We're four Brazilian women across mathematics, software development, marketing, and graphic design.",
-                "Our pilot: twelve vendors in three markets, two free months,",
-                "hands-on support, and testing referrals and affordable subscriptions."]),
+                "Our pilot: three suppliers and twelve of their vendors, in three markets.",
+                "Free for vendors, with better terms for those with a GIRO history."]),
     (175, 180, ["Money organized today, trust for tomorrow.", "That's GIRO."]),
 ]
 

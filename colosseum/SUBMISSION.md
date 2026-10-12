@@ -47,10 +47,13 @@ Per-sale splits of R$ 5–50 only work with sub-cent fees and sub-second finalit
 
 ## Business model and go-to-market
 
-- **Who:** street-market and small food/craft sellers in Brazil, plus their suppliers. The supplier is the growth channel: one supplier serves 20–100 sellers and has the strongest reason to want automatic payment.
-- **Pricing:** a 0.5% fee on settled sales, charged as one more line in the same atomic split. The free tier covers cash tracking and planning.
-- **Distribution:** (1) suppliers invite their sellers with GIRO invite codes and referrals; (2) partnerships with street-market associations and microcredit cooperatives; (3) attestations become the entry point for lenders, who pay for verified repayment history.
-- **Next steps:** pilot with our current test group on Devnet (one seller, two suppliers, one helper, customers), a small capped mainnet pilot with BRZ, a security audit and multisig upgrade authority, a regulatory review with Brazil's Central Bank (BCB) payment rules, and PIX on/off-ramp partners.
+- **Two sides, different value.** The supplier gets the most direct benefit: paid on time without chasing, plus evidence of who honors commitments. The vendor gets value on day one, even alone: knowing what money is really available. Over time, the vendor's history can turn into better terms: longer payment periods, higher limits, better prices, or the trust of a new supplier.
+- **Suppliers distribute, vendors build the habit.** One supplier serves dozens of vendors, so convincing one supplier brings many users at once, and the supplier is the one who invites ("use GIRO with me"). Vendors stay because the money-organization features are useful without the supplier.
+- **Who pays:** the supplier (subscription or a fee per tracked agreement), because the supplier is the one who cuts late payments and collection costs. GIRO is free for vendors. Suppliers offer a concrete perk to vendors who use GIRO, such as a few extra days to pay, a higher limit or a small discount.
+- **Pilot (2 months, 3 markets):** 3 suppliers and 12 of the vendors they serve (4 each), free during the pilot, with hands-on support. We measure, for suppliers: average delay before and after, time spent collecting, whether they would extend better terms based on GIRO history, and what they would pay. For vendors: weekly use without the supplier asking, whether they can say what they can spend, whether they got better terms, and referrals.
+- **Key hypothesis:** a supplier improves commercial terms based on a GIRO history. If that holds, the model sustains itself: the supplier pays for the value it gets, and the vendor gains access to better terms.
+- **Later:** partnerships with street-market associations and microcredit cooperatives; attestations as an entry point for lenders who value verified repayment history.
+- **Next technical steps:** a small capped mainnet pilot with BRZ, a security audit and multisig upgrade authority, a regulatory review of Brazil's Central Bank (BCB) payment rules, and PIX on/off-ramp partners.
 
 ## Prior work disclosure
 

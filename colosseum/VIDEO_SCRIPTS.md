@@ -21,7 +21,7 @@ The pitch video runs 2–3 minutes and the demo video runs 3 minutes or less. An
 "Our users have never touched crypto, so GIRO hides it. The supplier gets a WhatsApp invite link, creates her account and connects a wallet on one screen, and signs everything with one tap. We are running it now with a real group, a seller, her suppliers and her helper, on Devnet."
 
 **[1:50 – 2:20] Business.**
-"We charge half a percent of each settled sale, as one more line in the same split. Suppliers are our growth channel: each one serves dozens of sellers and wants to be paid automatically. Next come microcredit cooperatives, who get verified repayment history."
+"Suppliers pay, vendors use GIRO for free. One supplier serves dozens of vendors and wants to be paid on time, so suppliers bring their vendors and offer better terms to those with a GIRO history. Our pilot: three suppliers and twelve of their vendors, in three markets."
 
 **[2:20 – 2:30] Close.**
 "GIRO: every sale already split, every promise kept on-chain. Small business credit, built one sale at a time."

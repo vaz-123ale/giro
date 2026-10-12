@@ -147,16 +147,16 @@ Future compatible payments could be split automatically.
 It verifies records—not fruit deliveries.
 
 38
-00:02:40,415 --> 00:02:46,237
+00:02:40,362 --> 00:02:46,184
 We're four Brazilian women across mathematics, software development, marketing, and graphic design.
 
 39
-00:02:46,457 --> 00:02:49,854
-Our pilot: twelve vendors in three markets, two free months,
+00:02:46,404 --> 00:02:50,420
+Our pilot: three suppliers and twelve of their vendors, in three markets.
 
 40
-00:02:50,074 --> 00:02:54,148
-hands-on support, and testing referrals and affordable subscriptions.
+00:02:50,640 --> 00:02:54,448
+Free for vendors, with better terms for those with a GIRO history.
 
 41
 00:02:55,437 --> 00:02:57,967

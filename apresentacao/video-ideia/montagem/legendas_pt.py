@@ -28,7 +28,7 @@ CENAS = [
     (150, 160, ["A Solana tem transações baratas e pagamentos programáveis.",
                 "No futuro, pagamentos poderão ser divididos sozinhos.", "Ela verifica registros, não entrega de frutas."]),
     (160, 175, ["Somos quatro mulheres brasileiras: matemática, desenvolvimento de software, marketing e design gráfico.",
-                "Nosso piloto: doze feirantes em três feiras, dois meses grátis,",
-                "acompanhamento de perto, e testes de indicação e assinatura acessível."]),
+                "Nosso piloto: três fornecedores e doze feirantes, em três feiras.",
+                "Grátis para o feirante, com condições melhores para quem tem histórico."]),
     (175, 180, ["Dinheiro organizado hoje, confiança para amanhã.", "Isso é o GIRO."]),
 ]

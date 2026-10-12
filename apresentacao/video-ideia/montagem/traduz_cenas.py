@@ -14,8 +14,8 @@ T = [('lang="en"', 'lang="pt-BR"'), ('Supply agreement · 20% of registered sale
      ('>Confirmed<div class="sub">outcome', '>Confirmado<div class="sub">resultado'), ('João cannot certify it alone.', 'O João não pode certificar sozinho.'),
      ('20% agreement • Evidence • <b>Confirmed outcome</b>', 'Acordo de 20% • Evidência • <b>Resultado confirmado</b>'),
      ('4 Brazilian women • <b>Mathematics</b> • <b>Software Development</b> • <b>Marketing</b> • <b>Graphic Design</b>', '4 brasileiras • <b>Matemática</b> • <b>Desenvolvimento de Sistemas</b> • <b>Marketing</b> • <b>Design Gráfico</b>'),
-     ("'3 markets · 4 vendors each'", "'3 feiras · 4 feirantes cada'"), ("'12 pilot users'", "'12 participantes do piloto'"), ("'2 free months'", "'2 meses grátis'"),
-     ("'Hands-on support'", "'Acompanhamento de perto'"), ("'Referrals'", "'Indicações'"), ("'Affordable pricing'", "'Preço acessível'")]
+     ("'3 suppliers · 12 of their vendors'", "'3 fornecedores · 12 feirantes'"), ("'3 markets'", "'3 feiras'"), ("'2 free months'", "'2 meses grátis'"),
+     ("'Hands-on support'", "'Acompanhamento'"), ("'Free for vendors'", "'Grátis para o feirante'"), ("'Better terms with a GIRO history'", "'Condições melhores com histórico'")]
 T += [('.row .v{margin-left:auto;', '.row .v{white-space:nowrap;margin-left:auto;'), ('.row{display:flex;', '.row{white-space:nowrap;display:flex;'),
       ('style="right:60px;top:80px;width:720px"', 'style="right:50px;top:80px;width:780px"')]
 for a, b in T:
