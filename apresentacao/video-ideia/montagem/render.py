@@ -43,8 +43,8 @@ SEG = [
     ('img/19.jpg', 135, 150, (1.0, 1.06, .35, .5, .62, .45)),        # C13 Why Solana
     ('img/18.jpg', 150, 160, (1.0, 1.05, .5, .45, .5, .5)),          # C14 divisão futura
     ([('cenas/c15a_1.png', 160), ('cenas/c15a_2.png', 161.3)], 160, 163.5, SOFT),                                                  # C15 equipe
-    ('img/26.jpg', 163.5, 168, (1.0, 1.05, .5, .55, .5, .55)),       # C15 nomes e áreas
-    ([('cenas/c15b_1.png', 168), ('cenas/c15b_2.png', 170), ('cenas/c15b_3.png', 172.3)], 168, 175, SOFT),                         # C15 piloto
+    ('img/26.jpg', 163.5, 166.4, (1.0, 1.05, .5, .55, .5, .55)),     # C15 nomes e áreas
+    ([('cenas/c15b_1.png', 166.4), ('cenas/c15b_2.png', 168.8), ('cenas/c15b_3.png', 170.8)], 166.4, 175, SOFT),                         # C15 piloto
     ('img/24.jpg', 175, 180, (1.0, 1.03, .5, .5, .5, .5)),           # C16 foto real + frase final
 ]
 

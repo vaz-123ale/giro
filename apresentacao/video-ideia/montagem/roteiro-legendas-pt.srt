@@ -147,16 +147,16 @@ No futuro, pagamentos poderão ser divididos sozinhos.
 Ela verifica registros, não entrega de frutas.
 
 38
-00:02:40,303 --> 00:02:46,419
+00:02:40,345 --> 00:02:46,461
 Somos quatro mulheres brasileiras: matemática, desenvolvimento de software, marketing e design gráfico.
 
 39
-00:02:46,639 --> 00:02:50,367
-Nosso piloto: doze feirantes em três feiras, dois meses grátis,
+00:02:46,681 --> 00:02:50,408
+Nosso piloto: três fornecedores e doze feirantes, em três feiras.
 
 40
-00:02:50,587 --> 00:02:54,783
-acompanhamento de perto, e testes de indicação e assinatura acessível.
+00:02:50,628 --> 00:02:54,547
+Grátis para o feirante, com condições melhores para quem tem histórico.
 
 41
 00:02:55,368 --> 00:02:58,179
