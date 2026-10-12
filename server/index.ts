@@ -16,7 +16,8 @@ import {memberRoleOf} from './chain/events.ts';
 import {roleFor} from './chain/keys.ts';
 import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
-import {resolve,extname} from 'node:path';
+import {resolve,extname,join} from 'node:path';
+import {existsSync,readFileSync} from 'node:fs';
 import {database,read,update} from './store.ts';
 import {createCommitment,createSale,receiveSale} from './financial-service.ts';
 import {decideAgreement,decideRenegotiation,editDraft,requestRenegotiation,submitDraft} from './agreement-service.ts';
@@ -125,6 +126,8 @@ const server=createServer(async(req,res)=>{
   // Carteiras reais (redes públicas): o negócio assina pelo painel; cada fornecedor só pelo próprio link (token).
   const readJson=async(limit=8000)=>{let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>limit)throw Error('Solicitação muito grande.');}return JSON.parse(raw||'{}');};
   const route=new URL(req.url??'/','http://localhost');
+  // Demonstração pública (dados fictícios): mostra o acesso de teste na tela de entrada.
+  if(route.pathname==='/api/demo'&&req.method==='GET'){const f=join(config.dataDir,'demo.json');return existsSync(f)&&process.env.GIRO_DEMO_PUBLICA==='sim'?json(200,JSON.parse(readFileSync(f,'utf8'))):json(404,{error:'Sem demonstração.'});}
   if(chain&&route.pathname==='/api/chain/saldo'&&req.method==='GET')return json(200,await chain.walletBalance(chain.wallets?.seller())??null);
   if(chain&&route.pathname==='/api/chain/carteira'&&req.method==='GET')return json(200,{...chain.walletInfo(),...(route.searchParams.get('endereco')?{message:chain.bindMessage(route.searchParams.get('endereco')!,'o negócio')}:{})});
   if(chain&&route.pathname==='/api/chain/carteira'&&req.method==='POST')return json(200,chain.bindSeller(await readJson()));

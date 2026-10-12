@@ -26,7 +26,7 @@ const OPEN:[string,RegExp][]=[
  ['GET',/^\/api\/solana-pay\/[a-f0-9]{48}$/],['POST',/^\/api\/solana-pay\/[a-f0-9]{48}(\/verificar)?$/],
  ['GET',/^\/api\/rede\/[a-f0-9]{48}(\/mensagem)?$/],['POST',/^\/api\/rede\/[a-f0-9]{48}\/(carteira|\d+\/(transacao|assinada))$/],
  ['GET',/^\/api\/convite\/GIRO-[A-Z0-9]{6}$/],['POST',/^\/api\/convite\/GIRO-[A-Z0-9]{6}$/],
- ['GET',/^\/api\/publico\/[a-f0-9]{10}(\/foto)?$/],['GET',/^\/api\/chain\/status$/],['POST',/^\/api\/login$/],['GET',/^\/api\/sessao$/],['POST',/^\/api\/sair$/],
+ ['GET',/^\/api\/publico\/[a-f0-9]{10}(\/foto)?$/],['GET',/^\/api\/chain\/status$/],['GET',/^\/api\/demo$/],['POST',/^\/api\/login$/],['GET',/^\/api\/sessao$/],['POST',/^\/api\/sair$/],
 ];
 /** O que uma COLEGA logada pode acessar além dos links: o próprio painel e os perfis. Nada do resto do negócio. */
 const PERSON:[string,RegExp][]=[
@@ -54,7 +54,8 @@ export class AccessControl {
   if(this.isOpen(method,pathname))return true;const who=this.subject(req);if(!who)return false;
   return who.kind==='dona'||PERSON.some(([m,re])=>m===method&&re.test(pathname));
  }
- private who(req:IncomingMessage){return String(req.headers['cf-connecting-ip']??req.socket.remoteAddress??'?');}
+ /** IP de quem tenta entrar (o servidor só escuta em 127.0.0.1: o túnel/proxy informa o IP real no último X-Forwarded-For). */
+ private who(req:IncomingMessage){const xff=String(req.headers['x-forwarded-for']??'').split(',').map(x=>x.trim()).filter(Boolean).at(-1);return String(req.headers['cf-connecting-ip']??xff??req.socket.remoteAddress??'?');}
  /** Confere a senha (tempo constante); bloqueia por 1 minuto depois de 5 erros. Devolve o cabeçalho Set-Cookie. */
  /** Usuário "dona" (ou vazio) = senha do negócio (npm run senha); outro usuário = conta de colega. */
  login(req:IncomingMessage,login:unknown,password:unknown){
