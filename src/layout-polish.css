@@ -101,3 +101,22 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px soli
 .pp-partners span{min-width:0}
 
 main.pp{margin:0 auto!important;padding:12px 16px 40px!important;max-width:560px!important;width:100%!important}
+/* Convite, "Assinar tudo" e saldo */
+.invite-share{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:12px;border:1px solid #d7e5dc;border-radius:14px;background:#f6fbf8;margin:8px 0}
+.mini-qr{width:132px;height:132px;flex:none;border-radius:8px}
+.invite-share-body{display:grid;gap:6px;min-width:0;flex:1}
+.invite-code{font-size:1.4rem;letter-spacing:.06em;color:var(--deep-green,#1b6b45)}
+.invite-link{font-size:.85rem;overflow-wrap:anywhere}
+.sign-banner{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:14px 16px;margin:0 0 16px;border-radius:14px;background:#fff6dc;border:1px solid #f0d58a}
+.sign-banner span{display:grid;flex:1;min-width:180px}
+.join-page .panel{max-width:520px;margin:0 auto}
+.join-head{display:flex;gap:14px;align-items:center}
+.join-head h1{font-size:1.4rem;margin:0}
+.join-steps{display:flex;gap:8px;list-style:none;padding:0;margin:16px 0;counter-reset:s}
+.join-steps li{flex:1;text-align:center;padding:6px;border-radius:999px;background:#eef2ef;font-size:.85rem;counter-increment:s}
+.join-steps li::before{content:counter(s) ". "}
+.join-steps li.on{background:var(--deep-green,#1b6b45);color:#fff}
+.join-steps li.done{background:#cfe8d9}
+.big-action{display:block;width:100%;text-align:center;padding:14px;font-size:1.05rem;margin-top:12px}
+.wallet-balance strong{font-size:1.6rem}
+@media (prefers-color-scheme:dark){.invite-share{background:#12241b;border-color:#24453a}.sign-banner{background:#3a2f12;border-color:#6b5520}.join-steps li{background:#22302a}}

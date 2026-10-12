@@ -2,6 +2,7 @@ import {useCallback,useEffect,useState} from 'react';
 import {ShieldCheck,UserPlus,Camera,LogOut,ExternalLink} from 'lucide-react';
 import {money} from '../domain/finance';
 import {connect,discoverWallets,signMessage} from './wallet';
+import {InviteAdmin,ShareInvite,SignAllBanner} from './Onboarding';
 
 /** Pessoas com login, perfis (contratos + confiança) e "Minha conta" de cada colega. */
 async function api<T>(url:string,body?:unknown):Promise<T>{
@@ -49,7 +50,7 @@ export function ProfilePage({slug}:{slug:string}){
 
 /** "Minha conta" de cada colega: foto, senha, carteira, acordos, confirmações e perfis das outras. */
 export function MyPage(){
- const [me,setMe]=useState<{person:{name:string;login:string;roleLabel:string;slug:string;photo:string|null;mustChange:boolean};agreements:Row[];receipts:{amount:number;paidAt:string;link:string}[];shift:{link:string;active:boolean;commissionBps:number}|null;commissionsReceived:number;wallet?:{walletMode:boolean;token:string;cluster:string};myWallet:string|null}>();
+ const [me,setMe]=useState<{person:{name:string;login:string;roleLabel:string;slug:string;photo:string|null;mustChange:boolean};agreements:Row[];receipts:{amount:number;paidAt:string;link:string}[];shift:{link:string;active:boolean;commissionBps:number}|null;commissionsReceived:number;wallet?:{walletMode:boolean;token:string;cluster:string};myWallet:string|null;balance:{sol:number;reais:number}|null;invite:{code:string};referrals:{name:string;roleLabel:string;slug:string}[]}>();
  const [msg,setMsg]=useState('');const [error,setError]=useState('');const [atual,setAtual]=useState('');const [nova,setNova]=useState('');
  const load=useCallback(()=>api<typeof me>('/api/eu').then(setMe).catch(e=>setError((e as Error).message)),[]);useEffect(()=>{void load();},[load]);
  const run=async(fn:()=>Promise<string>)=>{setError('');setMsg('');try{setMsg(await fn());await load();}catch(e){setError((e as Error).message);}};
@@ -58,6 +59,7 @@ export function MyPage(){
  return <Page><section className="panel profile-head"><Avatar photo={p.photo} name={p.name}/><div><h1>{p.name}</h1><p className="muted">{p.roleLabel} · usuário <b>{p.login}</b></p>
    <label className="secondary photo-button"><Camera size={18} aria-hidden="true"/> Trocar foto<input type="file" accept="image/*" hidden onChange={e=>{const f=e.target.files?.[0];if(f)void run(async()=>{await api('/api/eu/foto',{photo:await resizePhoto(f)});return 'Foto atualizada.';});}}/></label>
    <a className="primary" href={`/p/${p.slug}`}><ExternalLink size={16} aria-hidden="true"/> Meu perfil público (compartilhar / NFC)</a> <button className="text-button" onClick={sair}><LogOut size={16} aria-hidden="true"/> Sair</button></div></section>
+  <SignAllBanner scope="eu"/>
   {msg&&<p className="success" role="status">{msg}</p>}{error&&<p className="error" role="alert">{error}</p>}
   {p.mustChange&&<section className="panel note"><h2>Troque a senha provisória</h2><form onSubmit={e=>{e.preventDefault();void run(async()=>{await api('/api/eu/senha',{atual,nova});setAtual('');setNova('');return 'Senha trocada.';});}}>
    <label>Senha provisória<input type="password" value={atual} onChange={e=>setAtual(e.target.value)} autoComplete="current-password" required/></label>
@@ -65,10 +67,14 @@ export function MyPage(){
   {me.wallet?.walletMode&&<section className="panel"><h2>Minha carteira</h2><p className="muted">Rede {me.wallet.cluster==='mainnet'?'Solana (dinheiro REAL)':'Solana Devnet (TESTE, sem valor)'} · token {me.wallet.token}</p>
    {me.myWallet?<p>Carteira vinculada: <code>{me.myWallet.slice(0,4)}…{me.myWallet.slice(-4)}</code></p>:<button className="primary" onClick={()=>run(async()=>{
     const w=discoverWallets()[0];if(!w)throw Error('Instale a carteira Phantom ou Solflare neste navegador e recarregue a página.');const a=await connect(w);
-    const {message}=await api<{message:string}>(`/api/eu/carteira/mensagem?endereco=${a.address}`);await api('/api/eu/carteira',{address:a.address,message,signature:await signMessage(w,a,message)});return 'Carteira vinculada.';})}>Conectar minha carteira</button>}</section>}
+    const {message}=await api<{message:string}>(`/api/eu/carteira/mensagem?endereco=${a.address}`);await api('/api/eu/carteira',{address:a.address,message,signature:await signMessage(w,a,message)});return 'Carteira vinculada.';})}>Conectar minha carteira</button>}
+   {me.balance&&<p className="wallet-balance"><strong>{money(Math.round(me.balance.reais*100))}</strong> <small>na carteira · {me.balance.sol.toFixed(3)} SOL para taxas</small></p>}</section>}
   <section className="panel"><h2>Meus acordos</h2><AgreementList rows={me.agreements}/></section>
   {me.receipts.length>0&&<section className="panel"><h2>Confirmar pagamentos em dinheiro</h2><ul>{me.receipts.map(r=><li key={r.link}>{money(r.amount)} em {new Date(r.paidAt).toLocaleDateString('pt-BR')} — <a href={r.link}>confirmar</a></li>)}</ul></section>}
   {me.shift&&<section className="panel"><h2>Meu turno</h2><p>{me.shift.active?'Você está em turno.':'Fora de turno.'} Comissão: {me.shift.commissionBps/100}% · recebido até agora {money(me.commissionsReceived)}</p><a className="primary" href={me.shift.link}>{me.shift.active?'Encerrar turno':'Iniciar turno'}</a></section>}
+  <section className="panel"><h2>Meu código de convite</h2><p className="muted">Convide quem você conhece. Cada pessoa cria a própria conta pelo link.</p>
+   <ShareInvite code={me.invite.code} title="GIRO" text={`${p.name} te convidou para o GIRO. Crie sua conta:`}/>
+   {me.referrals.length>0&&<><h3>Quem entrou pelo meu convite</h3><ul className="people-cards">{me.referrals.map(r=><li key={r.slug}><a href={`/p/${r.slug}`}><span><strong>{r.name}</strong><small>{r.roleLabel}</small></span></a></li>)}</ul></>}</section>
   <PeopleList/></Page>;
 }
 
@@ -80,7 +86,7 @@ export function PeopleAdmin(){
  const load=useCallback(()=>api<typeof data>('/api/pessoas').then(setData).catch(e=>setError((e as Error).message)),[]);useEffect(()=>{void load();},[load]);
  const run=async(fn:()=>Promise<string>)=>{setError('');setMsg('');try{setMsg(await fn());await load();}catch(e){setError((e as Error).message);}};
  const origin=location.origin;
- return <><section className="panel"><h2><UserPlus size={20} aria-hidden="true"/> Pessoas e perfis</h2>
+ return <><InviteAdmin/><section className="panel"><h2><UserPlus size={20} aria-hidden="true"/> Pessoas e perfis (criar conta manualmente)</h2>
   <p className="muted">Crie a conta de cada colega. Você recebe o usuário e uma senha provisória para enviar; no primeiro acesso ela troca a senha e põe a foto. Depois crie o acordo com ela em Compromissos.</p>
   <form className="people-form" onSubmit={e=>{e.preventDefault();void run(async()=>{const r=await api<{name:string;login:string;password:string;profile:string}>('/api/pessoas',{name:form.name,login:form.login,role:form.role,commissionBps:Math.round(Number(form.commission.replace(',','.'))*100)||0});setCreated(c=>[r,...c.filter(x=>x.login!==r.login)]);setForm({...form,name:'',login:''});return `Conta de ${r.name} criada.`;});}}>
    <label>Nome<input value={form.name} onChange={e=>setForm({...form,name:e.target.value})} required maxLength={120}/></label>

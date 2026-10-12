@@ -24,7 +24,17 @@ export function ensurePeopleTables(db:DatabaseSync){
  db.exec(`CREATE TABLE IF NOT EXISTS people (id TEXT PRIMARY KEY, login TEXT UNIQUE NOT NULL, name TEXT NOT NULL, role TEXT NOT NULL, slug TEXT UNIQUE NOT NULL,
   contact_id TEXT, member_id TEXT, photo TEXT, salt TEXT NOT NULL, hash TEXT NOT NULL, must_change INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL)`);
  db.exec('CREATE TABLE IF NOT EXISTS business_profile (id INTEGER PRIMARY KEY CHECK(id=1), name TEXT, photo TEXT, slug TEXT NOT NULL)');
+ // Convites: link/código para a pessoa criar a PRÓPRIA conta (sem a dona digitar senha de ninguém).
+ db.exec(`CREATE TABLE IF NOT EXISTS invites (code TEXT PRIMARY KEY, role TEXT NOT NULL, commission_bps INTEGER NOT NULL DEFAULT 0, created_by TEXT NOT NULL,
+  created_at TEXT NOT NULL, uses INTEGER NOT NULL DEFAULT 0, max_uses INTEGER NOT NULL DEFAULT 0, personal INTEGER NOT NULL DEFAULT 0, active INTEGER NOT NULL DEFAULT 1)`);
+ try{db.exec('ALTER TABLE people ADD COLUMN invited_by TEXT');}catch{/* já existe */}
 }
+export interface Invite {code:string;role:PersonRole;commissionBps:number;createdBy:string;createdAt:string;uses:number;maxUses:number;personal:boolean;active:boolean}
+type InviteRow={code:string;role:PersonRole;commission_bps:number;created_by:string;created_at:string;uses:number;max_uses:number;personal:number;active:number};
+const inviteOf=(r:InviteRow):Invite=>({code:r.code,role:r.role,commissionBps:r.commission_bps,createdBy:r.created_by,createdAt:r.created_at,uses:r.uses,maxUses:r.max_uses,personal:!!r.personal,active:!!r.active});
+/** Código fácil de ditar/digitar: GIRO-XXXXXX sem letras ambíguas. */
+function inviteCode(){const a='ABCDEFGHJKMNPQRSTUVWXYZ23456789';return 'GIRO-'+[...randomBytes(6)].map(x=>a[x%a.length]).join('');}
+export const roleNames:Record<PersonRole,string>={fornecedor:'Fornecedor(a)',ajudante:'Ajudante',cliente:'Cliente'};
 const person=(r:Row):Person=>({id:r.id,login:r.login,name:r.name,role:r.role,slug:r.slug,contactId:r.contact_id??undefined,memberId:r.member_id??undefined,photo:r.photo??undefined,mustChange:!!r.must_change,createdAt:r.created_at});
 /** Senha provisória fácil de ditar: 3 grupos de 4 letras/números sem caracteres ambíguos. */
 function temporaryPassword(){const a='abcdefghjkmnpqrstuvwxyz23456789';const b=randomBytes(12);return [0,4,8].map(i=>[...b.subarray(i,i+4)].map(x=>a[x%a.length]).join('')).join('-');}
@@ -40,7 +50,7 @@ export class People {
  byId(id:string){const r=this.db.prepare('SELECT * FROM people WHERE id=?').get(id) as Row|undefined;return r?person(r):undefined;}
  bySlug(slug:string){const r=this.db.prepare('SELECT * FROM people WHERE slug=?').get(slug) as Row|undefined;return r?person(r):undefined;}
  /** Cria a pessoa no GIRO (contato ou membro da equipe) e a conta de acesso. Devolve a senha provisória UMA vez. */
- create(state:State,value:unknown){
+ create(state:State,value:unknown,opts:{password?:string;invitedBy?:string}={}){
   const input=inputRecord(value);const login=String(input.login??'').trim().toLowerCase();
   if(!LOGIN.test(login)||login===OWNER_LOGIN)throw Error('Usuário: 3 a 32 letras minúsculas, números, ponto ou traço (e não pode ser "dona").');
   if(this.db.prepare('SELECT 1 FROM people WHERE login=?').get(login))throw Error('Este usuário já existe.');
@@ -53,8 +63,10 @@ export class People {
    const m=state.members.find(m=>!before.has(m.id))!;memberId=m.id;issueCheckin(state,{id:m.id});
    contactId=createContact(state,{name,type:'collaborator',memberId:m.id}).id;
   }else contactId=createContact(state,{name,type:role==='fornecedor'?'supplier':'other'}).id;
-  const password=temporaryPassword();const salt=randomBytes(16);const id=randomUUID();const slug=randomBytes(5).toString('hex');
-  this.db.prepare('INSERT INTO people VALUES (?,?,?,?,?,?,?,?,?,?,1,?)').run(id,login,name,role,slug,contactId??null,memberId??null,null,salt.toString('hex'),hashOf(password,salt).toString('hex'),new Date().toISOString());
+  if(opts.password!==undefined&&(typeof opts.password!=='string'||opts.password.length<10))throw Error('A senha precisa ter pelo menos 10 caracteres.');
+  const password=opts.password??temporaryPassword();const salt=randomBytes(16);const id=randomUUID();const slug=randomBytes(5).toString('hex');
+  this.db.prepare('INSERT INTO people (id,login,name,role,slug,contact_id,member_id,photo,salt,hash,must_change,created_at,invited_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)')
+   .run(id,login,name,role,slug,contactId??null,memberId??null,null,salt.toString('hex'),hashOf(password,salt).toString('hex'),opts.password?0:1,new Date().toISOString(),opts.invitedBy??null);
   return {person:this.byId(id)!,password};
  }
  /** Confere usuário e senha (tempo constante). */
@@ -88,6 +100,40 @@ export class People {
   this.db.prepare('DELETE FROM people WHERE id=?').run(id);
   return {name:p.name,removedAgreements:theirs.length,member};
  }
+ // ---------------- Convites ----------------
+ /** A dona cria um convite com papel definido (fornecedor, ajudante com %, cliente). maxUses 0 = ilimitado. */
+ createInvite(value:unknown,createdBy='dona'){
+  const input=inputRecord(value);const role=String(input.role) as PersonRole;if(!['fornecedor','ajudante','cliente'].includes(role))throw Error('Escolha o papel do convite.');
+  const bps=role==='ajudante'?Number(input.commissionBps??0):0;if(!Number.isInteger(bps)||bps<0||bps>10000)throw Error('Comissão inválida.');
+  const max=Number(input.maxUses??1);if(!Number.isInteger(max)||max<0||max>500)throw Error('Quantidade de usos inválida.');
+  const code=inviteCode();this.db.prepare('INSERT INTO invites (code,role,commission_bps,created_by,created_at,max_uses,personal) VALUES (?,?,?,?,?,?,0)').run(code,role,bps,createdBy,new Date().toISOString(),max);
+  return this.invite(code)!;
+ }
+ invite(code:string){const r=this.db.prepare('SELECT * FROM invites WHERE code=?').get(String(code).trim().toUpperCase()) as InviteRow|undefined;return r?inviteOf(r):undefined;}
+ invites(){return (this.db.prepare('SELECT * FROM invites WHERE personal=0 ORDER BY created_at DESC').all() as InviteRow[]).map(inviteOf);}
+ /** Código pessoal (dona ou colega) para indicar novas pessoas como CLIENTES; reaproveitado sempre. */
+ personalCode(owner:string){
+  const r=this.db.prepare('SELECT * FROM invites WHERE personal=1 AND created_by=?').get(owner) as InviteRow|undefined;if(r)return inviteOf(r);
+  const code=inviteCode();this.db.prepare('INSERT INTO invites (code,role,commission_bps,created_by,created_at,max_uses,personal) VALUES (?,?,0,?,?,0,1)').run(code,'cliente',owner,new Date().toISOString());return this.invite(code)!;
+ }
+ cancelInvite(code:string){this.db.prepare('UPDATE invites SET active=0 WHERE code=? AND personal=0').run(code);}
+ /** O que a página do convite mostra (sem login). */
+ invitePublic(code:string){
+  const i=this.invite(code);if(!i||!i.active||(i.maxUses>0&&i.uses>=i.maxUses))throw Error('Convite inválido ou já usado.');
+  const b=this.business();const by=i.createdBy==='dona'?(b.name??'o negócio'):this.byId(i.createdBy)?.name;
+  return {code:i.code,role:i.role,roleLabel:roleNames[i.role],commissionBps:i.commissionBps,business:b.name??'Negócio',businessPhoto:b.photo?`/api/publico/${b.slug}/foto`:null,invitedBy:by??'GIRO'};
+ }
+ /** A pessoa cria a PRÓPRIA conta pelo convite: escolhe usuário e senha; quem convidou fica registrado. */
+ acceptInvite(state:State,code:string,value:unknown){
+  const i=this.invite(code);if(!i||!i.active||(i.maxUses>0&&i.uses>=i.maxUses))throw Error('Convite inválido ou já usado.');
+  const input=inputRecord(value);
+  const created=this.create(state,{name:input.name,login:input.login,role:i.role,commissionBps:i.commissionBps},{password:typeof input.password==='string'?input.password:'',invitedBy:i.createdBy});
+  this.db.prepare('UPDATE invites SET uses=uses+1 WHERE code=?').run(i.code);
+  if(input.photo)this.setPhoto(created.person.id,input.photo);
+  return this.byId(created.person.id)!;
+ }
+ /** Quem esta pessoa (ou a dona) trouxe para o GIRO. */
+ referrals(owner:string){return (this.db.prepare('SELECT name,role,slug,created_at FROM people WHERE invited_by=? ORDER BY created_at').all(owner) as {name:string;role:PersonRole;slug:string;created_at:string}[]).map(r=>({name:r.name,roleLabel:roleNames[r.role],slug:r.slug,since:r.created_at}));}
  setPhoto(id:string,photo:unknown){this.db.prepare('UPDATE people SET photo=? WHERE id=?').run(validPhoto(photo),id);}
  business(){let r=this.db.prepare('SELECT * FROM business_profile WHERE id=1').get() as {name:string|null;photo:string|null;slug:string}|undefined;
   if(!r){const slug=randomBytes(5).toString('hex');this.db.prepare('INSERT INTO business_profile VALUES (1,NULL,NULL,?)').run(slug);r={name:null,photo:null,slug};}return r;}

@@ -10,7 +10,7 @@ import {confirmPayment} from '../payment-service.ts';
 import {inputRecord} from '../input.ts';
 import {type ChainAdapter,type ChainAgreementView,ChainRuleError,ChainTransportError,samePreview} from './adapter.ts';
 import {type ChainEvent,agreementKeyOf,attestationTargets,chainEvents,fingerprintOf,memberRoleOf,proposeEvent,settleEvent,sha256hex,supplierRoleOf} from './events.ts';
-import {type OutboxItem,counts,enqueue,ensureChainTables,itemsFor,listItems,markItem,noteAttempt,pendingItems,settledSaleRefs} from './outbox.ts';
+import {readChainState,writeChainState,type OutboxItem,counts,enqueue,ensureChainTables,itemsFor,listItems,markItem,noteAttempt,pendingItems,settledSaleRefs} from './outbox.ts';
 import {TestWallets,generateKeypair,isAddress,roleFor} from './keys.ts';
 import {SimulatedAdapter} from './simulated.ts';
 import {ChainNeedsSignature,type Party,SolanaAdapter,networkProfile} from './localnet.ts';
@@ -114,7 +114,23 @@ export class ChainService {
    maxSaleCents:net?.profile.maxSaleCents??0,sellerWallet:this.wallets?.seller()??null};
  }
  bindMessage(address:string,scope:string){return bindMessage(address,scope,new Date().toISOString());}
- bindSeller(value:unknown){const {wallets}=this.requireWalletMode();const a=wallets.bind({kind:'vendedor'},inputRecord(value),'o negócio');setImmediate(()=>void this.sync());return {sellerWallet:a};}
+ bindSeller(value:unknown){const {wallets}=this.requireWalletMode();const a=wallets.bind({kind:'vendedor'},inputRecord(value),'o negócio');this.autoFund(a);setImmediate(()=>void this.sync());return {sellerWallet:a};}
+ /**
+  * Rede de TESTE (Devnet): quem conecta a carteira recebe na hora SOL de teste (taxas) e R$ 500 em BRZ de teste,
+  * uma vez por carteira. Evita o erro de "sem saldo para a taxa". Na mainnet nunca acontece.
+  */
+ private autoFund(address:string){
+  if(!(this.adapter instanceof SolanaAdapter)||this.adapter.cluster!=='devnet')return;const net=this.adapter;
+  const done=new Set<string>(readChainState(this.db,'abastecidas')??[]);if(done.has(address))return;
+  done.add(address);writeChainState(this.db,'abastecidas',[...done]);
+  void net.fundTest(address,50000).catch(e=>{this.lastError=`Abastecer ${address.slice(0,4)}…: ${describe(e)}`;});
+ }
+ /** Saldo de uma carteira em SOL e no token do GIRO (em reais). */
+ async walletBalance(address:string|null|undefined){
+  if(!address||!(this.adapter instanceof SolanaAdapter))return null;const net=this.adapter;
+  try{const {value}=await net.chain.rpc.getBalance(address as never).send();const units=await net.chain.tokenBalanceOf(address as never);
+   return {sol:Number(value)/1e9,reais:Number(units/net.scale)/100};}catch{return null;}
+ }
  /** Escopo de um link (convite ou confirmação de recebimento): só o acordo daquela pessoa. */
  private scopeOf(token:string){
   const state=read();const inv=state.invitations?.find(i=>i.token===token);
@@ -137,13 +153,13 @@ export class ChainService {
   return {...this.walletInfo(),party,wallet,needsWallet:!wallet,items,...(scope?{agreement:scope.commitment?commitmentId(scope.commitment):undefined,bindScope:scope.label}:{bindScope:'o negócio'})};
  }
  /** Vincula a carteira de uma pessoa logada (papel = o mesmo dos acordos dela ou das comissões). */
- bindRole(role:string,value:unknown,scope:string){const {wallets}=this.requireWalletMode();const a=wallets.bind({kind:'papel',role},inputRecord(value),scope);setImmediate(()=>void this.sync());return {wallet:a};}
+ bindRole(role:string,value:unknown,scope:string){const {wallets}=this.requireWalletMode();const a=wallets.bind({kind:'papel',role},inputRecord(value),scope);this.autoFund(a);setImmediate(()=>void this.sync());return {wallet:a};}
  /** Redes de TESTE: SOL de teste (taxas) + token de teste (clientes) para a carteira vinculada da pessoa. */
  async fundTestWallet(role:string,cents:number){
   const net=this.solana();const owner=net.signing==='carteira'?this.wallets?.role(role):net.address(role);if(!owner)throw Error('Esta pessoa ainda não vinculou a carteira.');
   return net.fundTest(owner,Number(cents));
  }
- bindSupplier(token:string,value:unknown){const {wallets}=this.requireWalletMode();const scope=this.scopeOf(token);const a=wallets.bind({kind:'papel',role:scope.role},inputRecord(value),scope.label);setImmediate(()=>void this.sync());return {wallet:a};}
+ bindSupplier(token:string,value:unknown){const {wallets}=this.requireWalletMode();const scope=this.scopeOf(token);const a=wallets.bind({kind:'papel',role:scope.role},inputRecord(value),scope.label);this.autoFund(a);setImmediate(()=>void this.sync());return {wallet:a};}
  private signable(id:number,token?:string){
   const item=pendingItems(this.db).find(i=>i.id===id);if(!item)throw Error('Esta assinatura não está mais pendente.');
   const party=waitingFor(item);if(!party)throw Error('Este item não aguarda assinatura.');
@@ -157,6 +173,28 @@ export class ChainService {
   const {item,expected}=this.signable(id,token);if(!expected||expected!==input.account)throw Error('Conecte a carteira vinculada a este cadastro.');
   return {transaction:await net.transactionFor(item.event,String(input.account)),label:EVENT_LABEL[item.event.type]};
  }
+ /** Itens que uma COLEGA (fornecedor) pode assinar: só os acordos dela (contatos dela). */
+ personItems(contactIds:string[]){
+  const keys=new Set(read().commitments.filter(c=>c.contactId&&contactIds.includes(c.contactId)).map(agreementKeyOf));
+  return pendingItems(this.db).filter(i=>waitingFor(i)==='fornecedor'&&keys.has(eventKey(i.event)??''));
+ }
+ personPending(contactIds:string[]){const state=read();const byKey=new Map(state.commitments.map(c=>[agreementKeyOf(c),c]));
+  return this.personItems(contactIds).map(i=>({id:i.id,label:EVENT_LABEL[i.event.type],agreement:byKey.get(eventKey(i.event)??'')?commitmentId(byKey.get(eventKey(i.event)??'')!):undefined}));}
+ /** Carteira esperada para assinar os itens de uma colega (a vinculada ao contato do acordo). */
+ private personSigner(contactIds:string[]){for(const id of contactIds){const a=this.wallets?.role(supplierRoleOf({id:'',contactId:id} as Commitment));if(a)return a;}return undefined;}
+ async personSigningBatch(contactIds:string[],value:unknown){
+  const {net}=this.requireWalletMode();const input=inputRecord(value);const expected=this.personSigner(contactIds);
+  if(!isAddress(input.account)||input.account!==expected)throw Error('Conecte a carteira vinculada à sua conta.');
+  const items=this.personItems(contactIds);if(!items.length)throw Error('Nada para assinar agora.');
+  const groups:typeof items[]=[];for(const i of items){const g=groups.at(-1);if(g&&g.length<4)g.push(i);else groups.push([i]);}
+  const lotes=[];for(const g of groups)lotes.push({ids:g.map(i=>i.id),labels:g.map(i=>EVENT_LABEL[i.event.type]),transaction:await net.transactionForMany(g.map(i=>i.event),String(input.account))});
+  return {lotes};
+ }
+ async personSignedBatch(contactIds:string[],value:unknown){
+  const allowed=new Set(this.personItems(contactIds).map(i=>i.id));const input=inputRecord(value);
+  if(!Array.isArray(input.lotes)||!(input.lotes as {ids:number[]}[]).every(l=>Array.isArray(l.ids)&&l.ids.every(id=>allowed.has(id))))throw Error('Lote inválido.');
+  return this.confirmLotes(input.lotes as {ids:number[];signature:string}[],this.personSigner(contactIds)!,'fornecedor');
+ }
  /** Lote: todas as assinaturas pendentes do negócio, em grupos de até 4 por transação (cabe no limite de tamanho). */
  async signingBatch(value:unknown){
   const {net}=this.requireWalletMode();const input=inputRecord(value);if(!isAddress(input.account))throw Error('Conecte a carteira.');
@@ -168,11 +206,14 @@ export class ChainService {
  }
  /** Confere cada lote na rede e dá baixa em todos os itens dele. */
  async signedBatch(value:unknown){
-  const {net}=this.requireWalletMode();const input=inputRecord(value);if(!Array.isArray(input.lotes))throw Error('Lotes inválidos.');
-  const seller=this.wallets!.seller()!;let confirmed=0;
-  for(const lote of input.lotes as {ids:unknown;signature:unknown}[]){
+  const input=inputRecord(value);if(!Array.isArray(input.lotes))throw Error('Lotes inválidos.');
+  return this.confirmLotes(input.lotes as {ids:number[];signature:string}[],this.wallets!.seller()!,'vendedor');
+ }
+ private async confirmLotes(lotes:{ids:unknown;signature:unknown}[],seller:string,party:Party){
+  const {net}=this.requireWalletMode();let confirmed=0;
+  for(const lote of lotes){
    if(!Array.isArray(lote.ids)||typeof lote.signature!=='string')throw Error('Lote inválido.');
-   const items=pendingItems(this.db).filter(i=>(lote.ids as number[]).includes(i.id)&&waitingFor(i)==='vendedor');
+   const items=pendingItems(this.db).filter(i=>(lote.ids as number[]).includes(i.id)&&waitingFor(i)===party);
    for(let t=0;t<20;t++){
     let ok=true;for(const i of items)if(!await net.verifySigned(i.event,seller,lote.signature)){ok=false;break;}
     if(ok){for(const i of items){markItem(this.db,i.id,'confirmado',{signature:lote.signature});confirmed++;}break;}

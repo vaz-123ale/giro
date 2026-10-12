@@ -75,6 +75,19 @@ test('Pessoas: contas das colegas, perfis com foto, acordos próprios e venda di
   const del=await dona.ok(`pessoas/${ids.cris}/excluir`,{});assert.equal(del.name,'Cris Cliente');
   assert.equal((await as().call('login',{usuario:'cris',senha:cris.password})).status,400,'conta apagada não entra');
   assert.equal((await dona.ok('state')).contacts.some((c:{name:string})=>c.name==='Cris Cliente'),false,'contato removido');
+  // 7c. Convite por link: a pessoa cria a própria conta (sem a dona digitar senha) e já entra logada.
+  const conv=await dona.ok('convites',{role:'ajudante',commissionBps:500,maxUses:1});assert.match(conv.code,/^GIRO-[A-Z0-9]{6}$/);
+  const pub=await as().ok(`convite/${conv.code}`);assert.equal(pub.roleLabel,'Ajudante');assert.equal(pub.commissionBps,500);
+  assert.equal((await as().call(`convite/${conv.code}`,{name:'Duda',login:'duda',password:'curta'})).status,400,'senha curta');
+  const joined=await as().call(`convite/${conv.code}`,{name:'Duda Ajudante',login:'duda',password:'senha-da-duda-1',photo:PNG});assert.equal(joined.status,200,JSON.stringify(joined.data));
+  const dudaS=as(String(joined.headers.get('set-cookie')).split(';')[0]);const dudaEu=await dudaS.ok('eu');
+  assert.equal(dudaEu.person.mustChange,false,'senha escolhida pela própria pessoa');assert.ok(dudaEu.person.photo);assert.match(dudaEu.invite.code,/^GIRO-/);
+  assert.equal((await as().call(`convite/${conv.code}`)).status,400,'convite de uso único');
+  assert.equal((await dudaS.call('convites')).status,403,'só a dona gera convites');
+  const pessoal=await as().call(`convite/${dudaEu.invite.code}`,{name:'Eva Cliente',login:'eva',password:'senha-da-eva-12'});assert.equal(pessoal.status,200);
+  assert.deepEqual((await dudaS.ok('eu')).referrals.map((r:{name:string})=>r.name),['Eva Cliente'],'quem a Duda convidou');
+  assert.ok((await dona.ok('convites')).referrals.some((r:{name:string})=>r.name==='Duda Ajudante'));
+  assert.equal((await as().call('convite/GIRO-ZZZZZZ')).status,400);
   // 8. Sem login, perfis e fotos ficam fechados.
   assert.equal((await as().call('perfis')).status,401);assert.equal((await as().call(`fotos/${ana.profile.split('/')[2]}`)).status,401);
  }finally{const ended=new Promise<void>(done=>child.once('exit',()=>done()));child.kill();await ended;await rm(directory,{recursive:true,force:true});}
