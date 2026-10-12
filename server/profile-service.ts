@@ -24,6 +24,12 @@ function stats(list:Commitment[]){
  return {total:list.length,active:list.filter(c=>['active','accepted'].includes(c.status)).length,completed:done.length,onTime:done.filter(onTime).length,settled:done.reduce((a,c)=>a+c.original,0)};
 }
 /** Comissões recebidas por uma ajudante (vendas já recebidas). */
+/** Experiência verificada pelo próprio GIRO: vendas com comissão paga para a pessoa (dias trabalhados, meses, total recebido). */
+export function experienceOf(state:State,p:Person){
+ const dias=[...new Set(p.memberId?state.sales.filter(s=>!s.demo&&s.paidAt&&(s.distribution??[]).some(e=>e.kind==='commission'&&e.recipientId===p.memberId)).map(s=>s.soldAt):[])].sort();
+ const months=dias.length?Math.max(0,Math.floor((Date.parse(dias.at(-1)!)-Date.parse(dias[0]))/(30*864e5))):0;
+ return {days:dias.length,months,since:dias[0]??null,commissions:commissionsOf(state,p)};
+}
 function commissionsOf(state:State,p:Person){
  if(!p.memberId)return 0;return state.sales.filter(s=>!s.demo&&s.paidAt).flatMap(s=>s.distribution??[]).filter(e=>e.kind==='commission'&&e.recipientId===p.memberId).reduce((a,e)=>a+e.amount,0);
 }
@@ -36,7 +42,8 @@ export function myView(state:State,p:Person,marks:ChainMarks){
  const member=p.memberId?state.members.find(m=>m.id===p.memberId):undefined;
  return {person:{name:p.name,login:p.login,role:p.role,roleLabel:roleLabel[p.role],slug:p.slug,photo:photoUrl(p.slug,p.photo),mustChange:p.mustChange},
   agreements:links,receipts,shift:member?.checkinToken?{link:`/turno/${member.checkinToken}`,active:member.active,commissionBps:member.commissionBps}:null,
-  commissionsReceived:commissionsOf(state,p)};
+  commissionsReceived:commissionsOf(state,p),
+  purchases:(state.paymentRequests??[]).filter(r=>r.buyerId===p.id).map(r=>{const s=state.sales.find(x=>x.id===r.saleId);return {date:s?.soldAt??r.createdAt.slice(0,10),amount:s?.amount??0,paid:!!s?.paidAt,link:`/pagar/${r.token}`};}).sort((a,b)=>b.date.localeCompare(a.date))};
 }
 
 /** Lista de perfis (para todas as pessoas logadas). */

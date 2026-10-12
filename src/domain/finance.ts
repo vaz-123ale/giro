@@ -1,7 +1,8 @@
 import type { Commitment, CommissionRule, Movement, Sale, State } from './models.ts';
 
 export const today = () => new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
-export const money=(cents:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(cents/100);
+const moneyLocale=()=>{try{if(typeof window==='undefined')return 'pt-BR';const q=new URLSearchParams(window.location.search).get('lang');return (q??window.localStorage?.getItem('giro-lang'))==='en'?'en-US':'pt-BR';}catch{return 'pt-BR';}};
+export const money=(cents:number)=>new Intl.NumberFormat(moneyLocale(),{style:'currency',currency:'BRL'}).format(cents/100);
 export const remaining=(commitment:Commitment)=>commitment.original-commitment.paid;
 export const remainingToAllocate=(commitment:Commitment)=>Math.max(0,remaining(commitment)-(commitment.cashPending??0));
 export const isActive=(commitment:Commitment)=>['active','accepted'].includes(commitment.status)&&remaining(commitment)>0;

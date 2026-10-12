@@ -1,6 +1,7 @@
 import {useEffect,useState} from 'react';
 import {Printer,QrCode,Store} from 'lucide-react';
 import {invitationQR} from '../domain/qr';
+import {LangSwitch} from './LangSwitch';
 import {money} from '../domain/finance';
 import {parseMoney} from '../domain/validation';
 
@@ -26,7 +27,7 @@ export function BarracaPage(){
   location.href=`/pagar/${v.token}`;
  }catch(e){setError((e as Error).message);setBusy(false);}};
  return <main className="stall-page">
-  <header className="stall-hero">
+  <div className="stall-lang"><LangSwitch/></div><header className="stall-hero">
    {info?.photo?<img className="stall-photo" src={info.photo} alt=""/>:<span className="stall-photo stall-photo-empty"><Store size={34} aria-hidden="true"/></span>}
    <div><small>Pagando para</small><h1>{info?.name??'Carregando…'}</h1></div>
   </header>

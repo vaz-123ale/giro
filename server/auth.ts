@@ -30,7 +30,7 @@ const OPEN:[string,RegExp][]=[
 ];
 /** O que uma COLEGA logada pode acessar além dos links: o próprio painel e os perfis. Nada do resto do negócio. */
 const PERSON:[string,RegExp][]=[
- ['GET',/^\/api\/eu(\/carteira\/mensagem|\/assinaturas)?$/],['POST',/^\/api\/eu\/(senha|foto|carteira|assinaturas\/lote\/(transacao|assinada))$/],
+ ['GET',/^\/api\/eu(\/carteira\/mensagem|\/assinaturas)?$/],['GET',/^\/api\/trabalho$/],['GET',/^\/api\/vagas$/],['POST',/^\/api\/vagas(\/[a-f0-9]{12}\/(interesse|fechar))?$/],['POST',/^\/api\/eu\/(trabalho|senha|foto|carteira|assinaturas\/lote\/(transacao|assinada))$/],
  ['GET',/^\/api\/perfis(\/[a-f0-9]{10})?$/],['GET',/^\/api\/fotos\/[a-f0-9]{10}$/],
 ];
 export type Subject={kind:'dona'}|{kind:'pessoa';id:string};
@@ -62,7 +62,7 @@ export class AccessControl {
   const ip=this.who(req);const f=this.fails.get(ip);if(f&&f.until>Date.now())throw Error('Muitas tentativas. Espere 1 minuto.');
   const user=typeof login==='string'&&login.trim()?login.trim().toLowerCase():OWNER_LOGIN;const pass=typeof password==='string'?password:'';
   let who:Subject|undefined;
-  if(user===OWNER_LOGIN){
+  if(user===OWNER_LOGIN||this.people?.isOwnerLogin(user)){
    if(hasPassword(this.dataDir)){const saved=JSON.parse(readFileSync(passwordFile(this.dataDir),'utf8')) as {salt:string;hash:string;N:number};
     if(timingSafeEqual(scryptSync(pass,Buffer.from(saved.salt,'hex'),32,{N:saved.N,r:8,p:1}),Buffer.from(saved.hash,'hex')))who={kind:'dona'};}
   }else{const p=this.people?.check(user,pass);if(p)who={kind:'pessoa',id:p.id};}

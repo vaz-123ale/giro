@@ -5,6 +5,8 @@ import {connect,discoverWallets,signMessage} from './wallet';
 import {InviteAdmin,ShareInvite,SignAllBanner} from './Onboarding';
 import {ConfiancaCard,NegocioConfianca} from './Confianca';
 import {toast} from './toast';
+import {BuscoTrabalho,QuemBuscaTrabalho} from './Trabalho';
+import {ProcuroAjudante,VagasAbertas} from './Vagas';
 
 /** Pessoas com login, perfis (contratos + confiança) e "Minha conta" de cada colega. */
 async function api<T>(url:string,body?:unknown):Promise<T>{
@@ -35,9 +37,9 @@ function TrustBox({p}:{p:{stats:{total:number;active:number;completed:number;onT
   <div><dt>Atestados</dt><dd>{p.trust.attested}</dd></div>{p.commissionsReceived!==undefined&&<div><dt>Comissões recebidas</dt><dd>{money(p.commissionsReceived)}</dd></div>}</dl>;
 }
 interface Card {slug:string;name:string;roleLabel:string;photo:string|null}
-function PeopleList(){
+function PeopleList({title='Perfis',hint}:{title?:string;hint?:string}={}){
  const [list,setList]=useState<Card[]>([]);useEffect(()=>{api<Card[]>('/api/perfis').then(setList).catch(()=>setList([]));},[]);
- return <section className="panel"><h2>Perfis</h2><ul className="people-cards">{list.map(p=><li key={p.slug}><a href={`/p/${p.slug}`}><Avatar photo={p.photo} name={p.name}/><span><strong>{p.name}</strong><small>{p.roleLabel}</small></span></a></li>)}</ul></section>;
+ return <section className="panel"><h2>{title}</h2>{hint&&<p className="muted">{hint}</p>}<ul className="people-cards">{list.map(p=><li key={p.slug}><a href={`/p/${p.slug}`}><Avatar photo={p.photo} name={p.name}/><span><strong>{p.name}</strong><small>{p.roleLabel}</small></span></a></li>)}</ul></section>;
 }
 
 /** Perfil de uma pessoa (ou do negócio): contratos e confiança. Só para quem está logado. */
@@ -48,6 +50,26 @@ export function ProfilePage({slug}:{slug:string}){
   <ConfiancaCard name={p.name} stats={p.stats} rows={p.agreements} attested={p.trust.attested}/>{p.commissionsReceived!==undefined&&p.commissionsReceived>0&&<p className="muted">Comissões recebidas: {money(p.commissionsReceived)}</p>}
   <section className="panel"><h2>Contratos</h2><AgreementList rows={p.agreements}/></section></>}
   <p><a href="/eu">← Minha conta</a> · <a href="/">Painel do negócio</a></p></Page>;
+}
+
+/** Painel do comprador: histórico de compras nas barracas e atalho para pagar. */
+function BuyerPanel({name,purchases}:{name:string;purchases:{date:string;amount:number;paid:boolean;link:string}[]}){
+ const pagas=purchases.filter(c=>c.paid);const total=pagas.reduce((a,c)=>a+c.amount,0);
+ return <>
+  <section className="supplier-hero buyer-hero"><div><small>Conta de comprador</small><h2>Olá, {name.split(' ')[0]}!</h2><p>Suas compras pagas pelo QR das barracas ficam guardadas aqui. Entre na sua conta antes de pagar para elas aparecerem.</p></div>
+   <dl><div><dt>Compras</dt><dd>{pagas.length}</dd></div><div><dt>Total gasto</dt><dd>{money(total)}</dd></div></dl>
+   <a className="primary buyer-pay" href="/barraca">Pagar numa barraca</a></section>
+  <section className="panel"><h2>Histórico de compras</h2>{purchases.length?<ul className="purchase-list">{purchases.map(c=><li key={c.link}>
+   <span className="pl-date">{c.date.split('-').reverse().join('/')}</span><strong>{money(c.amount)}</strong><span className={`sa-status ${c.paid?'done':'wait'}`}>{c.paid?'Pago':'Não concluído'}</span>
+   {!c.paid&&<a className="secondary" href={c.link}>Concluir pagamento</a>}</li>)}</ul>:<p className="empty">Nenhuma compra ainda. Na barraca, aponte a câmera para o QR do GIRO e pague com sua conta aberta.</p>}</section>
+  <section className="panel"><h2><ShieldCheck size={20} aria-hidden="true"/> Confiança das barracas</h2><p className="muted">Veja o histórico de compromissos de quem vende para você.</p><NegocioConfianca anon/></section>
+ </>;
+}
+/** Painel da equipe: turno, comissão e o que já recebeu. */
+function WorkerHero({name,shift,received}:{name:string;shift:{link:string;active:boolean;commissionBps:number}|null;received:number}){
+ return <section className="supplier-hero worker-hero"><div><small>Conta da equipe</small><h2>Olá, {name.split(' ')[0]}!</h2><p>{shift?.active?'Você está em turno: suas vendas contam para a sua comissão.':'Você está fora do turno. Comece o turno para suas vendas contarem.'}</p></div>
+  <dl><div><dt>Comissão</dt><dd>{shift?shift.commissionBps/100:0}%</dd></div><div><dt>Recebido</dt><dd>{money(received)}</dd></div></dl>
+  {shift&&<a className="primary buyer-pay" href={shift.link}>{shift.active?'Encerrar turno':'Iniciar turno'}</a>}</section>;
 }
 
 /** Painel próprio do fornecedor: o que tem a receber, o andamento de cada acordo e a confiança de quem compra dele. */
@@ -64,19 +86,28 @@ function SupplierPanel({name,rows,receipts}:{name:string;rows:Row[];receipts:{am
    <div className="sa-bar"><i style={{width:`${pct}%`}}/></div>
    <small>{money(r.paid)} de {money(r.original)} · {r.rateBps/100}% das vendas · vence {r.due.split('-').reverse().join('/')}{r.chain?.registered?' · registrado na Solana ✓':''}</small>
    {r.link&&!r.waiting&&<a className="secondary" href={r.link}>Abrir acordo</a>}</li>;})}</ul>:<p className="empty">Nenhum acordo ainda. Quando a barraca propuser um, ele aparece aqui para você aceitar.</p>}</section>
+  <section className="panel"><h2><ShieldCheck size={20} aria-hidden="true"/> Minha confiança como fornecedor</h2><p className="muted">Os acordos que você cumpriu com as barracas. Compartilhe pelo seu perfil público.</p>
+   <ConfiancaCard name={name} stats={{total:rows.length,active:rows.filter(r=>r.remaining>0&&!r.waiting).length,completed:rows.filter(r=>r.remaining===0).length,onTime:rows.filter(r=>r.onTime).length,settled:recebido}} rows={rows.map(r=>({...r,with:r.id}))} attested={rows.filter(r=>r.chain?.attested).length}/></section>
   <section className="panel"><h2>Confiança de quem compra de você</h2><p className="muted">O histórico de compromissos da barraca, confirmado pelos dois lados.</p><NegocioConfianca anon/></section>
+  <ProcuroAjudante/>
+  <QuemBuscaTrabalho/>
+  <PeopleList title="Perfis de confiança" hint="Veja o histórico de compromissos das pessoas antes de fazer um acordo."/>
  </>;
 }
 
 /** "Minha conta" de cada colega: foto, senha, carteira, acordos, confirmações e perfis das outras. */
 export function MyPage(){
- const [me,setMe]=useState<{person:{name:string;login:string;role:string;roleLabel:string;slug:string;photo:string|null;mustChange:boolean};agreements:Row[];receipts:{amount:number;paidAt:string;link:string}[];shift:{link:string;active:boolean;commissionBps:number}|null;commissionsReceived:number;wallet?:{walletMode:boolean;token:string;cluster:string};myWallet:string|null;balance:{sol:number;reais:number}|null;invite:{code:string};referrals:{name:string;roleLabel:string;slug:string}[]}>();
+ const [me,setMe]=useState<{job:{note:string;contact:string;since:string}|null;purchases:{date:string;amount:number;paid:boolean;link:string}[];person:{name:string;login:string;role:string;roleLabel:string;slug:string;photo:string|null;mustChange:boolean};agreements:Row[];receipts:{amount:number;paidAt:string;link:string}[];shift:{link:string;active:boolean;commissionBps:number}|null;commissionsReceived:number;wallet?:{walletMode:boolean;token:string;cluster:string};myWallet:string|null;balance:{sol:number;reais:number}|null;invite:{code:string};referrals:{name:string;roleLabel:string;slug:string}[]}>();
  const [msg,setMsg]=useState('');const [error,setError]=useState('');const [atual,setAtual]=useState('');const [nova,setNova]=useState('');
+ const [area,setAreaState]=useState<'equipe'|'compras'|null>(()=>{try{return localStorage.getItem('giro-area') as 'equipe'|'compras'|null;}catch{return null;}});
  const load=useCallback(()=>api<typeof me>('/api/eu').then(setMe).catch(e=>setError((e as Error).message)),[]);useEffect(()=>{void load();},[load]);
  const run=async(fn:()=>Promise<string>)=>{setError('');setMsg('');try{const m=await fn();setMsg(m);toast(m);await load();}catch(e){setError((e as Error).message);}};
  if(!me)return <Page>{error?<p className="error">{error}</p>:<p>Carregando…</p>}</Page>;
  const p=me.person;
- return <Page><section className="panel profile-head"><Avatar photo={p.photo} name={p.name}/><div><h1>{p.name}</h1><p className="muted">{p.roleLabel} · usuário <b>{p.login}</b></p>
+ const setArea=(a:'equipe'|'compras')=>{setAreaState(a);try{localStorage.setItem('giro-area',a);}catch{/* sem storage */}};
+ const areaAtual=area??(p.role==='cliente'?'compras':'equipe');
+ const roleInfo={fornecedor:{badge:'Conta de fornecedor',icon:'/icons/nav-compromissos.png'},ajudante:{badge:'Conta da equipe',icon:'/icons/nav-equipe.png'},cliente:{badge:'Conta de comprador',icon:'/icons/nav-receber.png'}}[p.role as 'fornecedor'|'ajudante'|'cliente']??{badge:p.roleLabel,icon:'/icons/nav-inicio.png'};
+ return <Page><section className={`panel profile-head role-${p.role}`}><Avatar photo={p.photo} name={p.name}/><div><span className="role-badge"><img src={roleInfo.icon} alt=""/>{roleInfo.badge}</span><h1>{p.name}</h1><p className="muted">{p.roleLabel} · usuário <b>{p.login}</b></p>
    <label className="secondary photo-button"><Camera size={18} aria-hidden="true"/> Trocar foto<input type="file" accept="image/*" hidden onChange={e=>{const f=e.target.files?.[0];if(f)void run(async()=>{await api('/api/eu/foto',{photo:await resizePhoto(f)});return 'Foto atualizada.';});}}/></label>
    <a className="primary" href={`/p/${p.slug}`}><ExternalLink size={16} aria-hidden="true"/> Meu perfil público (compartilhar / NFC)</a> <button className="text-button" onClick={sair}><LogOut size={16} aria-hidden="true"/> Sair</button></div></section>
   <SignAllBanner scope="eu"/>
@@ -89,13 +120,17 @@ export function MyPage(){
     const w=discoverWallets()[0];if(!w)throw Error('Instale a carteira Phantom ou Solflare neste navegador e recarregue a página.');const a=await connect(w);
     const {message}=await api<{message:string}>(`/api/eu/carteira/mensagem?endereco=${a.address}`);await api('/api/eu/carteira',{address:a.address,message,signature:await signMessage(w,a,message)});return 'Carteira vinculada.';})}>Conectar minha carteira</button>}
    {me.balance&&<p className="wallet-balance"><strong>{money(Math.round(me.balance.reais*100))}</strong> <small>na carteira · {me.balance.sol.toFixed(3)} SOL para taxas</small></p>}</section>}
-  {p.role==='fornecedor'?<SupplierPanel name={p.name} rows={me.agreements} receipts={me.receipts}/>:<section className="panel"><h2>Meus acordos</h2><AgreementList rows={me.agreements}/></section>}
+  {p.role==='fornecedor'&&<SupplierPanel name={p.name} rows={me.agreements} receipts={me.receipts}/>}
+  {p.role!=='fornecedor'&&<div className="tabs area-switch" role="tablist" aria-label="Minha área">{(['equipe','compras'] as const).map(a=><button key={a} role="tab" aria-selected={areaAtual===a} className={areaAtual===a?'active':''} onClick={()=>setArea(a)}>{a==='equipe'?'Equipe e trabalho':'Minhas compras'}</button>)}</div>}
+  {p.role!=='fornecedor'&&areaAtual==='compras'&&<BuyerPanel name={p.name} purchases={me.purchases}/>}
+  {p.role!=='fornecedor'&&areaAtual==='equipe'&&<>{p.role==='ajudante'&&<WorkerHero name={p.name} shift={me.shift} received={me.commissionsReceived}/>}
+   <VagasAbertas/><BuscoTrabalho job={me.job} onSaved={()=>void load()}/>
+   {me.agreements.length>0&&<section className="panel"><h2>Meus acordos</h2><AgreementList rows={me.agreements}/></section>}</>}
   {p.role!=='fornecedor'&&me.receipts.length>0&&<section className="panel"><h2>Confirmar pagamentos em dinheiro</h2><ul>{me.receipts.map(r=><li key={r.link}>{money(r.amount)} em {new Date(r.paidAt).toLocaleDateString('pt-BR')} — <a href={r.link}>confirmar</a></li>)}</ul></section>}
-  {me.shift&&<section className="panel"><h2>Meu turno</h2><p>{me.shift.active?'Você está em turno.':'Fora de turno.'} Comissão: {me.shift.commissionBps/100}% · recebido até agora {money(me.commissionsReceived)}</p><a className="primary" href={me.shift.link}>{me.shift.active?'Encerrar turno':'Iniciar turno'}</a></section>}
   <section className="panel"><h2>Meu código de convite</h2><p className="muted">Convide quem você conhece. Cada pessoa cria a própria conta pelo link.</p>
    <ShareInvite code={me.invite.code} title="GIRO" text={`${p.name} te convidou para o GIRO. Crie sua conta:`}/>
    {me.referrals.length>0&&<><h3>Quem entrou pelo meu convite</h3><ul className="people-cards">{me.referrals.map(r=><li key={r.slug}><a href={`/p/${r.slug}`}><span><strong>{r.name}</strong><small>{r.roleLabel}</small></span></a></li>)}</ul></>}</section>
-  <PeopleList/></Page>;
+  {p.role!=='fornecedor'&&<PeopleList/>}</Page>;
 }
 
 /** Painel da dona: criar contas das colegas, senhas provisórias, foto/nome do negócio, abastecer carteiras de teste. */

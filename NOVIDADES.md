@@ -93,3 +93,26 @@ Registro organizado do que o GIRO faz, separado por quem usa. Atualizado a cada 
 - Testado na rede de teste (Devnet) por colegas simulando os papéis, com CNPJs fictícios e sem dinheiro real.
 - **Projeto piloto (próxima etapa):** 3 fornecedores e 12 feirantes clientes deles, em 3 feiras, por 2 meses.
 - **Demonstração pública:** <https://giro-demo-oyy1.onrender.com> (dados fictícios).
+
+---
+
+## 🌎 Site em inglês
+
+- Botão **🇧🇷 PT / 🇺🇸 EN** no topo de todas as páginas, na tela de entrar, na página da barraca e em **Configurações → Idioma**.
+- Link direto em inglês: acrescente **`?lang=en`** ao endereço (ex.: `https://giro-demo-oyy1.onrender.com/entrar?lang=en`).
+- Valores em inglês aparecem no formato R$1,000.00. Os nomes **GIRO** e **GIRO Confiança** ficam em português.
+
+## 🧑‍🤝‍🧑 Contas diferentes por tipo
+
+- **Entrar:** três opções — *Minha barraca* (usuário próprio da barraca ou "dona"), *Fornecedor(a)* e *Equipe ou comprador*.
+- **Usuário da barraca:** definido em *Meu perfil → Usuário da barraca*.
+- **Equipe ou comprador:** dentro da conta, escolhe a área **Equipe e trabalho** (turno, comissão, vagas, "Busco trabalho") ou **Minhas compras** (histórico de compras pagas pelo QR da barraca com a conta aberta, total gasto, confiança das barracas).
+- **Fornecedor:** painel próprio, **Minha confiança como fornecedor** (acordos que cumpriu), confiança das barracas, **Perfis de confiança** e **Procuro ajudante**.
+- Cada tipo de conta tem cor e selo próprios no topo (verde fornecedor, laranja equipe, roxo comprador).
+
+## 💼 Vagas e emprego para ajudantes
+
+- **Procuro ajudante** (barraca em *Equipe* e fornecedor em *Minha conta*): publica a vaga com regras — **experiência mínima em meses** e **dias trabalhados no mínimo**.
+- Quem é da equipe ou comprador vê as **Vagas de ajudante** e clica **Tenho interesse**; o perfil fica salvo para quem publicou.
+- **O GIRO confere sozinho a experiência** pelo histórico de comissões recebidas (dias trabalhados, meses, total recebido) e mostra **"Atende às regras"** ou **"Ainda não atende"**.
+- **Busco trabalho:** a pessoa também pode se colocar numa lista com resumo e contato; barraca e fornecedores veem, com o link do perfil de confiança e botão de WhatsApp.
