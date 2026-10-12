@@ -1,167 +1,167 @@
 1
-00:00:00,300 --> 00:00:03,732
+00:00:00,612 --> 00:00:02,741
 Meet Maria. She sells all day.
 
 2
-00:00:03,782 --> 00:00:07,650
+00:00:02,961 --> 00:00:06,033
 Customers come, and payment notifications keep ringing.
 
 3
-00:00:08,300 --> 00:00:12,944
+00:00:08,606 --> 00:00:13,026
 Except her business money shares an account with groceries and supplier bills.
 
 4
-00:00:12,994 --> 00:00:17,303
+00:00:13,246 --> 00:00:16,464
 Some sales go into a notebook; others vanish in the rush.
 
 5
-00:00:17,353 --> 00:00:19,650
+00:00:16,684 --> 00:00:18,066
 What can she actually spend?
 
 6
-00:00:20,300 --> 00:00:25,950
+00:00:20,536 --> 00:00:25,576
 Sebrae reports that 61% pay business expenses with personal accounts,
 
 7
-00:00:26,000 --> 00:00:31,650
+00:00:25,796 --> 00:00:30,463
 25% use notebooks, and 10% don't track finances at all.
 
 8
-00:00:32,300 --> 00:00:36,650
+00:00:32,611 --> 00:00:35,039
 But there's another invisible asset: trust.
 
 9
-00:00:37,300 --> 00:00:41,523
+00:00:37,892 --> 00:00:40,608
 João buys supplies and agrees to pay later.
 
 10
-00:00:41,573 --> 00:00:43,659
+00:00:40,828 --> 00:00:42,136
 His neighbor interrupts:
 
 11
-00:00:43,709 --> 00:00:46,650
+00:00:42,356 --> 00:00:43,448
 NEIGHBOR: You can trust João!
 
 12
-00:00:47,300 --> 00:00:50,002
+00:00:48,012 --> 00:00:49,812
 Around here, everyone knows him.
 
 13
-00:00:50,052 --> 00:00:53,933
+00:00:50,032 --> 00:00:51,980
 But in a new market, he's a stranger.
 
 14
-00:00:53,983 --> 00:00:58,650
+00:00:52,200 --> 00:00:54,767
 How can the next supplier see the commitments he honored?
 
 15
-00:00:59,300 --> 00:01:04,536
+00:00:59,767 --> 00:01:03,008
 His relationships mattered. But their history didn't travel.
 
 16
-00:01:04,586 --> 00:01:06,650
+00:01:03,228 --> 00:01:04,153
 Until GIRO.
 
 17
-00:01:07,300 --> 00:01:10,970
+00:01:07,502 --> 00:01:11,607
 GIRO organizes recorded income, reserves, and obligations.
 
 18
-00:01:11,020 --> 00:01:13,863
+00:01:11,827 --> 00:01:13,882
 Maria registers a thousand reais.
 
 19
-00:01:13,913 --> 00:01:19,650
+00:01:14,102 --> 00:01:18,653
 Four hundred are reserved; six hundred remain available based on her records.
 
 20
-00:01:20,300 --> 00:01:23,442
+00:01:20,849 --> 00:01:22,433
 Planning is her own decision.
 
 21
-00:01:23,492 --> 00:01:31,650
+00:01:22,653 --> 00:01:28,691
 A shared commitment is different: João and his supplier review and accept the same commercial terms.
 
 22
-00:01:32,300 --> 00:01:37,529
+00:01:32,615 --> 00:01:36,339
 They agree the supplier is owed twenty percent of registered sales.
 
 23
-00:01:37,579 --> 00:01:42,808
+00:01:36,559 --> 00:01:42,044
 Later, evidence and appropriate confirmations document whether the obligation was fulfilled.
 
 24
-00:01:42,858 --> 00:01:45,650
+00:01:42,264 --> 00:01:44,015
 João cannot certify it alone.
 
 25
-00:01:46,300 --> 00:01:53,497
+00:01:46,700 --> 00:01:54,380
 Now GIRO Confiança shows commitments fulfilled on time, completed after renegotiation, active, and finalized.
 
 26
-00:01:53,547 --> 00:01:58,479
+00:01:54,600 --> 00:01:57,389
 Not a credit score. Not a guarantee of honesty.
 
 27
-00:01:58,529 --> 00:02:01,650
+00:01:57,609 --> 00:01:59,531
 A history with traceable records.
 
 28
-00:02:02,300 --> 00:02:06,125
+00:02:02,808 --> 00:02:05,386
 In a new market, João shares selected entries.
 
 29
-00:02:06,175 --> 00:02:11,162
+00:02:05,606 --> 00:02:09,221
 JOÃO: Don't just take my word. Check the agreements I fulfilled.
 
 30
-00:02:11,212 --> 00:02:14,650
+00:02:09,441 --> 00:02:11,924
 These records can be verified beyond GIRO.
 
 31
-00:02:15,300 --> 00:02:19,142
+00:02:15,728 --> 00:02:17,950
 JOÃO: But what if GIRO changes my history?
 
 32
-00:02:19,192 --> 00:02:21,477
+00:02:18,170 --> 00:02:19,661
 That's why Solana matters.
 
 33
-00:02:21,527 --> 00:02:26,926
+00:02:19,881 --> 00:02:25,222
 Minimal proofs of accepted agreements and confirmed outcomes can be checked independently,
 
 34
-00:02:26,976 --> 00:02:29,650
+00:02:25,442 --> 00:02:27,375
 while private contracts stay off-chain.
 
 35
-00:02:30,300 --> 00:02:33,865
+00:02:30,341 --> 00:02:34,090
 Solana supports low-cost transactions and programmable payment rules.
 
 36
-00:02:33,915 --> 00:02:37,119
+00:02:34,310 --> 00:02:37,055
 Future compatible payments could be split automatically.
 
 37
-00:02:37,169 --> 00:02:39,650
+00:02:37,275 --> 00:02:39,569
 It verifies records—not fruit deliveries.
 
 38
-00:02:40,300 --> 00:02:45,850
+00:02:40,415 --> 00:02:46,237
 We're four Brazilian women across mathematics, software development, marketing, and graphic design.
 
 39
-00:02:45,900 --> 00:02:50,650
+00:02:46,457 --> 00:02:49,854
 Our pilot: twelve vendors in three markets, two free months,
 
 40
-00:02:50,700 --> 00:02:54,650
+00:02:50,074 --> 00:02:54,148
 hands-on support, and testing referrals and affordable subscriptions.
 
 41
-00:02:55,300 --> 00:02:58,183
+00:02:55,437 --> 00:02:57,967
 Money organized today, trust for tomorrow.
 
 42
-00:02:58,233 --> 00:02:59,650
+00:02:58,187 --> 00:02:59,024
 That's GIRO.

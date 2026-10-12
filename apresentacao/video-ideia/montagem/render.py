@@ -3,8 +3,9 @@
 Uso: python render.py [saida.mp4] [--previa]   (--previa: 960x540 e 12 fps, para conferir rápido)
 Gera também roteiro-legendas.srt (narração com os tempos de cada cena) para sincronizar o áudio depois.
 """
-import subprocess, sys
-from PIL import Image
+import os, subprocess, sys
+import numpy as np
+from PIL import Image, ImageFilter
 import imageio_ffmpeg
 
 PREVIA = '--previa' in sys.argv
@@ -20,7 +21,7 @@ Z_IN = (1.0, 1.07, .5, .5, .5, .5)
 Z_OUT = (1.07, 1.0, .5, .5, .5, .5)
 SOFT = (1.0, 1.035, .5, .5, .5, .5)
 SEG = [
-    ('img/02.jpg', 0, 8, (1.0, 1.08, .5, .42, .5, .36)),            # C01 Meet Maria
+    ('img/02.jpg', 0, 8, (1.0, 1.05, .5, .5, .5, .5)),            # C01 Meet Maria
     ('img/03.jpg', 8, 12.5, Z_IN),                                   # C02 mesma conta
     ('img/08.jpg', 12.5, 16.5, Z_OUT),                               # C02 caderno
     ('img/04.jpg', 16.5, 20, (1.0, 1.06, .5, .5, .5, .55)),          # C02 recebido ≠ disponível
@@ -48,6 +49,39 @@ SEG = [
 ]
 
 _cache = {}
+_clips = {}
+# regiões (frações da imagem) que não podem vir da IA: legendas e textos fixos
+PROTEGE = {'02': [(.28, .80, .62, .99), (.33, .12, .45, .40)]}
+def clipe(path):
+    """Se existir ia/NN.mp4 (cena animada por IA), devolve seus quadros já no tamanho de trabalho."""
+    nome = 'ia/' + os.path.basename(path).replace('.jpg', '.mp4')
+    if path not in _clips:
+        _clips[path] = None
+        if path.startswith('img/') and os.path.exists(nome):
+            ff = imageio_ffmpeg.get_ffmpeg_exe()
+            w, h = round(W * 1.25), round(H * 1.25)
+            raw = subprocess.run([ff, '-loglevel', 'error', '-i', nome, '-vf', f'scale={w}:{h}:flags=lanczos,unsharp=5:5:0.6',
+                                  '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], capture_output=True, check=True).stdout
+            fr = np.frombuffer(raw, np.uint8).reshape(-1, h, w, 3)
+            _clips[path] = [Image.fromarray(f) for f in fr]
+    return _clips[path]
+
+def animada(path, tl):
+    """Quadro da cena animada no tempo local tl: vai e volta (ping-pong) a 16 fps, com mistura entre quadros."""
+    fr = clipe(path)
+    n = len(fr); pos = (tl * 16) % (2 * (n - 1))
+    if pos > n - 1: pos = 2 * (n - 1) - pos
+    i = int(pos); f = pos - i
+    img = fr[i] if f < 0.01 or i + 1 >= n else Image.blend(fr[i], fr[i + 1], f)
+    # áreas com texto (legendas da imagem) sempre vêm da imagem original, para a IA não apagar nem deformar
+    for x0, y0, x1, y1 in PROTEGE.get(os.path.basename(path)[:2], []):
+        base = fonte(path); w, h = base.size
+        caixa = (round(x0 * w), round(y0 * h), round(x1 * w), round(y1 * h))
+        m = Image.new('L', (caixa[2] - caixa[0], caixa[3] - caixa[1]), 0)
+        m.paste(255, (12, 12, m.width - 12, m.height - 12)); m = m.filter(ImageFilter.GaussianBlur(8))
+        img = img.copy(); img.paste(base.crop(caixa), caixa[:2], m)
+    return img
+
 def fonte(path):
     """Imagem preenchendo 16:9 e ampliada 1,25x sobre a saída, para o zoom não perder nitidez."""
     if path not in _cache:
@@ -79,6 +113,8 @@ def cena(i, t):
     src, a, b, mov = SEG[i]
     p = (t - (a - XF / 2)) / ((b + XF / 2) - (a - XF / 2))
     if isinstance(src, str):
+        if clipe(src):
+            return quadro(animada(src, max(t - (a - XF / 2), 0)), mov, p)
         return quadro(fonte(src), mov, p)
     # estados: troca suave entre eles, mesmo movimento de câmera
     idx = max(k for k, (_, s) in enumerate(src) if s <= max(t, a))
@@ -112,8 +148,9 @@ def frame(t):
 def main():
     saida = next((a for a in sys.argv[1:] if not a.startswith('--')), 'GIRO-pitch-180s.mp4')
     ff = imageio_ffmpeg.get_ffmpeg_exe()
-    cmd = [ff, '-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-',
-           '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', saida]
+    audio = ['-i', 'audio/narracao.wav', '-c:a', 'aac', '-b:a', '192k', '-shortest'] if os.path.exists('audio/narracao.wav') and '--sem-audio' not in sys.argv else []
+    cmd = [ff, '-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-', *audio[:2],
+           '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-pix_fmt', 'yuv420p', *audio[2:], '-movflags', '+faststart', saida]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     n = int(TOTAL * FPS)
     for f in range(n):
