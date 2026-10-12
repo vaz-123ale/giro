@@ -5,6 +5,7 @@ import {allocationDisclosure} from '../src/domain/consent.ts';
 import {createCommitment} from './financial-service.ts';
 import {decideAgreement,decideRenegotiation,requestRenegotiation,submitDraft,terms} from './agreement-service.ts';
 import {inputRecord} from './input.ts';
+import {createMember} from './team-service.ts';
 import {notificationFeed} from '../src/domain/notifications.ts';
 import {commitmentId} from '../src/domain/records.ts';
 
@@ -77,3 +78,27 @@ export function decideInvitation(state:State,value:unknown){
  notify(state,c,`${c.supplier} ${i.state==='accepted'?'aceitou':'recusou'} ${i.kind==='change'?'o pedido de mudança':'o compromisso'}. Confirmação simulada localmente.`,i.id);
 }
 export function readNotification(state:State,value:unknown){const input=inputRecord(value);let n=state.notifications?.find(n=>n.id===input.id);if(!n){n=notificationFeed(state).find(n=>n.id===input.id);if(n)(state.notifications??=[]).push(n);}if(!n)throw Error('Notificação não encontrada.');n.readAt??=new Date().toISOString();}
+
+/**
+ * Importação de dívidas (PDF/Excel/CSV revisados pelo usuário): cadastra cada pessoa que ainda não existe
+ * (fornecedor ou ajudante) e propõe o acordo, que fica aguardando o aceite dela. Cada linha é independente.
+ */
+export function importDebts(state:State,value:unknown){
+ const input=inputRecord(value);if(!Array.isArray(input.items)||!input.items.length||input.items.length>100)throw Error('Envie de 1 a 100 dívidas.');
+ const norm=(s:string)=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
+ return input.items.map((raw:unknown,i:number)=>{
+  const it=inputRecord(raw);const name=String(it.name??'').trim();
+  try{
+   const type=it.type==='ajudante'?'collaborator':'supplier';
+   let contact=(state.contacts??[]).find(c=>norm(c.name)===norm(name)&&(c.type??'supplier')===type);
+   if(!contact){
+    if(type==='collaborator'){const before=new Set(state.members.map(m=>m.id));createMember(state,{name,compensation:'none',commissionBps:0});const m=state.members.find(m=>!before.has(m.id))!;contact=createContact(state,{name,type:'collaborator',memberId:m.id});}
+    else contact=createContact(state,{name,type:'supplier'});
+   }
+   const before=new Set((state.invitations??[]).map(x=>x.id));
+   sendInvitation(state,{contactId:contact.id,debtAmount:it.amount,rateBps:it.rateBps,priority:Number(it.priority)||i+1,due:it.due,acknowledged:true});
+   const inv=(state.invitations??[]).find(x=>!before.has(x.id));
+   return {name,ok:true,link:inv?`/convite/${inv.token}`:null};
+  }catch(e){return {name,ok:false,error:(e as Error).message};}
+ });
+}

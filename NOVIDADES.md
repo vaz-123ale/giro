@@ -9,9 +9,19 @@ Registro organizado do que o GIRO faz, separado por quem usa. Atualizado a cada 
 **Entrar**
 - Na tela de entrada, escolha **"Minha barraca"** e digite só a senha da barraca.
 
-**Meu perfil** (botão **Meu perfil**, no canto superior direito)
-- No topo da página: **foto da barraca** (trocar foto), **nome da barraca** e **perfil público** para compartilhar (abrir, copiar link, WhatsApp).
-- Confirmação bem visível ao salvar a foto ou o nome.
+**O que só a barraca vê:** o painel completo (vendas, caixa, organização, todos os acordos, equipe, confiança de todos), o QR da barraca, convites e importação de dívidas.
+
+**Meu perfil** (canto superior direito, com a foto da barraca)
+- Clicar abre um menu com a foto e o nome da barraca e as opções **Alterar perfil**, **Ver perfil público** e **Sair**.
+- **Alterar perfil** abre a página com foto (trocar), nome da barraca, perfil público (abrir, copiar link, WhatsApp) e **Sair**.
+- A foto do canto **muda na hora** quando é trocada no perfil. Confirmação bem visível ao salvar.
+- Clicar no logo **GIRO** volta para o Início.
+
+**Importar dívidas por PDF ou Excel** (*Compromissos → Importar dívidas*)
+- Sobe uma planilha (.xlsx, .xls, .csv) ou um PDF com as dívidas de **fornecedores e ajudantes**.
+- O GIRO monta uma tabela para revisar (nome, tipo, valor, vencimento, % das vendas), com tudo editável.
+- **Cadastrar tudo**: cria cada pessoa (o ajudante entra na equipe) e propõe o acordo, que fica aguardando o aceite dela.
+- Ajuda **"Como fazer?"** e botão **Baixar modelo (Excel)**. Se faltar a %, sugere 20% para fornecedor e 10% para ajudante.
 
 **QR fixo da barraca** (*Receber → QR fixo da barraca*)
 - Um único QR impresso na banca. **A feirante não precisa entrar no sistema a cada venda.**
@@ -41,6 +51,8 @@ Registro organizado do que o GIRO faz, separado por quem usa. Atualizado a cada 
 **Entrar**
 - Na tela de entrada, escolha **"Fornecedor(a)"** e use o usuário e a senha criados pelo convite.
 
+**O que o fornecedor vê:** só os acordos dele com a barraca (não vê vendas, caixa, outros fornecedores nem a equipe).
+
 **Painel do fornecedor** (*Minha conta*)
 - **A receber**, **já recebido** e **acordos ativos**, logo no topo.
 - **Precisa de você:** acordos novos para aceitar e pagamentos em dinheiro para confirmar.
@@ -53,6 +65,7 @@ Registro organizado do que o GIRO faz, separado por quem usa. Atualizado a cada 
 ## 👥 Conta da equipe ou cliente
 
 - Na tela de entrada, escolha **"Equipe ou cliente"**.
+- **O que vê:** só os próprios dados.
 - **Ajudante:** turno (iniciar/encerrar), comissão e quanto já recebeu.
 - **Cliente:** perfil, convites e histórico.
 

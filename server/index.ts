@@ -31,7 +31,7 @@ import {createMember,toggleShift,changeMember} from './team-service.ts';
 import {contributePlan} from './planning-service.ts';
 import {consultCommitment,requestConsultChange} from './record-service.ts';
 import {openCash,separateCash,payCash,outflowCash,closeCash,inflowCash} from './cash-service.ts';
-import {createContact,sendInvitation,sendChangeInvitation,inviteExistingChange,invitationView,decideInvitation,readNotification,supplierChange,saveContactDraft} from './invitation-service.ts';
+import {createContact,sendInvitation,sendChangeInvitation,inviteExistingChange,invitationView,decideInvitation,readNotification,supplierChange,saveContactDraft,importDebts} from './invitation-service.ts';
 const config=loadConfig();
 // Rede Solana: camada opcional, desligada por padrão (GIRO_SOLANA_CLUSTER=disabled → nada muda).
 const chain=startChain(config);
@@ -174,6 +174,7 @@ const server=createServer(async(req,res)=>{
    if(req.url==='/api/invitations/decision'){
     const state=update(s=>decideInvitation(s,input));return json(200,invitationView(state,input.token));
    }
+   if(req.url==='/api/dividas/importar'){let results:unknown;const state=update(s=>{results=importDebts(s,input);});return json(200,{results,state});}
    if(req.url==='/api/invitations/supplier-change'){const state=update(s=>supplierChange(s,input));return json(200,invitationView(state,input.token));}
    const localActions:Record<string,(s:ReturnType<typeof read>,v:unknown)=>unknown>={'/api/notifications/refresh':refreshNotifications,'/api/accounts/pay':payAccount,'/api/team/daily/schedule':scheduleDaily,'/api/payments/create':createPayment,'/api/payments/amount':amountPayment,'/api/team/daily':registerDaily,'/api/team/daily/pay':payDaily,'/api/contacts':createContact,'/api/invitations/send':sendInvitation,'/api/invitations/change':sendChangeInvitation,'/api/invitations/change-existing':inviteExistingChange,'/api/notifications/read':readNotification,'/api/receipts/request':requestReceipt,'/api/members/schedule':setSchedule,'/api/members/checkin-link':issueCheckin,'/api/shift/decision':decideShift};
    if(req.url==='/api/invitations/draft')return json(200,update(s=>{saveContactDraft(s,input);}));
