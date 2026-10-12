@@ -107,8 +107,14 @@ main.pp{margin:0 auto!important;padding:12px 16px 40px!important;max-width:560px
 .invite-share-body{display:grid;gap:6px;min-width:0;flex:1}
 .invite-code{font-size:1.4rem;letter-spacing:.06em;color:var(--deep-green,#1b6b45)}
 .invite-link{font-size:.85rem;overflow-wrap:anywhere}
-.sign-banner{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:14px 16px;margin:0 0 16px;border-radius:14px;background:#fff6dc;border:1px solid #f0d58a}
-.sign-banner span{display:grid;flex:1;min-width:180px}
+.sign-banner{display:flex;gap:14px;align-items:center;flex-wrap:wrap;padding:16px 18px;margin:0 0 18px;border-radius:16px;background:#064c3c;color:#fff;border:0}
+.sign-banner>svg{color:#9be3bd;flex:none}
+.sign-banner span{display:grid;gap:2px;flex:1;min-width:180px}
+.sign-banner strong{color:#fff;font-size:17px}
+.sign-banner small{color:#cfeedd;font-size:14px}
+.sign-banner .primary{background:#fff;color:#064c3c;font-weight:700}
+.sign-banner .primary:hover{background:#e6f5eb}
+.sign-banner .success,.sign-banner .error{flex-basis:100%;padding:10px 12px}
 .join-page .panel{max-width:520px;margin:0 auto}
 .join-head{display:flex;gap:14px;align-items:center}
 .join-head h1{font-size:1.4rem;margin:0}
@@ -119,4 +125,4 @@ main.pp{margin:0 auto!important;padding:12px 16px 40px!important;max-width:560px
 .join-steps li.done{background:#cfe8d9}
 .big-action{display:block;width:100%;text-align:center;padding:14px;font-size:1.05rem;margin-top:12px}
 .wallet-balance strong{font-size:1.6rem}
-@media (prefers-color-scheme:dark){.invite-share{background:#12241b;border-color:#24453a}.sign-banner{background:#3a2f12;border-color:#6b5520}.join-steps li{background:#22302a}}
+html[data-contrast="high"] section.sign-banner.sign-banner span small:not(.error):not(.success){color:#fff!important}
