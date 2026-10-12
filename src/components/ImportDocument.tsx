@@ -4,6 +4,7 @@ import {parseDocument,type ImportedItem} from '../domain/import';
 import {money,today} from '../domain/finance';
 import {parseMoney} from '../domain/validation';
 import {brDate} from './display';
+import {pdfText} from './pdfText';
 type Post=(path:string,input:unknown)=>Promise<boolean>;
 const norm=(s:string)=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim();
 
@@ -19,8 +20,11 @@ export function ImportDocument({busy=false,post}:{busy?:boolean;post?:Post}){
  const save=async()=>{if(!post||!items)return;let ok=0;for(const i of items.filter(i=>i.selected)){if(await post('plans',{kind:'account',name:i.name,target:i.amount,amount:0,category:'Importado',recurrence:i.repeat?'monthly':'once',priority:null,targetDate:i.due,mode:'manual',rateBps:0}))ok++;else break;}
   setMessage(`${ok} conta${ok===1?'':'s'} adicionada${ok===1?'':'s'} em Organizar → Contas.`);if(ok)setItems(null);};
  return <section className="document-import" aria-labelledby="import-title"><h3 id="import-title"><FileUp size={21} aria-hidden="true"/> Importar documento</h3>
-  <p className="muted">Envie um arquivo CSV ou TXT (planilha salva como CSV, extrato, relatório) ou cole o texto de um boleto/PDF. A leitura acontece neste computador; nada é cadastrado sem sua revisão.</p>
-  <label>Arquivo (.csv ou .txt)<input type="file" accept=".csv,.txt,text/csv,text/plain" onChange={async e=>{const f=e.target.files?.[0];if(!f)return;if(/\.(pdf|png|jpe?g|xlsx?)$/i.test(f.name)){setFileNote('PDF, imagem e Excel ainda não são lidos automaticamente. Abra o documento, copie o texto (Ctrl+C) e cole abaixo, ou salve a planilha como CSV.');return;}setFileNote('');const content=await f.text();setText(content);read(content);}}/></label>
+  <p className="muted">Envie um PDF (boleto, fatura, extrato), um CSV ou TXT, ou cole o texto. A leitura acontece neste computador; nada é cadastrado sem sua revisão.</p>
+  <label>Arquivo (.pdf, .csv ou .txt)<input type="file" accept=".pdf,.csv,.txt,application/pdf,text/csv,text/plain" onChange={async e=>{const f=e.target.files?.[0];if(!f)return;if(/\.(png|jpe?g|xlsx?)$/i.test(f.name)){setFileNote('Imagem e Excel ainda não são lidos automaticamente. Use PDF, salve a planilha como CSV ou cole o texto abaixo.');return;}
+   let content='';if(/\.pdf$/i.test(f.name)||f.type==='application/pdf'){setFileNote('Lendo o PDF…');try{content=await pdfText(f);}catch{setFileNote('Não consegui ler este PDF. Abra o documento, copie o texto (Ctrl+C) e cole abaixo.');return;}
+    if(!content.trim()){setFileNote('Este PDF parece ser uma imagem escaneada (sem texto). Cole o texto abaixo.');return;}}else content=await f.text();
+   setFileNote('');setText(content);read(content);}}/></label>
   {fileNote&&<p className="note" role="status">{fileNote}</p>}
   <label>Ou cole o texto aqui<textarea rows={4} value={text} onChange={e=>setText(e.target.value)} placeholder={'Ex.: Fornecedor João — R$ 600 — vencimento em 08/10\nAluguel R$ 900 10/10'}/></label>
   <button className="secondary" type="button" disabled={!text.trim()} onClick={()=>read(text)}>Ler texto</button>
