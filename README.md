@@ -1,81 +1,64 @@
-# GIRO — Carteira inteligente
+# GIRO — Programmable revenue and verifiable trust for small businesses
 
-Receitas programáveis e confiança comercial para pequenos negócios. O vendedor define as regras uma vez, cada venda já nasce organizada e cada compromisso cumprido vira histórico verificável.
+*Português: [LEIAME.md](LEIAME.md)*
 
-**Fase atual: teste em grupo na Solana Devnet** (rede pública de teste, token sem valor real). O servidor escuta só em 127.0.0.1; o acesso externo é feito por túnel https com login. Mainnet (dinheiro real) exige autorização explícita (`GIRO_AUTORIZACAO_MAINNET=sim`).
+GIRO turns a small business's revenue into **programmable rules** and every commitment kept into **verifiable trust**.
 
-## Como testar (pelo link)
+A street-market seller in Brazil sells R$ 10 of cheese. Part of that money already belongs to the supplier who fronted the goods, part to the helper on commission, and the rest is hers. Today this split lives in a notebook and on trust. With GIRO, the seller and each partner agree once on the split (e.g. "20% of each sale until R$ 300 is paid"), both sign the agreement with their own wallet, and **every sale settles itself on Solana**: the customer pays with Solana Pay and, in the same transaction, the supplier, the helper and the seller each receive their share in a BRL stablecoin. Every agreement fulfilled becomes an on-chain attestation the seller can show to get more credit next time.
 
-1. Peça à dona do negócio o **endereço** (`https://….trycloudflare.com`), seu **usuário** e a **senha provisória**.
-2. Entre, troque a senha e ponha sua foto em **Minha conta**.
-3. Instale a carteira **Phantom** e ative *Configurações → Configurações de desenvolvedor → Modo de teste → Solana Devnet*. Clique em **Conectar minha carteira**.
-4. **Fornecedora:** em *Meus acordos* abra o acordo, aceite e clique em **Assinar na carteira**.
-   **Cliente:** pague a venda pelo botão/QR **Pagar com carteira Solana**.
-5. Veja os perfis de confiança em **Perfis** e o seu perfil público (link, QR, WhatsApp e NFC) em **Meu perfil público**.
+## Why Solana
 
-## Como rodar
+- **Atomic split per sale.** One `settle_sale` instruction distributes a single payment to up to N parties by priority and caps (fixed fees → commissions → agreements by priority → seller), never paying more than is owed and never exceeding 100%.
+- **Cents-level fees.** A R$ 10 sale can carry its own split; that only makes sense on a network with sub-cent fees and sub-second confirmation.
+- **Solana Pay** for the customer (QR / wallet link with a reference to find the payment), **Wallet Standard** for every party signing their own agreements, **Solana Attestation Service (SAS)** for portable trust records.
+- **BRL stablecoin (BRZ)** so nobody is exposed to volatility.
 
-Requisito: Node.js 24.15 ou superior. As dependências já estão em `node_modules` (não precisa de internet).
+## What is on-chain vs off-chain
 
-```powershell
-npm run dev          # site em http://127.0.0.1:5173 (API em http://127.0.0.1:3001)
-```
-
-Versão compilada: `npm run build` e depois `npm start` → http://127.0.0.1:3001.
-
-| Comando | O que faz |
+| On-chain (program `giro_acordos`, Anchor) | Off-chain (GIRO app, SQLite) |
 |---|---|
-| `npm test` | 288 testes automáticos (alguns só rodam com o validador local ligado) |
-| `npm run verificar` | tipos + testes + build + 34 telas no navegador, numa cópia dos dados → `auditoria/verificacao-local.md` |
-| `npm run relatorio:integracao` | o que um dia iria para a rede (sem dados pessoais) → `auditoria/PRONTIDAO_INTEGRACAO.md` |
-| `npm run dev:rede` | igual ao `dev`, com a rede Solana **simulada** ligada (modelo do programa, neste PC) |
-| `npm run dev:rede-local` | igual ao `dev`, usando o validador Solana **local** (suba antes no WSL: `solana/scripts/validador-local.sh`) |
-| `npm run solana:cliente` | gera o cliente TypeScript do programa a partir do IDL (Codama) |
-| `npm run senha` | define a senha da dona (usuário `dona`) |
-| `npm run publico` | abre o GIRO pelo túnel https na Devnet (exige senha e `npm run build`) |
-| `npm run solana:vetores` | gera os vetores de paridade GIRO × programa para o `cargo test` |
-| `npm run demo` | base de demonstração fictícia em http://127.0.0.1:3019 (não usa os dados reais) |
-| `npm run demo:prints` | refaz os prints da demonstração |
+| Seller account with per-sale cap | Names, photos, phone numbers (never on-chain) |
+| Agreement PDAs: proposal → accept/reject, changes only with both signatures | Planning, goals, team shifts, receipts |
+| `settle_sale`: atomic multi-party split of each payment | Notifications, invites, profiles |
+| Cash payments recorded by seller, confirmed or disputed by supplier | Transactional outbox mirroring every change to the chain |
+| SAS attestation when an agreement is completed | |
 
-## O que o sistema faz
+Program ID (Devnet): `CVAQPvyjepuDP9j5df22ipp9E7XWVxej1T26rb4NvEMV`
 
-- **Início:** quanto entrou, quanto já tem destino e quanto está realmente livre.
-- **Receber:** venda (pagar depois), venda em dinheiro, “para onde vai cada venda”, vendas, a receber, caixa físico.
-- **Organizar:** contas e metas pessoais, sugestões de percentual, renegociar, importar documento (CSV/texto), resumo.
-- **Compromissos:** acordos com fornecedores e colaboradores, aceitos pela outra parte por link local; mudanças só com aceite.
-- **Equipe:** turnos, escala, check-in do trabalhador confirmado pelo vendedor, comissões, diárias, comprovantes.
-- **Confiança:** comprovantes de conclusão (código SHA-256), baixar e verificar histórico; pagamentos em dinheiro confirmados pelas duas partes.
-- **Mais:** contatos, notificações, histórico, acessibilidade (tamanho do texto, alto contraste), configurações.
+## Easy for non-crypto people
 
-Regras financeiras: valores em centavos; ordem da divisão = fixos por venda → comissões → acordos por prioridade → restante do vendedor; nunca destina mais do que falta; soma dos percentuais ≤ 100%. Digital e aceites são simulados localmente; dinheiro é confirmado manualmente.
+- **Join by invite link** — the owner sends `…/participar/GIRO-XXXXXX` on WhatsApp; the person picks their own username, password and photo and connects a wallet in the same screen. Nobody types passwords for others.
+- **"Sign everything" banner** — all pending signatures (proposals, accepts, cash confirmations) batched into one wallet approval.
+- **Balances inside the app**, **personal invite code** with referrals, **public trust profile** shareable by link, QR, WhatsApp or NFC.
+- Portuguese interface, large text and high-contrast options.
 
-## Estrutura das pastas
+## Run it
 
-```
-Documentação/        documento de referência do projeto
-Referencias/         mockups e imagens de referência do layout
-src/                 interface (React) e regras de negócio (src/domain)
-server/              API local (Node + SQLite); config.ts = trava "só local"
-tests/               testes automáticos
-scripts/             dev, verificação local e relatório de integração
-public/              imagens e ícones usados pelo site
-data/                banco local (giro.sqlite) e backups — dados reais, ficam só no PC
-apresentacao/        slides (.pptx, .pdf, .html), roteiro, prints e ferramentas
-planejamento/solana/ plano e andamento da integração com Solana
-solana/              programa Anchor giro_acordos (Rust) e scripts do WSL
-auditoria/           entregas atuais, verificação e histórico das fases anteriores
-node_modules/        dependências (necessárias para rodar sem internet)
+Requirements: Node.js ≥ 24.15. Dependencies are vendored in `node_modules`.
+
+```bash
+npm run dev            # app on http://127.0.0.1:5173 (API on 127.0.0.1:3001), chain disabled
+npm run dev:rede       # same, with the simulated chain (TypeScript model of the program)
+npm test               # 288 automated tests (6 need the local validator)
+npm run demo           # fictional demo data on http://127.0.0.1:3019
+npm run publico        # Devnet + https tunnel for group testing (requires `npm run senha` and `npm run build`)
 ```
 
-## Solana (em andamento)
+Solana program (WSL/Linux): `solana/scripts/compilar-e-testar.sh` builds and runs `cargo test` (including 1,165 parity vectors generated from the TypeScript split engine) and the localnet integration tests. Devnet deployment: `solana/scripts/publicar-devnet.sh`.
 
-Plano: [PLANO_IMPLEMENTACAO_SOLANA.txt](planejamento/solana/PLANO_IMPLEMENTACAO_SOLANA.txt) · andamento e o que falta: [STATUS_IMPLEMENTACAO.md](planejamento/solana/STATUS_IMPLEMENTACAO.md).
+## Repository map
 
-A rede é opcional e vem desligada (`GIRO_SOLANA_CLUSTER=disabled`). `simulado` roda o modelo do programa neste PC; `localnet` usa o programa compilado e o SAS no `solana-test-validator` em 127.0.0.1, com Solana Pay para carteira (token BRL-T de teste). Programa Anchor em `solana/`, camada do servidor em `server/chain/`. Devnet só com autorização separada.
+```
+src/            React UI and business rules (src/domain: split engine, capacity, chain model)
+server/         Node API + SQLite; server/chain: outbox, Solana adapter, Solana Pay, SAS, wallets
+solana/         Anchor program giro_acordos, Codama client, build scripts
+tests/          automated tests (domain, API, chain parity, wallet-signing flow on Devnet)
+colosseum/      hackathon submission material (English)
+```
 
-## Documentos de referência
+## Safety
 
-- [Roteiro da demonstração](apresentacao/ROTEIRO_DEMONSTRACAO.md)
-- [Incorporação do documento e validação local](auditoria/ENTREGA_INCORPORACAO_DOCUMENTO.md)
-- [Ajuste de layout pelos mockups](auditoria/AJUSTE_LAYOUT_MOCKUPS.md)
-- [Índice da auditoria e do histórico](auditoria/LEIA-ME.md)
+- Mainnet is disabled unless explicitly authorized (`GIRO_AUTORIZACAO_MAINNET=sim`) and capped per sale.
+- No personal data on-chain; on-chain records use opaque keys.
+- The server listens only on 127.0.0.1; external access is via an https tunnel with login, HttpOnly/SameSite=Strict sessions and scrypt passwords.
+- Each party signs with their own wallet; GIRO never holds user keys in wallet mode.

@@ -61,6 +61,15 @@ const server=createServer(async(req,res)=>{
   if(reqPath==='/api/chain/status'&&who?.kind!=='dona')return json(200,chain?{enabled:true,cluster:chain.cluster}:{enabled:false,cluster:'disabled'});
   // ---- Pessoas e perfis (teste em grupo) ----
   const marks=async()=>chain?((await chain.status()).items as Record<string,{state:string;attested:boolean}>):{};
+  // ---- Convites (entrar no GIRO por link/código, criando a PRÓPRIA conta) ----
+  const joinCode=reqPath.match(/^\/api\/convite\/(GIRO-[A-Z0-9]{6})$/)?.[1];
+  if(joinCode&&method==='GET')return json(200,people.invitePublic(joinCode));
+  if(joinCode&&method==='POST'){const input=await readBody(400000);let created:Person|undefined;update(s=>{created=people.acceptInvite(s,joinCode,input);});
+   const cookie=access.startSession({kind:'pessoa',id:created!.id});res.writeHead(200,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Set-Cookie':cookie});return res.end(JSON.stringify({ok:true,login:created!.login}));}
+  if(reqPath==='/api/convites'&&method==='GET')return json(200,{invites:people.invites(),personal:people.personalCode('dona'),referrals:people.referrals('dona')});
+  if(reqPath==='/api/convites'&&method==='POST')return json(200,people.createInvite(await readBody()));
+  const cancelCode=reqPath.match(/^\/api\/convites\/(GIRO-[A-Z0-9]{6})\/cancelar$/)?.[1];
+  if(cancelCode&&method==='POST'){people.cancelInvite(cancelCode);return json(200,{ok:true});}
   if(reqPath==='/api/pessoas'&&method==='GET')return json(200,{business:{...people.business(),photo:undefined},people:people.list().map(p=>({...p,photo:undefined,hasPhoto:!!p.photo,wallet:chain?.wallets?.role(walletRoleOf(p))??null}))});
   if(reqPath==='/api/pessoas'&&method==='POST'){const input=await readBody();let created:ReturnType<typeof people.create>|undefined;update(s=>{created=people.create(s,input);});
    return json(200,{login:created!.person.login,password:created!.password,name:created!.person.name,profile:`/perfil/${created!.person.slug}`});}
@@ -84,7 +93,12 @@ const server=createServer(async(req,res)=>{
   if(photoSlug&&method==='GET'){const ph=photoOf(people,photoSlug);if(!ph)return json(404,{error:'Sem foto.'});res.writeHead(200,{'Content-Type':ph.type,'Cache-Control':'private, max-age=60','X-Content-Type-Options':'nosniff'});return res.end(ph.data);}
   if(reqPath.startsWith('/api/eu')){
    if(who?.kind!=='pessoa')return json(403,{error:'Entre com o usuário da sua conta.'});const me=people.byId(who.id)!;
-   if(reqPath==='/api/eu'&&method==='GET')return json(200,{...myView(read(),me,await marks()),wallet:chain?.walletInfo(),myWallet:chain?.wallets?.role(walletRoleOf(me))??null});
+   if(reqPath==='/api/eu'&&method==='GET'){const w=chain?.wallets?.role(walletRoleOf(me))??null;return json(200,{...myView(read(),me,await marks()),wallet:chain?.walletInfo(),myWallet:w,balance:await chain?.walletBalance(w)??null,invite:people.personalCode(me.id),referrals:people.referrals(me.id)});}
+   // Assinaturas da colega (só os acordos dela), tudo de uma vez.
+   const contactIds=[me.contactId,...(read().contacts??[]).filter(c=>c.memberId&&c.memberId===me.memberId).map(c=>c.id)].filter((x):x is string=>!!x);
+   if(reqPath==='/api/eu/assinaturas'&&method==='GET')return json(200,{items:chain?chain.personPending(contactIds):[],wallet:chain?.walletInfo()});
+   if(reqPath==='/api/eu/assinaturas/lote/transacao'&&method==='POST'){if(!chain)throw Error('Rede desligada.');return json(200,await chain.personSigningBatch(contactIds,await readBody()));}
+   if(reqPath==='/api/eu/assinaturas/lote/assinada'&&method==='POST'){if(!chain)throw Error('Rede desligada.');return json(200,await chain.personSignedBatch(contactIds,await readBody(40000)));}
    if(reqPath==='/api/eu/senha'&&method==='POST'){const input=await readBody();people.changePassword(me.id,input.atual,input.nova);return json(200,{ok:true});}
    if(reqPath==='/api/eu/foto'&&method==='POST'){people.setPhoto(me.id,(await readBody(400000)).photo);return json(200,{ok:true});}
    if(reqPath==='/api/eu/carteira/mensagem'&&method==='GET'){if(!chain)throw Error('Rede desligada.');return json(200,{message:chain.bindMessage(new URL(req.url??'/','http://localhost').searchParams.get('endereco')??'',`a conta ${me.login}`)});}
@@ -111,6 +125,7 @@ const server=createServer(async(req,res)=>{
   // Carteiras reais (redes públicas): o negócio assina pelo painel; cada fornecedor só pelo próprio link (token).
   const readJson=async(limit=8000)=>{let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>limit)throw Error('Solicitação muito grande.');}return JSON.parse(raw||'{}');};
   const route=new URL(req.url??'/','http://localhost');
+  if(chain&&route.pathname==='/api/chain/saldo'&&req.method==='GET')return json(200,await chain.walletBalance(chain.wallets?.seller())??null);
   if(chain&&route.pathname==='/api/chain/carteira'&&req.method==='GET')return json(200,{...chain.walletInfo(),...(route.searchParams.get('endereco')?{message:chain.bindMessage(route.searchParams.get('endereco')!,'o negócio')}:{})});
   if(chain&&route.pathname==='/api/chain/carteira'&&req.method==='POST')return json(200,chain.bindSeller(await readJson()));
   if(chain&&route.pathname==='/api/chain/assinaturas'&&req.method==='GET')return json(200,chain.pendingSignatures());

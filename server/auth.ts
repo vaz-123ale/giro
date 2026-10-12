@@ -25,11 +25,12 @@ const OPEN:[string,RegExp][]=[
  ['POST',/^\/api\/(invitations\/decision|invitations\/supplier-change|receipts\/decision|checkin\/request|payments\/confirm)$/],
  ['GET',/^\/api\/solana-pay\/[a-f0-9]{48}$/],['POST',/^\/api\/solana-pay\/[a-f0-9]{48}(\/verificar)?$/],
  ['GET',/^\/api\/rede\/[a-f0-9]{48}(\/mensagem)?$/],['POST',/^\/api\/rede\/[a-f0-9]{48}\/(carteira|\d+\/(transacao|assinada))$/],
+ ['GET',/^\/api\/convite\/GIRO-[A-Z0-9]{6}$/],['POST',/^\/api\/convite\/GIRO-[A-Z0-9]{6}$/],
  ['GET',/^\/api\/publico\/[a-f0-9]{10}(\/foto)?$/],['GET',/^\/api\/chain\/status$/],['POST',/^\/api\/login$/],['GET',/^\/api\/sessao$/],['POST',/^\/api\/sair$/],
 ];
 /** O que uma COLEGA logada pode acessar além dos links: o próprio painel e os perfis. Nada do resto do negócio. */
 const PERSON:[string,RegExp][]=[
- ['GET',/^\/api\/eu(\/carteira\/mensagem)?$/],['POST',/^\/api\/eu\/(senha|foto|carteira)$/],
+ ['GET',/^\/api\/eu(\/carteira\/mensagem|\/assinaturas)?$/],['POST',/^\/api\/eu\/(senha|foto|carteira|assinaturas\/lote\/(transacao|assinada))$/],
  ['GET',/^\/api\/perfis(\/[a-f0-9]{10})?$/],['GET',/^\/api\/fotos\/[a-f0-9]{10}$/],
 ];
 export type Subject={kind:'dona'}|{kind:'pessoa';id:string};
@@ -68,5 +69,7 @@ export class AccessControl {
   this.fails.delete(ip);const t=randomBytes(32).toString('hex');this.sessions.set(t,{exp:Date.now()+TTL_MS,who});
   return {cookie:`${COOKIE}=${t}; HttpOnly; ${this.enabled?'Secure; ':''}SameSite=Strict; Path=/; Max-Age=${TTL_MS/1000}`,who};
  }
+ /** Abre sessão para quem acabou de criar a conta pelo convite (sem pedir a senha de novo). */
+ startSession(who:Subject){const t=randomBytes(32).toString('hex');this.sessions.set(t,{exp:Date.now()+TTL_MS,who});return `${COOKIE}=${t}; HttpOnly; ${this.enabled?'Secure; ':''}SameSite=Strict; Path=/; Max-Age=${TTL_MS/1000}`;}
  logout(req:IncomingMessage){const t=this.token(req);if(t)this.sessions.delete(t);return `${COOKIE}=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0`;}
 }
