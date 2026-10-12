@@ -86,7 +86,8 @@ export class People {
    const before=new Set(state.members.map(m=>m.id));createMember(state,{name,commissionBps:bps,compensation:bps>0?'commission':'none'});
    const m=state.members.find(m=>!before.has(m.id))!;memberId=m.id;issueCheckin(state,{id:m.id});
    contactId=createContact(state,{name,type:'collaborator',memberId:m.id}).id;
-  }else contactId=createContact(state,{name,type:role==='fornecedor'?'supplier':'other'}).id;
+  }else if(role==='fornecedor'&&typeof input.contactId==='string'&&state.contacts?.some(c=>c.id===input.contactId&&c.type==='supplier')&&!this.db.prepare('SELECT 1 FROM people WHERE contact_id=?').get(input.contactId))contactId=input.contactId;
+  else contactId=createContact(state,{name,type:role==='fornecedor'?'supplier':'other'}).id;
   if(opts.password!==undefined&&(typeof opts.password!=='string'||opts.password.length<10))throw Error('A senha precisa ter pelo menos 10 caracteres.');
   const password=opts.password??temporaryPassword();const salt=randomBytes(16);const id=randomUUID();const slug=randomBytes(5).toString('hex');
   this.db.prepare('INSERT INTO people (id,login,name,role,slug,contact_id,member_id,photo,salt,hash,must_change,created_at,invited_by) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)')

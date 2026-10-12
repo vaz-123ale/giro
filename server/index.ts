@@ -57,7 +57,7 @@ const server=createServer(async(req,res)=>{
   const readBody=async(limit=16000)=>{let raw='';for await(const chunk of req){raw+=chunk;if(raw.length>limit)throw Error('Solicitação muito grande.');}return JSON.parse(raw||'{}');};
   const who=access.subject(req);
   if(reqPath==='/api/sessao'&&method==='GET'){const p=who?.kind==='pessoa'?people.byId(who.id):undefined;return json(200,{required:access.enabled,authenticated:!!who,who:who?.kind??null,...(p?{mustChange:p.mustChange,name:p.name}:{})});}
-  if(reqPath==='/api/login'&&method==='POST'){const input=await readBody(2000);const {cookie,who:w}=access.login(req,input.usuario,input.senha);
+  if(reqPath==='/api/login'&&method==='POST'){const input=await readBody(2000);const {cookie,who:w}=access.login(req,input.usuario,input.senha,input.tipo);
    res.writeHead(200,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Set-Cookie':cookie});return res.end(JSON.stringify({ok:true,who:w.kind}));}
   if(reqPath==='/api/sair'&&method==='POST'){res.writeHead(200,{'Content-Type':'application/json; charset=utf-8','Set-Cookie':access.logout(req)});return res.end('{"ok":true}');}
   if(!access.allowed(req,method,reqPath))return json(who?403:401,{error:who?'Esta área é só da dona do negócio.':'Entre com usuário e senha do GIRO.'});
