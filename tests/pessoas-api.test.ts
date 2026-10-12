@@ -88,6 +88,12 @@ test('Pessoas: contas das colegas, perfis com foto, acordos próprios e venda di
   assert.deepEqual((await dudaS.ok('eu')).referrals.map((r:{name:string})=>r.name),['Eva Cliente'],'quem a Duda convidou');
   assert.ok((await dona.ok('convites')).referrals.some((r:{name:string})=>r.name==='Duda Ajudante'));
   assert.equal((await as().call('convite/GIRO-ZZZZZZ')).status,400);
+  // 7d. QR fixo da barraca: o comprador (sem login) define o valor e recebe uma cobrança normal.
+  const barraca=await as().ok('barraca');assert.equal(typeof barraca.maxCents,'number');
+  assert.equal((await as().call('barraca/venda',{amount:10})).status,400,'valor mínimo');
+  assert.equal((await as().call('barraca/venda',{amount:barraca.maxCents+1})).status,400,'valor máximo');
+  const {token}=await as().ok('barraca/venda',{amount:1500});assert.match(token,/^[a-f0-9]{48}$/);
+  const cobranca=await as().ok(`payments/${token}`);assert.equal(cobranca.amount,1500);assert.equal(cobranca.paid,false);
   // 8. Sem login, perfis e fotos ficam fechados.
   assert.equal((await as().call('perfis')).status,401);assert.equal((await as().call(`fotos/${ana.profile.split('/')[2]}`)).status,401);
  }finally{const ended=new Promise<void>(done=>child.once('exit',()=>done()));child.kill();await ended;await rm(directory,{recursive:true,force:true});}

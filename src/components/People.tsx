@@ -3,6 +3,7 @@ import {ShieldCheck,UserPlus,Camera,LogOut,ExternalLink} from 'lucide-react';
 import {money} from '../domain/finance';
 import {connect,discoverWallets,signMessage} from './wallet';
 import {InviteAdmin,ShareInvite,SignAllBanner} from './Onboarding';
+import {ConfiancaCard,NegocioConfianca} from './Confianca';
 
 /** Pessoas com login, perfis (contratos + confiança) e "Minha conta" de cada colega. */
 async function api<T>(url:string,body?:unknown):Promise<T>{
@@ -43,14 +44,32 @@ export function ProfilePage({slug}:{slug:string}){
  const [p,setP]=useState<Card&{stats:{total:number;active:number;completed:number;onTime:number;settled:number};trust:{registered:number;attested:number};commissionsReceived?:number;agreements:Row[]}>();const [error,setError]=useState('');
  useEffect(()=>{api<typeof p>(`/api/perfis/${slug}`).then(setP).catch(e=>setError((e as Error).message));},[slug]);
  return <Page>{error&&<p className="error" role="alert">{error}</p>}{p&&<><section className="panel profile-head"><Avatar photo={p.photo} name={p.name}/><div><h1>{p.name}</h1><p className="muted">{p.roleLabel}</p></div></section>
-  <section className="panel"><h2><ShieldCheck size={20} aria-hidden="true"/> Confiança</h2><TrustBox p={p}/></section>
+  <ConfiancaCard name={p.name} stats={p.stats} rows={p.agreements} attested={p.trust.attested}/>{p.commissionsReceived!==undefined&&p.commissionsReceived>0&&<p className="muted">Comissões recebidas: {money(p.commissionsReceived)}</p>}
   <section className="panel"><h2>Contratos</h2><AgreementList rows={p.agreements}/></section></>}
   <p><a href="/eu">← Minha conta</a> · <a href="/">Painel do negócio</a></p></Page>;
 }
 
+/** Painel próprio do fornecedor: o que tem a receber, o andamento de cada acordo e a confiança de quem compra dele. */
+function SupplierPanel({name,rows,receipts}:{name:string;rows:Row[];receipts:{amount:number;paidAt:string;link:string}[]}){
+ const aReceber=rows.reduce((a,r)=>a+r.remaining,0),recebido=rows.reduce((a,r)=>a+r.paid,0),ativos=rows.filter(r=>r.remaining>0&&!r.waiting).length,aceitar=rows.filter(r=>r.waiting).length;
+ return <>
+  <section className="supplier-hero"><div><small>Painel do fornecedor</small><h2>Olá, {name.split(' ')[0]}!</h2><p>Acompanhe o que você tem a receber. O pagamento vem das vendas da barraca, na regra que vocês combinaram.</p></div>
+   <dl><div><dt>A receber</dt><dd>{money(aReceber)}</dd></div><div><dt>Já recebido</dt><dd>{money(recebido)}</dd></div><div><dt>Acordos ativos</dt><dd>{ativos}</dd></div></dl></section>
+  {(aceitar>0||receipts.length>0)&&<section className="panel supplier-todo"><h2>Precisa de você</h2><ul>
+   {rows.filter(r=>r.waiting&&r.link).map(r=><li key={r.id}><span>Novo acordo <b>{r.id}</b>: {r.rateBps/100}% das vendas até {money(r.original)}</span><a className="primary" href={r.link!}>Ver e aceitar</a></li>)}
+   {receipts.map(r=><li key={r.link}><span>Pagamento em dinheiro de <b>{money(r.amount)}</b> em {new Date(r.paidAt).toLocaleDateString('pt-BR')}</span><a className="primary" href={r.link}>Confirmar</a></li>)}</ul></section>}
+  <section className="panel"><h2>Meus acordos</h2>{rows.length?<ul className="supplier-agreements">{rows.map(r=>{const pct=r.original?Math.round(r.paid/r.original*100):0;return <li key={r.id}>
+   <div className="sa-top"><strong>{r.id}</strong><span className={`sa-status ${r.remaining===0?'done':r.waiting?'wait':''}`}>{r.remaining===0?'Quitado':r.waiting?'Aguardando seu aceite':r.situation}</span></div>
+   <div className="sa-bar"><i style={{width:`${pct}%`}}/></div>
+   <small>{money(r.paid)} de {money(r.original)} · {r.rateBps/100}% das vendas · vence {r.due.split('-').reverse().join('/')}{r.chain?.registered?' · registrado na Solana ✓':''}</small>
+   {r.link&&!r.waiting&&<a className="secondary" href={r.link}>Abrir acordo</a>}</li>;})}</ul>:<p className="empty">Nenhum acordo ainda. Quando a barraca propuser um, ele aparece aqui para você aceitar.</p>}</section>
+  <section className="panel"><h2>Confiança de quem compra de você</h2><p className="muted">O histórico de compromissos da barraca, confirmado pelos dois lados.</p><NegocioConfianca anon/></section>
+ </>;
+}
+
 /** "Minha conta" de cada colega: foto, senha, carteira, acordos, confirmações e perfis das outras. */
 export function MyPage(){
- const [me,setMe]=useState<{person:{name:string;login:string;roleLabel:string;slug:string;photo:string|null;mustChange:boolean};agreements:Row[];receipts:{amount:number;paidAt:string;link:string}[];shift:{link:string;active:boolean;commissionBps:number}|null;commissionsReceived:number;wallet?:{walletMode:boolean;token:string;cluster:string};myWallet:string|null;balance:{sol:number;reais:number}|null;invite:{code:string};referrals:{name:string;roleLabel:string;slug:string}[]}>();
+ const [me,setMe]=useState<{person:{name:string;login:string;role:string;roleLabel:string;slug:string;photo:string|null;mustChange:boolean};agreements:Row[];receipts:{amount:number;paidAt:string;link:string}[];shift:{link:string;active:boolean;commissionBps:number}|null;commissionsReceived:number;wallet?:{walletMode:boolean;token:string;cluster:string};myWallet:string|null;balance:{sol:number;reais:number}|null;invite:{code:string};referrals:{name:string;roleLabel:string;slug:string}[]}>();
  const [msg,setMsg]=useState('');const [error,setError]=useState('');const [atual,setAtual]=useState('');const [nova,setNova]=useState('');
  const load=useCallback(()=>api<typeof me>('/api/eu').then(setMe).catch(e=>setError((e as Error).message)),[]);useEffect(()=>{void load();},[load]);
  const run=async(fn:()=>Promise<string>)=>{setError('');setMsg('');try{setMsg(await fn());await load();}catch(e){setError((e as Error).message);}};
@@ -69,8 +88,8 @@ export function MyPage(){
     const w=discoverWallets()[0];if(!w)throw Error('Instale a carteira Phantom ou Solflare neste navegador e recarregue a página.');const a=await connect(w);
     const {message}=await api<{message:string}>(`/api/eu/carteira/mensagem?endereco=${a.address}`);await api('/api/eu/carteira',{address:a.address,message,signature:await signMessage(w,a,message)});return 'Carteira vinculada.';})}>Conectar minha carteira</button>}
    {me.balance&&<p className="wallet-balance"><strong>{money(Math.round(me.balance.reais*100))}</strong> <small>na carteira · {me.balance.sol.toFixed(3)} SOL para taxas</small></p>}</section>}
-  <section className="panel"><h2>Meus acordos</h2><AgreementList rows={me.agreements}/></section>
-  {me.receipts.length>0&&<section className="panel"><h2>Confirmar pagamentos em dinheiro</h2><ul>{me.receipts.map(r=><li key={r.link}>{money(r.amount)} em {new Date(r.paidAt).toLocaleDateString('pt-BR')} — <a href={r.link}>confirmar</a></li>)}</ul></section>}
+  {p.role==='fornecedor'?<SupplierPanel name={p.name} rows={me.agreements} receipts={me.receipts}/>:<section className="panel"><h2>Meus acordos</h2><AgreementList rows={me.agreements}/></section>}
+  {p.role!=='fornecedor'&&me.receipts.length>0&&<section className="panel"><h2>Confirmar pagamentos em dinheiro</h2><ul>{me.receipts.map(r=><li key={r.link}>{money(r.amount)} em {new Date(r.paidAt).toLocaleDateString('pt-BR')} — <a href={r.link}>confirmar</a></li>)}</ul></section>}
   {me.shift&&<section className="panel"><h2>Meu turno</h2><p>{me.shift.active?'Você está em turno.':'Fora de turno.'} Comissão: {me.shift.commissionBps/100}% · recebido até agora {money(me.commissionsReceived)}</p><a className="primary" href={me.shift.link}>{me.shift.active?'Encerrar turno':'Iniciar turno'}</a></section>}
   <section className="panel"><h2>Meu código de convite</h2><p className="muted">Convide quem você conhece. Cada pessoa cria a própria conta pelo link.</p>
    <ShareInvite code={me.invite.code} title="GIRO" text={`${p.name} te convidou para o GIRO. Crie sua conta:`}/>
