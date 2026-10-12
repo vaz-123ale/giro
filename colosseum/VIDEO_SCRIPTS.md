@@ -6,6 +6,8 @@ The pitch video runs 2–3 minutes and the demo video runs 3 minutes or less. An
 
 ## Pitch video (~2:30)
 
+**Animated version (recommended):** open `apresentacao/video-ideia/index.html` in Microsoft Edge, press F11, start recording (Win + Alt + R) and click *Começar*. It plays a ~2:45 illustrated story (Maria, João, Pedro) with English narration and captions. The text below is the earlier talking-head version.
+
 **[0:00 – 0:20] Hook.** *(Market stall footage, or a photo of a notebook full of debts.)*
 "This is how millions of small sellers in Brazil keep track of who they owe: a notebook. Every sale, part of the money belongs to the supplier who fronted the goods, part to the helper on commission. Nobody can prove what was agreed, and the seller who always pays has no credit history to show for it."
 
