@@ -1,6 +1,6 @@
 # GIRO — Colosseum Crypto World's Fair submission
 
-**Track:** Solana · **Repository:** https://github.com/vaz-123ale/giro
+**Track:** Solana · **Repository:** https://github.com/vaz-123ale/giro · **Live demo:** https://giro-demo-oyy1.onrender.com (user `dona`, password `giro-demo-2026`; fictional data, simulated chain; first load may take ~1 min)
 
 ## One-liner
 

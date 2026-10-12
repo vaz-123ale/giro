@@ -53,7 +53,7 @@ Regras financeiras: valores em centavos; ordem da divisão = fixos por venda →
 ## Estrutura das pastas
 
 ```
-Documentação/        documento de referência do projeto
+Documentacao/        documento de referência do projeto
 Referencias/         mockups e imagens de referência do layout
 src/                 interface (React) e regras de negócio (src/domain)
 server/              API local (Node + SQLite); config.ts = trava "só local"
