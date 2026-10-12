@@ -2,7 +2,7 @@
 
 *Português: [LEIAME.md](LEIAME.md)*
 
-**Live demo:** *(link after deploy)* — fictional data, simulated Solana program; the login screen shows the demo credentials. The free host sleeps when idle, so the first visit can take about a minute.
+**Live demo:** https://giro-demo-oyy1.onrender.com (user `dona`, password `giro-demo-2026`) — fictional data, simulated Solana program; the login screen shows the demo credentials. The free host sleeps when idle, so the first visit can take about a minute.
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/vaz-123ale/giro)
 
