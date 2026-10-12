@@ -19,6 +19,7 @@
     "solana:cliente": "node scripts/gerar-cliente-solana.mjs",
     "senha": "node --experimental-strip-types --no-warnings scripts/definir-senha.mjs",
     "publico": "node scripts/publico.mjs",
+    "nuvem": "node --experimental-strip-types --no-warnings scripts/nuvem.mjs",
     "demo": "npm run build && node --experimental-strip-types --no-warnings apresentacao/ferramentas/montar-demo.mjs",
     "demo:prints": "node apresentacao/ferramentas/capturar-prints.mjs"
   },

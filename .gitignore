@@ -18,7 +18,7 @@ carteiras-teste/
 .env.*
 
 # Ferramentas baixadas (cloudflared portátil)
-ferramentas/
+/ferramentas/
 
 # Registros internos de auditoria (contêm despejos de dados e logs brutos)
 auditoria/historico/
@@ -27,3 +27,4 @@ auditoria/historico/
 *.log
 .DS_Store
 Thumbs.db
+apresentacao/dados-demo/

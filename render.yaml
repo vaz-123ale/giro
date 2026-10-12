@@ -1,0 +1,12 @@
+# Demonstração pública do GIRO (dados fictícios, rede Solana simulada). Os dados recomeçam a cada início.
+services:
+  - type: web
+    name: giro-demo
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: node --experimental-strip-types --no-warnings scripts/nuvem.mjs
+    healthCheckPath: /entrar
+    envVars:
+      - key: NODE_VERSION
+        value: 24.15.0
