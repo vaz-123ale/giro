@@ -34,3 +34,5 @@ apresentacao/dados-demo/
 apresentacao/video-ideia/montagem/img/
 apresentacao/video-ideia/montagem/cenas/
 *.mp4
+__pycache__/
+~$*
