@@ -1,0 +1,167 @@
+1
+00:00:00,504 --> 00:00:02,763
+Esta é a Maria. Ela vende o dia todo.
+
+2
+00:00:02,983 --> 00:00:06,646
+Os clientes chegam, e as notificações de pagamento não param.
+
+3
+00:00:08,339 --> 00:00:13,432
+Só que o dinheiro do negócio divide a conta com as compras de casa e com os fornecedores.
+
+4
+00:00:13,652 --> 00:00:17,230
+Algumas vendas vão para o caderno; outras se perdem na correria.
+
+5
+00:00:17,450 --> 00:00:19,578
+Quanto ela pode gastar de verdade?
+
+6
+00:00:20,573 --> 00:00:25,239
+Segundo o Sebrae, 61% pagam despesas do negócio com a conta pessoal,
+
+7
+00:00:25,459 --> 00:00:30,253
+25% usam caderno, e 10% não controlam as finanças.
+
+8
+00:00:32,550 --> 00:00:35,382
+Mas existe outro ativo invisível: a confiança.
+
+9
+00:00:37,765 --> 00:00:41,002
+O João compra mercadoria e combina de pagar depois.
+
+10
+00:00:41,222 --> 00:00:42,520
+A vizinha interrompe:
+
+11
+00:00:42,740 --> 00:00:44,162
+VIZINHA: Pode confiar no João!
+
+12
+00:00:47,738 --> 00:00:49,588
+Aqui, todo mundo conhece ele.
+
+13
+00:00:49,808 --> 00:00:52,361
+Mas numa feira nova, ele é um desconhecido.
+
+14
+00:00:52,581 --> 00:00:56,316
+Como o próximo fornecedor vai ver os compromissos que ele cumpriu?
+
+15
+00:00:59,747 --> 00:01:03,112
+As relações dele importavam. Mas a história não ia junto.
+
+16
+00:01:03,332 --> 00:01:04,268
+Até o GIRO.
+
+17
+00:01:07,470 --> 00:01:11,411
+O GIRO organiza receitas registradas, reservas e obrigações.
+
+18
+00:01:11,631 --> 00:01:13,460
+A Maria registra mil reais.
+
+19
+00:01:13,680 --> 00:01:18,835
+Quatrocentos ficam reservados; seiscentos continuam disponíveis, pelos registros dela.
+
+20
+00:01:20,776 --> 00:01:22,765
+Planejar é decisão só dela.
+
+21
+00:01:22,985 --> 00:01:29,102
+Um compromisso compartilhado é diferente: o João e o fornecedor revisam e aceitam os mesmos termos.
+
+22
+00:01:32,499 --> 00:01:37,122
+Eles combinam que o fornecedor recebe vinte por cento das vendas registradas.
+
+23
+00:01:37,342 --> 00:01:41,794
+Depois, evidências e confirmações mostram se a obrigação foi cumprida.
+
+24
+00:01:42,014 --> 00:01:44,675
+O João não pode certificar isso sozinho.
+
+25
+00:01:46,722 --> 00:01:53,201
+Agora o GIRO Confiança mostra compromissos cumpridos no prazo, após renegociação, ativos e finalizados.
+
+26
+00:01:53,421 --> 00:01:56,679
+Não é score de crédito. Não é garantia de honestidade.
+
+27
+00:01:56,899 --> 00:01:59,410
+É um histórico com registros rastreáveis.
+
+28
+00:02:02,573 --> 00:02:06,150
+Numa feira nova, o João compartilha registros escolhidos.
+
+29
+00:02:06,370 --> 00:02:10,034
+JOÃO: Não confie só na minha palavra. Confira os acordos que eu cumpri.
+
+30
+00:02:10,254 --> 00:02:13,256
+Esses registros podem ser verificados fora do GIRO.
+
+31
+00:02:15,456 --> 00:02:17,626
+JOÃO: Mas e se o GIRO mudar o meu histórico?
+
+32
+00:02:17,846 --> 00:02:19,609
+É por isso que a Solana importa.
+
+33
+00:02:19,829 --> 00:02:26,016
+Provas mínimas de acordos aceitos e resultados confirmados podem ser conferidas de forma independente,
+
+34
+00:02:26,236 --> 00:02:28,918
+e os contratos privados ficam fora da rede.
+
+35
+00:02:30,333 --> 00:02:33,571
+A Solana tem transações baratas e pagamentos programáveis.
+
+36
+00:02:33,791 --> 00:02:36,796
+No futuro, pagamentos poderão ser divididos sozinhos.
+
+37
+00:02:37,016 --> 00:02:39,613
+Ela verifica registros, não entrega de frutas.
+
+38
+00:02:40,303 --> 00:02:46,419
+Somos quatro mulheres brasileiras: matemática, desenvolvimento de software, marketing e design gráfico.
+
+39
+00:02:46,639 --> 00:02:50,367
+Nosso piloto: doze feirantes em três feiras, dois meses grátis,
+
+40
+00:02:50,587 --> 00:02:54,783
+acompanhamento de perto, e testes de indicação e assinatura acessível.
+
+41
+00:02:55,368 --> 00:02:58,179
+Dinheiro organizado hoje, confiança para amanhã.
+
+42
+00:02:58,399 --> 00:02:59,416
+Isso é o GIRO.
