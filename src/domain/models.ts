@@ -16,7 +16,7 @@ export interface State { recurringAccounts?:RecurringAccount[];accountPayments?:
 export interface Contact { type?:'supplier'|'collaborator'|'other'; memberId?:string }
 export interface Invitation { senderId?:string;recipientId?:string }
 export interface DailyWage { id:string; memberId:string; name:string; date:string; amount:number; paid:number }
-export interface PaymentRequest { id:string; token:string; requestId:string; saleId?:string; createdAt:string; /** Assinatura da transação na rede local (só com a rede ligada). */ chainSignature?:string; /** Solana Pay: chave de referência pública (aleatória) para achar o pagamento. */ chainReference?:string }
+export interface PaymentRequest { id:string; token:string; requestId:string; saleId?:string; createdAt:string; /** De onde veio a cobrança (ex.: 'barraca' = QR fixo, valor definido pelo comprador). */ origin?:'barraca'; /** Assinatura da transação na rede local (só com a rede ligada). */ chainSignature?:string; /** Solana Pay: chave de referência pública (aleatória) para achar o pagamento. */ chainReference?:string }
 export interface State { dailyWages?:DailyWage[]; paymentRequests?:PaymentRequest[] }
 export interface Contact { id:string; name:string; phone?:string; note?:string; createdAt:string; wallet?:string }
 export interface Invitation { id:string; token:string; commitmentId:string; contactId?:string; recipient:string; kind:'agreement'|'change'; proposalId?:string; version:number; terms:AgreementTerms; previous?:AgreementTerms; state:'waiting'|'accepted'|'refused'; createdAt:string; decidedAt?:string; disclosure:string; sellerAcknowledgedAt:string; recipientAcknowledgedAt?:string; authentication:'local_simulation' }

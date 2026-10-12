@@ -126,3 +126,58 @@ main.pp{margin:0 auto!important;padding:12px 16px 40px!important;max-width:560px
 .big-action{display:block;width:100%;text-align:center;padding:14px;font-size:1.05rem;margin-top:12px}
 .wallet-balance strong{font-size:1.6rem}
 html[data-contrast="high"] section.sign-banner.sign-banner span small:not(.error):not(.success){color:#fff!important}
+/* QR fixo da barraca */
+.stall-page{min-height:100vh;background:linear-gradient(170deg,#064c3c 0%,#0b7a4b 38%,#f4faf6 38.1%);padding:0 16px 32px;font-family:inherit}
+.stall-hero{display:flex;align-items:center;gap:16px;max-width:460px;margin:0 auto;padding:36px 4px 28px;color:#fff}
+.stall-hero small{color:#cfeedd;font-size:15px}.stall-hero h1{margin:2px 0 0;font-size:28px;color:#fff;line-height:1.15}
+.stall-photo{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid #fff;flex:none;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.stall-photo-empty{display:flex;align-items:center;justify-content:center;background:#9be3bd;color:#064c3c}
+.stall-card{max-width:460px;margin:0 auto;background:#fff;border-radius:24px;padding:26px 22px;box-shadow:0 20px 50px rgba(6,76,60,.22);display:grid;gap:14px}
+.stall-card label{font-weight:700;font-size:18px;color:#13261f}
+.stall-amount{display:flex;align-items:center;gap:8px;border:2px solid #0b7a4b;border-radius:18px;padding:6px 16px}
+.stall-amount span{font-size:28px;font-weight:800;color:#0b7a4b}
+.stall-amount input{border:0;outline:0;font-size:44px;font-weight:800;width:100%;min-height:64px;padding:0;color:#13261f;background:transparent}
+.stall-chips{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.stall-chips button{padding:12px 0;font-size:16px}
+.stall-note{font-size:13px;margin:0}
+.stall-foot{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:22px;color:#5b6d65;font-size:13px}.stall-foot img{height:26px}
+.stall-qr-card .stall-qr-head{display:flex;gap:12px;align-items:flex-start}.stall-qr-card h2{margin:0}
+.stall-print{display:flex;flex-direction:column;align-items:center;gap:6px;margin:18px auto;padding:22px;max-width:320px;border:2px dashed #b9d9c6;border-radius:22px;background:#fff;text-align:center}
+.stall-print-logo{height:34px}.stall-qr{width:230px;height:230px}.stall-print strong{font-size:20px;color:#064c3c}.stall-print span{color:#5b6d65}
+@media print{body *{visibility:hidden}#stall-print,#stall-print *{visibility:visible}#stall-print{position:fixed;left:50%;top:40px;transform:translateX(-50%);border:2px solid #064c3c;max-width:none;width:12cm}#stall-print .stall-qr{width:9cm;height:9cm}}
+/* GIRO Confiança — cartão em destaque */
+.confianca-card{position:relative;margin:0 0 22px;padding:26px 26px 20px;border-radius:28px;background:linear-gradient(135deg,#ffffff 0%,#f2fbf6 55%,#fff6dc 100%);
+ box-shadow:0 0 0 2px #ffe08a,0 0 40px rgba(255,214,90,.45),0 22px 50px rgba(6,76,60,.14);overflow:hidden}
+.confianca-card::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(255,214,90,.35),rgba(255,214,90,0) 70%)}
+.confianca-head{display:flex;align-items:center;gap:14px;position:relative;z-index:1}
+.confianca-logo{height:44px}
+.confianca-head h2{margin:0;font-size:28px;letter-spacing:-.5px;color:#064c3c;font-weight:900}.confianca-head h2 span{color:#0b7a4b}
+.confianca-head p{margin:2px 0 0;color:#5b6d65}
+.confianca-seal{margin-left:auto;width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;background:linear-gradient(135deg,#f2b705,#e08a00);box-shadow:0 6px 18px rgba(224,138,0,.4)}
+.confianca-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px;position:relative;z-index:1}
+.confianca-tile{background:#fff;border-radius:18px;padding:14px 14px 12px;box-shadow:0 6px 16px rgba(6,76,60,.08);display:grid;gap:4px}
+.confianca-tile small{color:#5b6d65;font-size:13px}.confianca-tile strong{font-size:28px;color:#13261f;line-height:1.1}
+.confianca-tile i{display:block;height:6px;border-radius:6px;margin-top:6px}
+.tile-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.tone-green .tile-icon{background:#e3f6ea;color:#0b7a4b}.tone-green i{background:#0b7a4b}
+.tone-gold .tile-icon{background:#fff1d6;color:#c2410c}.tone-gold i{background:#f2b705}
+.tone-blue .tile-icon{background:#e5efff;color:#1d4ed8}.tone-blue i{background:#3b82f6}
+.tone-gray .tile-icon{background:#eef1f0;color:#4b5b53}.tone-gray i{background:#9aa9a2}
+.confianca-timeline{list-style:none;padding:0;margin:18px 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;position:relative;z-index:1}
+.confianca-timeline li{background:#fff;border-radius:14px;padding:12px;display:grid;gap:3px;border:1px solid #e3ece7}
+.confianca-timeline .dot{width:24px;height:24px;border-radius:50%;background:#e3ece7;color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;font-weight:900}
+.confianca-timeline li.done .dot{background:#0b7a4b}.confianca-timeline small{color:#5b6d65;font-size:12px}.confianca-timeline em{color:#0b7a4b;font-size:12px;font-style:normal;font-weight:700}
+.confianca-foot{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:16px;padding:10px 14px;border-radius:14px;background:#e9f7ef;color:#064c3c;font-size:14px;position:relative;z-index:1}
+.confianca-foot b{margin-left:auto;font-style:italic}
+.confianca-card.compact .confianca-tiles{grid-template-columns:repeat(2,1fr)}
+@media (max-width:700px){.confianca-tiles{grid-template-columns:repeat(2,1fr)}.confianca-head h2{font-size:22px}.confianca-foot b{margin-left:0}}
+/* Painel do fornecedor */
+.supplier-hero{display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between;padding:26px;border-radius:26px;margin-bottom:22px;color:#fff;
+ background:linear-gradient(135deg,#064c3c,#0b7a4b);box-shadow:0 18px 40px rgba(6,76,60,.25)}
+.supplier-hero small{color:#9be3bd;font-weight:700;letter-spacing:1px;text-transform:uppercase}.supplier-hero h2{margin:4px 0;color:#fff;font-size:28px}.supplier-hero p{margin:0;color:#dff3e8;max-width:420px}
+.supplier-hero dl{display:flex;gap:12px;margin:0;flex-wrap:wrap}.supplier-hero dl div{background:rgba(255,255,255,.12);border-radius:16px;padding:12px 16px;min-width:120px}
+.supplier-hero dt{font-size:13px;color:#cfeedd}.supplier-hero dd{margin:2px 0 0;font-size:24px;font-weight:800;color:#fff}
+.supplier-todo ul{list-style:none;padding:0;margin:0;display:grid;gap:10px}.supplier-todo li{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px 14px;border-radius:14px;background:#fff8e6;border:1px solid #f6dfa0}
+.supplier-agreements{list-style:none;padding:0;margin:0;display:grid;gap:12px}.supplier-agreements li{padding:14px 16px;border:1px solid #e3ece7;border-radius:16px;display:grid;gap:8px}
+.sa-top{display:flex;justify-content:space-between;gap:10px;align-items:center}.sa-status{font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px;background:#e5efff;color:#1d4ed8}
+.sa-status.done{background:#e3f6ea;color:#0b7a4b}.sa-status.wait{background:#fff1d6;color:#b45309}
+.sa-bar{height:10px;border-radius:10px;background:#eef2ef;overflow:hidden}.sa-bar i{display:block;height:100%;background:linear-gradient(90deg,#0b7a4b,#34c27a);border-radius:10px}

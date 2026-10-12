@@ -6,7 +6,7 @@ import {setSchedule,issueCheckin,checkinView,requestShift,decideShift} from './s
 import {globalFinancialForecast} from '../src/domain/global-forecast.ts';
 import {payAccount} from './account-service.ts';
 import {scheduleDaily} from './daily-service.ts';
-import {createPayment,amountPayment,confirmPayment,paymentView} from './payment-service.ts';
+import {createPayment,amountPayment,confirmPayment,paymentView,stallSale} from './payment-service.ts';
 import {registerDaily,payDaily} from './daily-service.ts';
 import {startChain} from './chain/service.ts';
 import {AccessControl} from './auth.ts';
@@ -40,6 +40,9 @@ const access=new AccessControl(config.dataDir,!!config.publicUrl);
 const people=new People(database());access.people=people;
 /** Papel da carteira de uma pessoa: o mesmo usado pelos acordos (contato) ou pelas comissões (membro). */
 const walletRoleOf=(p:Person)=>p.memberId?memberRoleOf(p.memberId):roleFor('contato',p.contactId!);
+/** Teto do pagamento pelo QR da barraca: o teto da rede (se houver) ou R$ 1.000. */
+const stallMax=()=>{const t=(chain?.walletInfo() as {maxSaleCents?:number}|undefined)?.maxSaleCents??0;return t>0?Math.min(t,100000):100000;};
+const stallHits=new Map<string,number[]>();
 const server=createServer(async(req,res)=>{
  const json=(status:number,value:unknown)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
  try {
@@ -128,6 +131,12 @@ const server=createServer(async(req,res)=>{
   const route=new URL(req.url??'/','http://localhost');
   // Demonstração pública (dados fictícios): mostra o acesso de teste na tela de entrada.
   if(route.pathname==='/api/demo'&&req.method==='GET'){const f=join(config.dataDir,'demo.json');return existsSync(f)&&process.env.GIRO_DEMO_PUBLICA==='sim'?json(200,JSON.parse(readFileSync(f,'utf8'))):json(404,{error:'Sem demonstração.'});}
+  // QR fixo da barraca (público): informações da barraca e cobrança com valor definido pelo comprador.
+  if(route.pathname==='/api/barraca'&&req.method==='GET'){const b=people.business();const st=chain?await chain.status():{enabled:false,cluster:'disabled'};
+   return json(200,{name:b.name??'Barraca',photo:b.photo?`/api/publico/${b.slug}/foto`:null,slug:b.slug,maxCents:stallMax(),chain:st.enabled&&st.cluster!=='simulado'?st.cluster:null});}
+  if(route.pathname==='/api/barraca/venda'&&req.method==='POST'){const ip=String(req.headers['x-forwarded-for']??req.socket.remoteAddress??'?').split(',').pop()!.trim();
+   const now=Date.now(),hits=(stallHits.get(ip)??[]).filter(t=>now-t<60000);if(hits.length>=10)return json(429,{error:'Muitas tentativas. Espere um minuto.'});hits.push(now);stallHits.set(ip,hits);
+   const input=await readJson();let token='';update(s=>{token=stallSale(s,input,stallMax());});return json(200,{token});}
   if(chain&&route.pathname==='/api/chain/saldo'&&req.method==='GET')return json(200,await chain.walletBalance(chain.wallets?.seller())??null);
   if(chain&&route.pathname==='/api/chain/carteira'&&req.method==='GET')return json(200,{...chain.walletInfo(),...(route.searchParams.get('endereco')?{message:chain.bindMessage(route.searchParams.get('endereco')!,'o negócio')}:{})});
   if(chain&&route.pathname==='/api/chain/carteira'&&req.method==='POST')return json(200,chain.bindSeller(await readJson()));

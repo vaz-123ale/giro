@@ -26,7 +26,7 @@ const OPEN:[string,RegExp][]=[
  ['GET',/^\/api\/solana-pay\/[a-f0-9]{48}$/],['POST',/^\/api\/solana-pay\/[a-f0-9]{48}(\/verificar)?$/],
  ['GET',/^\/api\/rede\/[a-f0-9]{48}(\/mensagem)?$/],['POST',/^\/api\/rede\/[a-f0-9]{48}\/(carteira|\d+\/(transacao|assinada))$/],
  ['GET',/^\/api\/convite\/GIRO-[A-Z0-9]{6}$/],['POST',/^\/api\/convite\/GIRO-[A-Z0-9]{6}$/],
- ['GET',/^\/api\/publico\/[a-f0-9]{10}(\/foto)?$/],['GET',/^\/api\/chain\/status$/],['GET',/^\/api\/demo$/],['POST',/^\/api\/login$/],['GET',/^\/api\/sessao$/],['POST',/^\/api\/sair$/],
+ ['GET',/^\/api\/publico\/[a-f0-9]{10}(\/foto)?$/],['GET',/^\/api\/chain\/status$/],['GET',/^\/api\/demo$/],['GET',/^\/api\/barraca$/],['POST',/^\/api\/barraca\/venda$/],['POST',/^\/api\/login$/],['GET',/^\/api\/sessao$/],['POST',/^\/api\/sair$/],
 ];
 /** O que uma COLEGA logada pode acessar além dos links: o próprio painel e os perfis. Nada do resto do negócio. */
 const PERSON:[string,RegExp][]=[
