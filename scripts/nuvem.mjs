@@ -29,7 +29,15 @@ const base=`http://127.0.0.1:${inner}/api/`,headers={'Content-Type':'application
 const login=await fetch(base+'login',{method:'POST',headers,body:JSON.stringify({usuario:'dona',senha})});
 const cookie=String(login.headers.get('set-cookie')).split(';')[0];
 const invite=await (await fetch(base+'convites',{method:'POST',headers:{...headers,Cookie:cookie},body:JSON.stringify({role:'fornecedor',maxUses:0})})).json();
-writeFileSync(`${dir}/demo.json`,JSON.stringify({usuario:'dona',senha,convite:invite.code}));
+// Contas de teste dos outros tipos (cada uma abre um app diferente): fornecedor João (com os acordos da história) e ajudante Lia.
+const state=await (await fetch(base+'state',{headers:{...headers,Cookie:cookie}})).json();
+const conta=async(body,nova)=>{const c=await (await fetch(base+'pessoas',{method:'POST',headers:{...headers,Cookie:cookie},body:JSON.stringify(body)})).json();
+ const l=await fetch(base+'login',{method:'POST',headers,body:JSON.stringify({usuario:c.login,senha:c.password})});
+ await fetch(base+'eu/senha',{method:'POST',headers:{...headers,Cookie:String(l.headers.get('set-cookie')).split(';')[0]},body:JSON.stringify({atual:c.password,nova})});return c.login;};
+const contas=[{tipo:'barraca',usuario:'dona',senha},
+ {tipo:'fornecedor',usuario:await conta({name:'João',login:'joao',role:'fornecedor',contactId:state.contacts.find(c=>c.name==='João')?.id},senha),senha},
+ {tipo:'equipe',usuario:await conta({name:'Lia Santos',login:'lia',role:'ajudante',commissionBps:1000},senha),senha}];
+writeFileSync(`${dir}/demo.json`,JSON.stringify({usuario:'dona',senha,convite:invite.code,contas}));
 
 // 4. Porta pública → GIRO (o IP real segue no X-Forwarded-For, para o limite de tentativas de senha).
 createServer((req,res)=>{

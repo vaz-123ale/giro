@@ -58,7 +58,7 @@ export class AccessControl {
  private who(req:IncomingMessage){const xff=String(req.headers['x-forwarded-for']??'').split(',').map(x=>x.trim()).filter(Boolean).at(-1);return String(req.headers['cf-connecting-ip']??xff??req.socket.remoteAddress??'?');}
  /** Confere a senha (tempo constante); bloqueia por 1 minuto depois de 5 erros. Devolve o cabeçalho Set-Cookie. */
  /** Usuário "dona" (ou vazio) = senha do negócio (npm run senha); outro usuário = conta de colega. */
- login(req:IncomingMessage,login:unknown,password:unknown){
+ login(req:IncomingMessage,login:unknown,password:unknown,kind?:unknown){
   const ip=this.who(req);const f=this.fails.get(ip);if(f&&f.until>Date.now())throw Error('Muitas tentativas. Espere 1 minuto.');
   const user=typeof login==='string'&&login.trim()?login.trim().toLowerCase():OWNER_LOGIN;const pass=typeof password==='string'?password:'';
   let who:Subject|undefined;
@@ -67,6 +67,11 @@ export class AccessControl {
     if(timingSafeEqual(scryptSync(pass,Buffer.from(saved.salt,'hex'),32,{N:saved.N,r:8,p:1}),Buffer.from(saved.hash,'hex')))who={kind:'dona'};}
   }else{const p=this.people?.check(user,pass);if(p)who={kind:'pessoa',id:p.id};}
   if(!who){const n=(f?.n??0)+1;this.fails.set(ip,{n,until:n>=MAX_FAILS?Date.now()+LOCK_MS:0});throw Error('Usuário ou senha incorretos.');}
+  // a conta precisa ser do tipo escolhido na tela de entrada (barraca, fornecedor ou equipe/comprador)
+  const role=who.kind==='pessoa'?this.people?.byId(who.id)?.role:undefined;
+  const chosen=kind==='barraca'||kind==='fornecedor'||kind==='equipe'?kind:undefined;
+  const actual=who.kind==='dona'?'barraca':role==='fornecedor'?'fornecedor':'equipe';
+  if(chosen&&chosen!==actual)throw Error(`Esta conta é de ${actual==='barraca'?'barraca':actual==='fornecedor'?'fornecedor(a)':'equipe ou comprador'}. Escolha "${actual==='barraca'?'Minha barraca':actual==='fornecedor'?'Fornecedor(a)':'Equipe ou comprador'}" para entrar.`);
   this.fails.delete(ip);const t=randomBytes(32).toString('hex');this.sessions.set(t,{exp:Date.now()+TTL_MS,who});
   return {cookie:`${COOKIE}=${t}; HttpOnly; ${this.enabled?'Secure; ':''}SameSite=Strict; Path=/; Max-Age=${TTL_MS/1000}`,who};
  }

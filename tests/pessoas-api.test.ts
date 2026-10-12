@@ -41,6 +41,11 @@ test('Pessoas: contas das colegas, perfis com foto, acordos próprios e venda di
   // 2. Ana entra: não vê o negócio; troca a senha provisória; põe foto.
   assert.equal((await as().call('login',{usuario:'ana',senha:'errada-123'})).status,400);
   let anaS=await login('ana',ana.password);
+  // o tipo de conta escolhido na entrada precisa bater com a conta
+  assert.equal((await as().call('login',{usuario:'ana',senha:ana.password,tipo:'equipe'})).status,400,'fornecedora não entra como equipe');
+  assert.equal((await as().call('login',{usuario:'dona',senha:'senha-da-dona-123',tipo:'fornecedor'})).status,400,'barraca não entra como fornecedor');
+  assert.equal((await as().call('login',{usuario:'bia',senha:bia.password,tipo:'equipe'})).status,200);
+  assert.equal((await as().call('login',{usuario:'ana',senha:ana.password,tipo:'fornecedor'})).status,200);
   assert.equal((await anaS.call('state')).status,403,'colega não vê o painel do negócio');
   assert.equal((await anaS.call('pessoas')).status,403);
   let eu=await anaS.ok('eu');assert.equal(eu.person.mustChange,true);

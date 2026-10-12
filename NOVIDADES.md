@@ -109,6 +109,8 @@ Registro organizado do que o GIRO faz, separado por quem usa. Atualizado a cada 
 
 - **Entrar:** três opções — *Minha barraca* (usuário próprio da barraca ou "dona"), *Fornecedor(a)* e *Equipe ou comprador*.
 - **Usuário da barraca:** definido em *Meu perfil → Usuário da barraca*.
+- **A entrada confere o tipo:** se a conta não for do tipo escolhido, o GIRO avisa qual opção escolher (uma conta de fornecedor não abre como barraca, e vice-versa).
+- **Demonstração pública:** a tela de entrada mostra uma conta de teste de cada tipo — `dona`, `joao` (fornecedor) e `lia` (equipe), senha `giro-demo-2026`.
 - **Cada tipo de conta tem o seu próprio app**, com cor, topo e menu diferentes — não aparece tudo para todo mundo:
   - **Barraca** (verde): o GIRO completo do negócio (vendas, caixa, compromissos, equipe).
   - **Fornecedor** (âmbar): Painel · Acordos · Minha confiança · Barracas · Ajudantes · Conta.
