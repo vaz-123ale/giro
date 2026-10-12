@@ -199,7 +199,7 @@ const server=createServer(async(req,res)=>{
   const root=resolve('dist');const pathname=decodeURIComponent(new URL(req.url??'/','http://localhost').pathname);let path=resolve(root,'.'+pathname);
   if(!path.startsWith(root+'\\')&&!path.startsWith(root+'/'))path=resolve(root,'index.html');
   let body;try{body=await readFile(path);}catch{path=resolve(root,'index.html');body=await readFile(path);}
-  const types:Record<string,string>={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.png':'image/png','.webmanifest':'application/manifest+json'};
+  const types:Record<string,string>={'.html':'text/html; charset=utf-8','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.png':'image/png','.webmanifest':'application/manifest+json'};
   res.writeHead(200,{'Content-Type':types[extname(path)]??'application/octet-stream','Content-Security-Policy':"default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'"});res.end(body);
  }catch(error){json(400,{error:error instanceof Error?error.message:'Não foi possível concluir. Revise os dados ou tente novamente.'});}
 });
