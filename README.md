@@ -2,6 +2,10 @@
 
 *Português: [LEIAME.md](LEIAME.md)*
 
+**Live demo:** *(link after deploy)* — fictional data, simulated Solana program; the login screen shows the demo credentials. The free host sleeps when idle, so the first visit can take about a minute.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/vaz-123ale/giro)
+
 GIRO turns a small business's revenue into **programmable rules** and every commitment kept into **verifiable trust**.
 
 A street-market seller in Brazil sells R$ 10 of cheese. Part of that money already belongs to the supplier who fronted the goods, part to the helper on commission, and the rest is hers. Today this split lives in a notebook and on trust. With GIRO, the seller and each partner agree once on the split (e.g. "20% of each sale until R$ 300 is paid"), both sign the agreement with their own wallet, and **every sale settles itself on Solana**: the customer pays with Solana Pay and, in the same transaction, the supplier, the helper and the seller each receive their share in a BRL stablecoin. Every agreement fulfilled becomes an on-chain attestation the seller can show to get more credit next time.
