@@ -54,8 +54,8 @@ Per-sale splits of R$ 5–50 only work with sub-cent fees and sub-second finalit
 
 ## Prior work disclosure
 
-- **Before the Contest Period (before Sep 14, 2026):** *[confirm]* the GIRO concept document and the off-chain bookkeeping app (React UI in Portuguese, SQLite, the split engine for planning).
-- **During the Contest Period (Sep 14 – Oct 12, 2026), everything on Solana:** the Anchor program `giro_acordos` and its parity tests, the TypeScript chain model, the transactional outbox and Solana adapter, wallet signing and batch signing, Solana Pay checkout with the atomic split, cash confirm/dispute, SAS attestations, Devnet deployment and the group test, logins and profiles for partners, and onboarding by invite link with auto-funded wallets. The Git history starts on Oct 3, 2026.
+- **Before the Contest Period:** the GIRO concept and an off-chain bookkeeping app (React UI in Portuguese, SQLite, the split engine for planning).
+- **During the Contest Period (Sep 14 – Oct 12, 2026), all of the Solana work:** the Anchor program `giro_acordos` and its parity tests, the TypeScript chain model, the transactional outbox and Solana adapter, wallet signing and batch signing, Solana Pay checkout with the atomic split, cash confirm/dispute, SAS attestations, Devnet deployment and the group test, logins and profiles for partners, onboarding by invite link with auto-funded wallets, PDF import and the public demo. The Git history starts on Oct 3, 2026.
 
 ## Team
 
