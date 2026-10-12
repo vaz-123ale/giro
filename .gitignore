@@ -28,3 +28,9 @@ auditoria/historico/
 .DS_Store
 Thumbs.db
 apresentacao/dados-demo/
+
+# vídeo do pitch: imagens e vídeos ficam só no PC
+/Animação/
+apresentacao/video-ideia/montagem/img/
+apresentacao/video-ideia/montagem/cenas/
+*.mp4
