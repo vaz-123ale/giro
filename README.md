@@ -1,6 +1,6 @@
 # GIRO — Programmable revenue and verifiable trust for small businesses
 
-*Português: [LEIAME.md](LEIAME.md)*
+*Português: [LEIAME.md](LEIAME.md)* · **Full project document (English): [docs/GIRO-project-document-EN.md](docs/GIRO-project-document-EN.md)**
 
 **Live demo:** https://giro-demo-oyy1.onrender.com (user `dona`, password `giro-demo-2026`) — fictional data, simulated Solana program; the login screen shows the demo credentials. The free host sleeps when idle, so the first visit can take about a minute.
 

@@ -41,3 +41,7 @@ apresentacao/video-ideia/montagem/ia/
 *.wav
 /ferramentas/
 apresentacao/video-ideia/montagem/cenas-pt/
+/Entrega Colosseum/
+apresentacao/video-ideia/montagem/*.srt
+!apresentacao/video-ideia/montagem/roteiro-legendas*.srt
+apresentacao/video-ideia/montagem/deck.log
