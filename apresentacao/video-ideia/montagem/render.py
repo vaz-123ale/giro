@@ -48,10 +48,16 @@ SEG = [
     ('img/24.jpg', 175, 180, (1.0, 1.03, .5, .5, .5, .5)),           # C16 foto real + frase final
 ]
 
+PT = '--pt' in sys.argv   # versão em português: cenas próprias traduzidas e narração em português
+if PT:
+    SEG = [([(f.replace('cenas/', 'cenas-pt/'), t) for f, t in src] if isinstance(src, list) else src, a, b, m) for src, a, b, m in SEG]
+
 _cache = {}
 _clips = {}
 # regiões (frações da imagem) que não podem vir da IA: legendas e textos fixos
-PROTEGE = {'02': [(.28, .80, .62, .99), (.33, .12, .45, .40)]}
+PROTEGE = {'02': [(.28, .80, .62, .99), (.33, .12, .45, .40)], '09': [(.38, .03, .63, .32), (.20, .80, .80, .99)]}
+# fração inicial do clipe que pode ser usada (depois disso a IA começa a mudar o personagem)
+LIMITE = {'09': .42}
 def clipe(path):
     """Se existir ia/NN.mp4 (cena animada por IA), devolve seus quadros já no tamanho de trabalho."""
     nome = 'ia/' + os.path.basename(path).replace('.jpg', '.mp4')
@@ -69,7 +75,7 @@ def clipe(path):
 def animada(path, tl):
     """Quadro da cena animada no tempo local tl: vai e volta (ping-pong) a 16 fps, com mistura entre quadros."""
     fr = clipe(path)
-    n = len(fr); pos = (tl * 16) % (2 * (n - 1))
+    n = max(2, int(len(fr) * LIMITE.get(os.path.basename(path)[:2], 1))); pos = (tl * 16) % (2 * (n - 1))
     if pos > n - 1: pos = 2 * (n - 1) - pos
     i = int(pos); f = pos - i
     img = fr[i] if f < 0.01 or i + 1 >= n else Image.blend(fr[i], fr[i + 1], f)
@@ -148,7 +154,7 @@ def frame(t):
 def main():
     saida = next((a for a in sys.argv[1:] if not a.startswith('--')), 'GIRO-pitch-180s.mp4')
     ff = imageio_ffmpeg.get_ffmpeg_exe()
-    audio = ['-i', 'audio/narracao.wav', '-c:a', 'aac', '-b:a', '192k', '-shortest'] if os.path.exists('audio/narracao.wav') and '--sem-audio' not in sys.argv else []
+    audio = ['-i', f"audio/narracao{'-pt' if PT else ''}.wav", '-c:a', 'aac', '-b:a', '192k', '-shortest'] if os.path.exists(f"audio/narracao{'-pt' if PT else ''}.wav") and '--sem-audio' not in sys.argv else []
     cmd = [ff, '-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-', *audio[:2],
            '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-pix_fmt', 'yuv420p', *audio[2:], '-movflags', '+faststart', saida]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)

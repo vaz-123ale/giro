@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><title>GIRO cenas</title>
+<style>
+*{box-sizing:border-box;margin:0}
+html,body{width:1920px;height:1080px;overflow:hidden;font-family:"Segoe UI",Arial,sans-serif;color:#13261f}
+.bg{position:absolute;inset:0;background-size:cover;background-position:center}
+.blur{filter:blur(30px) saturate(1.15);transform:scale(1.6);transform-origin:50% 0}
+.shade{position:absolute;inset:0}
+.glass{position:absolute;background:rgba(255,255,255,.93);border-radius:34px;box-shadow:0 30px 80px rgba(40,25,0,.35),0 0 0 3px rgba(255,236,170,.9),0 0 60px rgba(255,214,90,.55);padding:44px 52px}
+.logo{height:64px}
+h2{font-size:46px;font-weight:800;color:#064c3c;letter-spacing:-.5px}
+.sub{font-size:24px;color:#5b6d65;margin-top:4px}
+.row{white-space:nowrap;display:flex;align-items:center;gap:22px;padding:22px 26px;border-radius:22px;margin-top:18px;background:#f4f8f5;font-size:30px;font-weight:700}
+.row .ic{width:62px;height:62px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:34px;flex:none}
+.row .v{white-space:nowrap;margin-left:auto;font-size:38px;font-weight:900}
+.chip{position:absolute;left:50%;transform:translateX(-50%);bottom:52px;background:rgba(255,250,235,.96);border-radius:999px;padding:20px 46px;font-size:38px;font-weight:800;color:#13261f;box-shadow:0 12px 40px rgba(0,0,0,.3),0 0 0 3px #ffe08a;white-space:nowrap}
+.chip b{color:#0b7a4b}
+.hide{opacity:0}
+.ok{color:#0b7a4b}
+.pill{display:inline-flex;align-items:center;gap:12px;background:#e7f6ec;color:#0b7a4b;border-radius:999px;padding:12px 24px;font-size:28px;font-weight:800;margin:8px 8px 0 0}
+.step{flex:1;text-align:center;padding:26px 14px;border-radius:24px;background:#f4f8f5;font-size:26px;font-weight:700;position:relative}
+.step .n{width:64px;height:64px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;background:#dfe9e4;color:#5b6d65}
+.step.on{background:#e7f6ec}.step.on .n{background:#0b7a4b;color:#fff}
+.arrow{font-size:40px;color:#c9a227;align-self:center}
+.label{position:absolute;padding:14px 28px;border-radius:999px;font-size:30px;font-weight:800;color:#fff;background:#0b7a4b;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+</style></head><body>
+<div id="root"></div>
+<script>
+const q=new URLSearchParams(location.search),scene=q.get('c'),st=+q.get('s')||1;
+const R=document.getElementById('root');
+// retrato redondo recortado da própria imagem (cx,cy = centro do rosto na imagem 1600x900; r = raio no original)
+const av=(img,cx,cy,r,size=120)=>{const z=size/(2*r);return `<div style="width:${size}px;height:${size}px;border-radius:50%;flex:none;box-shadow:0 0 0 5px #fff,0 8px 20px rgba(0,0,0,.25);background:url(img/${img}.jpg) ${-(cx*z-size/2)}px ${-(cy*z-size/2)}px/${1600*z}px auto"></div>`;};const show=n=>st>=n?'':'hide';
+const T={
+// C08 — dinheiro registrado, reservado e disponível (fundo: Maria, imagem 02)
+c08:()=>`<div class="bg" style="background-image:url(img/02.jpg);background-size:2400px auto;background-position:50% 0"></div>
+ <div class="shade" style="background:linear-gradient(90deg,rgba(0,0,0,0) 30%,rgba(10,30,20,.55) 62%)"></div>
+ <div class="glass" style="right:50px;top:80px;width:780px">
+  <div style="display:flex;align-items:center;gap:18px"><img class="logo" src="img/logo.png"><span class="sub" style="margin:0">Maria · hoje</span></div>
+  <div class="row" style="background:#eef6ff;margin-top:26px"><span class="ic" style="background:#dbeafe">💵</span>Receita registrada<span class="v">R$ 1.000</span></div>
+  <div class="row ${show(2)}"><span class="ic" style="background:#fff1d6">📦</span>Reservado · estoque<span class="v" style="color:#b7791f">R$ 250</span></div>
+  <div class="row ${show(3)}"><span class="ic" style="background:#ffe4e1">🤝</span>Reservado · compromisso<span class="v" style="color:#c2410c">R$ 150</span></div>
+  <div class="row ${show(4)}" style="background:#e3f6ea;box-shadow:0 0 0 4px #0b7a4b inset"><span class="ic" style="background:#0b7a4b;color:#fff">✓</span>Disponível para usar<span class="v ok">R$ 600</span></div>
+ </div>
+ <div class="chip ${show(4)}">Registrado <b>R$ 1.000</b> • Reservado <b>R$ 400</b> • Disponível <b>R$ 600</b></div>`,
+// C09 — planejamento pessoal ≠ acordo mútuo (fundos: 02 e 09)
+c09:()=>`<div class="bg blur" style="background-image:url(img/09.jpg)"></div><div class="shade" style="background:rgba(10,30,20,.3)"></div>
+ <div class="glass" style="left:90px;top:300px;width:800px;padding:38px 44px">
+  <div style="display:flex;align-items:center;gap:24px">${av('02',800,205,150)}<div><h2 style="font-size:42px">Planejamento pessoal</h2><div class="sub">A Maria decide sozinha</div></div></div>
+  <div class="row"><span class="ic" style="background:#fff1d6">📦</span>Reserva de estoque<span class="v" style="color:#b7791f">R$ 250</span></div>
+  <div class="pill" style="margin-top:20px">✓ Decisão dela</div></div>
+ <div class="glass ${show(2)}" style="right:90px;top:300px;width:800px;padding:38px 44px">
+  <div style="display:flex;align-items:center;gap:18px">${av('09',425,190,115)}${av('09',1310,265,115)}<div><h2 style="font-size:42px">Acordo mútuo</h2><div class="sub">João e o fornecedor</div></div></div>
+  <div class="row"><span class="ic" style="background:#e7f6ec">🤝</span>20% das vendas registradas<span class="v ok" style="font-size:28px">→ fornecedor</span></div>
+  <div class="${show(3)}"><span class="pill">✓ João aceitou</span><span class="pill">✓ Fornecedor aceitou</span></div></div>
+ <div class="chip ${show(3)}">Planejamento pessoal <b>≠</b> Acordo mútuo</div>`,
+// C10 — o acordo deixa de ser só uma promessa (fundo: 09 desfocado)
+c10:()=>`<div class="bg blur" style="background-image:url(img/09.jpg)"></div><div class="shade" style="background:rgba(10,30,20,.25)"></div>
+ <div class="glass" style="left:120px;right:120px;top:120px;padding:44px 50px">
+  <div style="display:flex;align-items:center;gap:20px"><img class="logo" src="img/logo.png"><h2>Acordo de fornecimento · 20% das vendas registradas</h2></div>
+  <div style="display:flex;gap:16px;margin-top:38px">
+   <div class="step ${st>=1?'on':''}"><div class="n">1</div>Proposto<div class="sub">termos enviados</div></div><span class="arrow">➜</span>
+   <div class="step ${st>=2?'on':''}"><div class="n">2</div>Aceito<div class="sub">duas confirmações</div></div><span class="arrow">➜</span>
+   <div class="step ${st>=3?'on':''}"><div class="n">3</div>Acompanhado<div class="sub">obrigações seguidas</div></div><span class="arrow">➜</span>
+   <div class="step ${st>=4?'on':''}"><div class="n">4</div>Evidência<div class="sub">comprovantes anexados</div></div><span class="arrow">➜</span>
+   <div class="step ${st>=5?'on':''}"><div class="n">✓</div>Confirmado<div class="sub">resultado</div></div>
+  </div>
+  <div class="${show(5)}" style="margin-top:34px;font-size:32px;font-weight:800;color:#c2410c;text-align:center">O João não pode certificar sozinho.</div>
+ </div>
+ <div class="chip ${show(4)}">Acordo de 20% • Evidência • <b>Resultado confirmado</b></div>`,
+// C15a — equipe (fundo: 21)
+c15a:()=>`<div class="bg" style="background-image:url(img/21.jpg)"></div>
+ <div class="chip ${show(2)}" style="font-size:34px">4 brasileiras • <b>Matemática</b> • <b>Desenvolvimento de Sistemas</b> • <b>Marketing</b> • <b>Design Gráfico</b></div>`,
+// C15b — piloto (fundo: 22)
+c15b:()=>`<div class="bg" style="background-image:url(img/22.jpg)"></div><div class="shade" style="background:linear-gradient(180deg,rgba(0,0,0,0) 55%,rgba(10,30,20,.55))"></div>
+ <div style="position:absolute;left:0;right:0;bottom:60px;display:flex;justify-content:center;gap:22px;flex-wrap:wrap;padding:0 80px">
+  ${[['🗺️','3 feiras · 4 feirantes cada',1],['👥','12 participantes do piloto',2],['📅','2 meses grátis',2],['🤝','Acompanhamento de perto',3],['💬','Feedback',3],['🔁','Indicações',3],['💸','Preço acessível',3]].map(([i,t,n])=>`<span class="pill ${show(n)}" style="background:rgba(255,250,235,.97);color:#13261f;font-size:32px;padding:16px 30px;box-shadow:0 10px 30px rgba(0,0,0,.3),0 0 0 3px #ffe08a">${i} ${t}</span>`).join('')}
+ </div>`,
+};
+R.innerHTML=T[scene]();
+</script></body></html>
