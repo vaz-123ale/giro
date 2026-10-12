@@ -62,3 +62,7 @@ colosseum/      hackathon submission material (English)
 - No personal data on-chain; on-chain records use opaque keys.
 - The server listens only on 127.0.0.1; external access is via an https tunnel with login, HttpOnly/SameSite=Strict sessions and scrypt passwords.
 - Each party signs with their own wallet; GIRO never holds user keys in wallet mode.
+
+## License
+
+[MIT](LICENSE)
