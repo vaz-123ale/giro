@@ -53,21 +53,24 @@ Registro organizado do que o GIRO faz, separado por quem usa. Atualizado a cada 
 
 **O que o fornecedor vê:** só os acordos dele com a barraca (não vê vendas, caixa, outros fornecedores nem a equipe).
 
-**Painel do fornecedor** (*Minha conta*)
-- **A receber**, **já recebido** e **acordos ativos**, logo no topo.
-- **Precisa de você:** acordos novos para aceitar e pagamentos em dinheiro para confirmar.
-- **Meus acordos** com barra de progresso (pago de quanto, % das vendas, vencimento, registrado na Solana).
-- **Confiança de quem compra de você:** o GIRO Confiança da barraca, sem mostrar os outros fornecedores.
-- Carteira, saldo, **Assinar tudo** e código de convite pessoal.
+**App próprio do fornecedor** (topo âmbar com "Fornecedor", menu só dele)
+- **Painel:** a receber, já recebido, acordos ativos, *Precisa de você* (aceitar acordos, confirmar dinheiro) e os 3 acordos mais recentes.
+- **Acordos:** todos os acordos com barra de progresso (pago de quanto, % das vendas, vencimento, registrado na Solana).
+- **Minha confiança:** o GIRO Confiança do fornecedor (acordos que cumpriu) e botão para compartilhar o perfil.
+- **Barracas:** confiança das barracas antes de vender a prazo e *Perfis de confiança*.
+- **Ajudantes:** *Procuro ajudante* (publicar vaga com regras) e quem está buscando trabalho.
+- **Conta:** foto, perfil público, senha, carteira, código de convite (para outras barracas) e Sair.
 
 ---
 
-## 👥 Conta da equipe ou cliente
+## 👥 Conta da equipe ou comprador
 
-- Na tela de entrada, escolha **"Equipe ou cliente"**.
-- **O que vê:** só os próprios dados.
-- **Ajudante:** turno (iniciar/encerrar), comissão e quanto já recebeu.
-- **Cliente:** perfil, convites e histórico.
+- Na tela de entrada, escolha **"Equipe ou comprador"**. **O que vê:** só os próprios dados.
+- **App próprio** (topo azul com "Trabalho e compras"), com um menu diferente do fornecedor:
+  - **Vagas** (tela inicial): vagas de ajudante com a experiência conferida pelo GIRO, *Tenho interesse* e *Busco trabalho*.
+  - **Meu trabalho:** turno (iniciar/encerrar), comissão, quanto já recebeu, pagamentos em dinheiro para confirmar e acordos. Se ainda não trabalha em barraca, mostra um aviso com o botão *Ver vagas*.
+  - **Minhas compras:** compras pagas pelo QR da barraca, total gasto e confiança das barracas.
+  - **Conta:** foto, perfil público, senha, carteira, convite para amigos e Sair.
 
 ---
 
@@ -106,13 +109,14 @@ Registro organizado do que o GIRO faz, separado por quem usa. Atualizado a cada 
 
 - **Entrar:** três opções — *Minha barraca* (usuário próprio da barraca ou "dona"), *Fornecedor(a)* e *Equipe ou comprador*.
 - **Usuário da barraca:** definido em *Meu perfil → Usuário da barraca*.
-- **Equipe ou comprador:** dentro da conta, escolhe a área **Equipe e trabalho** (turno, comissão, vagas, "Busco trabalho") ou **Minhas compras** (histórico de compras pagas pelo QR da barraca com a conta aberta, total gasto, confiança das barracas).
-- **Fornecedor:** painel próprio, **Minha confiança como fornecedor** (acordos que cumpriu), confiança das barracas, **Perfis de confiança** e **Procuro ajudante**.
-- Cada tipo de conta tem cor e selo próprios no topo (verde fornecedor, laranja equipe, roxo comprador).
+- **Cada tipo de conta tem o seu próprio app**, com cor, topo e menu diferentes — não aparece tudo para todo mundo:
+  - **Barraca** (verde): o GIRO completo do negócio (vendas, caixa, compromissos, equipe).
+  - **Fornecedor** (âmbar): Painel · Acordos · Minha confiança · Barracas · Ajudantes · Conta.
+  - **Equipe ou comprador** (azul): Vagas · Meu trabalho · Minhas compras · Conta.
 
 ## 💼 Vagas e emprego para ajudantes
 
-- **Procuro ajudante** (barraca em *Equipe* e fornecedor em *Minha conta*): publica a vaga com regras — **experiência mínima em meses** e **dias trabalhados no mínimo**.
+- **Procuro ajudante** (barraca em *Equipe* e fornecedor na aba *Ajudantes*): publica a vaga com regras — **experiência mínima em meses** e **dias trabalhados no mínimo**.
 - Quem é da equipe ou comprador vê as **Vagas de ajudante** e clica **Tenho interesse**; o perfil fica salvo para quem publicou.
 - **O GIRO confere sozinho a experiência** pelo histórico de comissões recebidas (dias trabalhados, meses, total recebido) e mostra **"Atende às regras"** ou **"Ainda não atende"**.
 - **Busco trabalho:** a pessoa também pode se colocar numa lista com resumo e contato; barraca e fornecedores veem, com o link do perfil de confiança e botão de WhatsApp.
