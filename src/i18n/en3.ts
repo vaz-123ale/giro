@@ -1,5 +1,10 @@
 /** Tradução (parte 3): textos encontrados na varredura da tela em inglês. */
 export const EN3:Record<string,string>={
+'Ver todos':'See all','Alterar perfil':'Edit profile','Ver perfil público':'View public profile','Minha conta':'My account','Sair':'Log out',
+'Domingo':'Sunday','Segunda-feira':'Monday','Terça-feira':'Tuesday','Quarta-feira':'Wednesday','Quinta-feira':'Thursday','Sexta-feira':'Friday','Sábado':'Saturday',
+'Onde trabalho':'Where I work','Escala semanal':'Weekly schedule','Não definida':'Not set','Histórico de turnos':'Shift history','Turnos encerrados':'Completed shifts','Horas trabalhadas':'Hours worked','Em andamento':'In progress','horas':'hours','Comissão gerada':'Commission generated',
+'Horas encerradas e comissão gerada nas vendas recebidas. Valores digitais são simulados; dinheiro depende da confirmação de entrega.':'Completed hours and commission generated from paid sales. Digital amounts are simulated; cash requires confirmation of handover.',
+'Barraca da Maria · demonstração':'Maria’s Stall · demonstration','Feira Central · corredor 2, barraca 14 (local fictício)':'Central Market · aisle 2, stall 14 (fictional location)',
 'A aba Resumo é a última da seção.':'The Summary tab is the last one in the section.',
 'A estimativa não cobre todos os destinos conhecidos. Considere alterar intenções pessoais ou negociar os acordos.':'The estimate does not cover all known destinations. Consider changing personal plans or negotiating the agreements.',
 'A previsão segue comissão e prioridade atuais. A capacidade sugerida preserva comissões, dívidas de maior prioridade que vencem até essa data, sugestões de caixinhas e o mínimo desejado. Caixinhas já guardadas não são descontadas de novo das receitas futuras.':'The forecast follows current commission and priority. The suggested capacity keeps commissions, higher-priority debts due by that date, envelope suggestions and the desired minimum. Envelopes already saved are not deducted again from future income.',

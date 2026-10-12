@@ -35,12 +35,14 @@ function commissionsOf(state:State,p:Person){
 }
 
 /** Painel da colega: seus acordos (com o link para aceitar/assinar), confirmações pendentes e turno. */
-export function myView(state:State,p:Person,marks:ChainMarks){
+export function myView(state:State,p:Person,marks:ChainMarks,businessName='Barraca'){
  const list=agreementsOf(state,p);
  const links=list.map(c=>{const inv=[...(state.invitations??[])].filter(i=>i.commitmentId===c.id).sort((a,b)=>b.createdAt.localeCompare(a.createdAt))[0];return {...agreementRow(c,marks),link:inv?`/convite/${inv.token}`:null,waiting:inv?.state==='waiting'};});
- const receipts=(state.receiptConfirmations??[]).filter(r=>r.kind==='supplier'&&list.some(c=>c.id===r.recipientId)&&r.state==='waiting').map(r=>({amount:r.amount,paidAt:r.paidAt,link:`/confirmar/${r.token}`}));
+ const receipts=(state.receiptConfirmations??[]).filter(r=>r.state==='waiting'&&(r.kind==='supplier'?list.some(c=>c.id===r.recipientId):r.recipientId===p.memberId)).map(r=>({amount:r.amount,paidAt:r.paidAt,link:`/confirmar/${r.token}`}));
  const member=p.memberId?state.members.find(m=>m.id===p.memberId):undefined;
+ const shifts=(state.shifts??[]).filter(t=>t.memberId===p.memberId).sort((a,b)=>b.startedAt.localeCompare(a.startedAt)).map(t=>({id:t.id,start:t.startedAt,end:t.endedAt??null,hours:t.endedAt?Math.max(0,(Date.parse(t.endedAt)-Date.parse(t.startedAt))/36e5):null,amount:state.sales.filter(s=>!s.demo&&s.paidAt&&s.commissions?.some(c=>c.shiftId===t.id&&c.memberId===p.memberId)).flatMap(s=>s.distribution??[]).filter(e=>e.kind==='commission'&&e.recipientId===p.memberId).reduce((sum,e)=>sum+e.amount,0)}));
  return {person:{name:p.name,login:p.login,role:p.role,roleLabel:roleLabel[p.role],slug:p.slug,photo:photoUrl(p.slug,p.photo),mustChange:p.mustChange},
+  work:member?{businessName,location:member.workLocation??null,schedule:member.schedule??[],shifts}:null,
   agreements:links,receipts,shift:member?.checkinToken?{link:`/turno/${member.checkinToken}`,active:member.active,commissionBps:member.commissionBps}:null,
   commissionsReceived:commissionsOf(state,p),
   purchases:(state.paymentRequests??[]).filter(r=>r.buyerId===p.id).map(r=>{const s=state.sales.find(x=>x.id===r.saleId);return {date:s?.soldAt??r.createdAt.slice(0,10),amount:s?.amount??0,paid:!!s?.paidAt,link:`/pagar/${r.token}`};}).sort((a,b)=>b.date.localeCompare(a.date))};

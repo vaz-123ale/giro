@@ -115,7 +115,7 @@ const server=createServer(async(req,res)=>{
    return json(200,people.jobSeekers().map(p=>({name:p.name,roleLabel:roleNames[p.role as keyof typeof roleNames]??p.role,slug:p.slug,photo:p.photo?`/api/fotos/${p.slug}`:null,...p.job})));}
   if(reqPath.startsWith('/api/eu')){
    if(who?.kind!=='pessoa')return json(403,{error:'Entre com o usuário da sua conta.'});const me=people.byId(who.id)!;
-   if(reqPath==='/api/eu'&&method==='GET'){const w=chain?.wallets?.role(walletRoleOf(me))??null;return json(200,{...myView(read(),me,await marks()),job:people.job(me.id),wallet:chain?.walletInfo(),myWallet:w,balance:await chain?.walletBalance(w)??null,invite:people.personalCode(me.id),referrals:people.referrals(me.id)});}
+   if(reqPath==='/api/eu'&&method==='GET'){const w=chain?.wallets?.role(walletRoleOf(me))??null;return json(200,{...myView(read(),me,await marks(),people.business().name??'Barraca'),job:people.job(me.id),wallet:chain?.walletInfo(),myWallet:w,balance:await chain?.walletBalance(w)??null,invite:people.personalCode(me.id),referrals:people.referrals(me.id)});}
    // Assinaturas da colega (só os acordos dela), tudo de uma vez.
    const contactIds=[me.contactId,...(read().contacts??[]).filter(c=>c.memberId&&c.memberId===me.memberId).map(c=>c.id)].filter((x):x is string=>!!x);
    if(reqPath==='/api/eu/assinaturas'&&method==='GET')return json(200,{items:chain?chain.personPending(contactIds):[],wallet:chain?.walletInfo()});

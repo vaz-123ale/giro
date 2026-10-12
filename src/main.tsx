@@ -34,6 +34,7 @@ import './revision.css';
 import './layout-polish.css';
 import './mockup.css';
 import './refresh.css';
+import './role-apps.css';
 import {AreaIcon} from './components/AreaIcon';
 import {StructureOverview} from './components/StructureOverview';
 import {Accessibility} from './components/Accessibility';

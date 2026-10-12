@@ -2,6 +2,7 @@ import {useCallback,useEffect,useState} from 'react';
 import {BadgeCheck,Briefcase,MessageCircle,ShieldCheck,XCircle} from 'lucide-react';
 import {money} from '../domain/finance';
 import {toast} from './toast';
+import {RoleHeading,RoleEmpty} from './RoleUI';
 
 /**
  * Vagas "Procuro ajudante". A barraca ou o fornecedor define as regras (experiência mínima em meses e dias trabalhados);
@@ -23,7 +24,7 @@ const post=async(url:string,body:unknown={})=>{const r=await fetch(url,{method:'
 export function ProcuroAjudante(){
  const {d,load}=useVagas();const [f,setF]=useState({title:'Ajudante de barraca',note:'',minMonths:'0',minDays:'0'});const [error,setError]=useState('');const [open,setOpen]=useState(false);
  const minhas=d?.vagas.filter(v=>v.mine)??[];
- return <section className="panel vagas-panel"><div className="section-title"><h2><Briefcase size={22} aria-hidden="true"/> Procuro ajudante</h2><button className="primary" onClick={()=>setOpen(!open)}>{open?'Fechar':'Publicar vaga'}</button></div>
+ return <section className="panel vagas-panel"><div className="section-title"><RoleHeading icon={Briefcase}>Procuro ajudante</RoleHeading><button className="primary" onClick={()=>setOpen(!open)}>{open?'Fechar':'Publicar vaga'}</button></div>
   <p className="muted">Publique uma vaga com as suas regras. As pessoas clicam em “Tenho interesse” e o GIRO confere a experiência delas pelo histórico de comissões recebidas.</p>
   {open&&<form className="vaga-form" onSubmit={async e=>{e.preventDefault();setError('');try{await post('/api/vagas',{title:f.title,note:f.note,minMonths:Number(f.minMonths)||0,minDays:Number(f.minDays)||0});toast('Vaga publicada!');setOpen(false);await load();}catch(err){setError((err as Error).message);}}}>
    <label>Título<input value={f.title} onChange={e=>setF({...f,title:e.target.value})} maxLength={80} required/></label>
@@ -46,11 +47,11 @@ export function ProcuroAjudante(){
 export function VagasAbertas(){
  const {d,load}=useVagas();if(!d)return null;
  const vagas=d.vagas.filter(v=>!v.mine);
- return <section className="panel vagas-panel"><h2><Briefcase size={22} aria-hidden="true"/> Vagas de ajudante</h2>
+ return <section className="panel vagas-panel"><RoleHeading icon={Briefcase}>Vagas de ajudante</RoleHeading>
   <p className="muted">Barracas e fornecedores procurando ajudante. Sua experiência é conferida pelo GIRO: <b>{d.me?expTxt(d.me):'—'}</b>.</p>
   {vagas.length?vagas.map(v=><article className="vaga" key={v.id}><div className="vaga-top"><div><strong>{v.title}</strong><small>{v.ownerName} · {regra(v)}</small></div>
    <button className={v.interested?'secondary':'primary'} onClick={async()=>{try{const r=await post(`/api/vagas/${v.id}/interesse`);toast(r.interested?'Interesse enviado! Seu perfil foi salvo para quem publicou.':'Interesse retirado.');await load();}catch(e){toast((e as Error).message);}}}>{v.interested?'Retirar interesse':'Tenho interesse'}</button></div>
    {v.note&&<p>{v.note}</p>}<span className={`elig ${v.eligible?'ok':'no'}`}>{v.eligible?<><BadgeCheck size={15}/> Seu histórico atende às regras</>:<><XCircle size={15}/> Seu histórico ainda não atende às regras (você pode demonstrar interesse mesmo assim)</>}</span>
-  </article>):<p className="empty">Nenhuma vaga aberta no momento.</p>}
+  </article>):<RoleEmpty icon={Briefcase}>Nenhuma vaga aberta no momento.</RoleEmpty>}
  </section>;
 }
