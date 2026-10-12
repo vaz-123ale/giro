@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GIRO — Meet Maria</title>
+<style>
+:root{--green:#064c3c;--green2:#0b7a4b;--mint:#9be3bd;--cream:#fff8ec;--ink:#1d2b26}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#0b1410;color:var(--ink);font-family:"Segoe UI",Arial,sans-serif;overflow:hidden}
+#wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#stage{position:relative;width:min(100vw,177.78vh);height:min(56.25vw,100vh);background:var(--cream);overflow:hidden}
+#stage svg.scene{position:absolute;inset:0;width:100%;height:100%}
+#stage svg.scene.enter{animation:wipe .9s cubic-bezier(.6,0,.2,1) forwards}
+@keyframes wipe{from{clip-path:circle(0% at 50% 55%)}to{clip-path:circle(120% at 50% 55%)}}
+.cam{animation:cam 14s ease-out forwards;transform-box:view-box;transform-origin:800px 470px}
+@keyframes cam{from{transform:scale(1)}to{transform:scale(1.045)}}
+#caption{position:absolute;left:50%;bottom:3.2%;transform:translate(-50%,12px);width:max-content;max-width:84%;background:rgba(5,32,24,.9);color:#fff;
+ font-size:clamp(13px,2.05vw,38px);font-weight:600;line-height:1.3;padding:.42em 1em;border-radius:.55em;text-align:center;opacity:0;transition:opacity .25s,transform .25s;
+ box-shadow:0 6px 24px #0004;border-left:.28em solid var(--mint)}
+#caption.on{opacity:1;transform:translate(-50%,0)}
+#caption b{color:var(--mint)}
+#progress{position:absolute;left:0;bottom:0;height:.55%;background:var(--mint);width:0;transition:width .4s;z-index:3}
+#brand{position:absolute;left:2%;top:3%;height:6.5%;opacity:.0;transition:opacity .6s;z-index:3}
+#brand.on{opacity:.9}
+#panel{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(6,20,15,.94);z-index:10;color:#fff;padding:16px}
+#panel .card{max-width:640px;padding:30px;background:#10241c;border-radius:18px;box-shadow:0 20px 60px #0008}
+#panel h1{margin:0 0 6px;font-size:26px}
+#panel p,#panel li{color:#cfe5d9;line-height:1.55;font-size:15px}
+#panel label{display:block;margin:12px 0 4px;font-size:14px;color:var(--mint)}
+#panel select{width:100%;padding:10px;border-radius:10px;border:0;font-size:15px}
+#panel .row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+#panel button{flex:1;padding:14px 18px;border:0;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer}
+#go{background:var(--mint);color:#063}
+#silent{background:#24463a;color:#fff}
+#panel .check{display:flex;gap:8px;align-items:center;margin-top:10px;font-size:14px;color:#cfe5d9}
+body.playing{cursor:none}
+#hint{position:fixed;right:12px;bottom:8px;color:#6f8d80;font-size:12px;z-index:5}
+/* elementos */
+.el{opacity:0}
+.el.on{animation:pop .6s cubic-bezier(.2,1.45,.4,1) forwards;transform-box:fill-box;transform-origin:50% 100%}
+.el.fade.on{animation:fade .8s ease forwards}
+.el.up.on{animation:up .8s cubic-bezier(.2,1.1,.4,1) forwards}
+.el.left.on{animation:left .9s cubic-bezier(.2,1.1,.4,1) forwards}
+.el.right.on{animation:right .9s cubic-bezier(.2,1.1,.4,1) forwards}
+.el.drop.on{animation:drop .8s cubic-bezier(.3,1.4,.5,1) forwards}
+.el.fly.on{animation:fly 1.25s cubic-bezier(.55,0,.25,1) forwards}
+.el.travel.on{animation:travel 2.2s cubic-bezier(.5,0,.3,1) forwards}
+.el.stamp.on{animation:stamp .55s cubic-bezier(.2,1.8,.4,1) forwards;transform-origin:50% 50%}
+.el.grow.on{animation:grow 1.6s cubic-bezier(.4,0,.2,1) forwards;transform-origin:0 50%}
+.el.shake.on{animation:pop .5s forwards,shake .45s .6s 4;transform-origin:50% 100%}
+.bob{animation:bob 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+.bob2{animation:bob 2.2s .5s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+.eyes{animation:blink 4.2s infinite;transform-box:fill-box;transform-origin:50% 50%}
+.spin{animation:spin 18s linear infinite;transform-box:fill-box;transform-origin:50% 50%}
+.sway{animation:sway 3s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 0}
+.pulse{animation:pulse 1.4s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 50%}
+.float{animation:float 5s ease-in-out infinite;transform-box:fill-box}
+@keyframes pop{0%{opacity:0;transform:scale(.4)}100%{opacity:1;transform:scale(1)}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes up{from{opacity:0;transform:translateY(60px)}to{opacity:1;transform:none}}
+@keyframes left{from{opacity:0;transform:translateX(-340px)}to{opacity:1;transform:none}}
+@keyframes right{from{opacity:0;transform:translateX(340px)}to{opacity:1;transform:none}}
+@keyframes drop{from{opacity:0;transform:translateY(-260px)}to{opacity:1;transform:none}}
+@keyframes fly{0%{opacity:1;transform:translate(0,0) scale(.5)}100%{opacity:1;transform:translate(var(--dx),var(--dy)) scale(1)}}
+@keyframes travel{0%{opacity:1;transform:translate(0,0)}100%{opacity:1;transform:translate(var(--dx),0)}}
+@keyframes stamp{0%{opacity:0;transform:scale(2.4) rotate(-14deg)}100%{opacity:1;transform:scale(1) rotate(0)}}
+@keyframes grow{from{opacity:1;transform:scaleX(0)}to{opacity:1;transform:scaleX(1)}}
+@keyframes shake{0%,100%{transform:rotate(0)}25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.08)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes sway{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg)}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage"><img id="brand" src="logo_giro.png" alt=""><div id="caption"></div><div id="progress"></div></div></div>
+<div id="panel"><div class="card">
+ <h1>GIRO — vídeo da ideia (pitch animado)</h1>
+ <p>Animação de cerca de 2min45 com narração em inglês. Para gravar:</p>
+ <ol>
+  <li>Abra no <b>Microsoft Edge</b>, que tem as vozes naturais em inglês.</li>
+  <li>Aperte <b>F11</b> (tela cheia) e depois <b>Win + Alt + R</b> para começar a gravar.</li>
+  <li>Clique em <b>Começar</b>. No final, aperte <b>Win + Alt + R</b> de novo.</li>
+ </ol>
+ <p>Teclas: <b>espaço</b> pausa · <b>R</b> recomeça · <b>Esc</b> volta a este painel.</p>
+ <label for="voice">Voz do narrador (inglês)</label>
+ <select id="voice"></select>
+ <label class="check"><input type="checkbox" id="sfx" checked> Efeitos sonoros discretos (moeda, carimbo)</label>
+ <div class="row"><button id="go">▶ Começar com narração</button><button id="silent">Sem voz (eu narro)</button></div>
+</div></div>
+<div id="hint"></div>
+<script>
+// ======================= ilustração =======================
+const G=700; // linha do chão
+const SK={maria:'#8d5524',joao:'#e3a982',pedro:'#c68642',cli:'#f1c27d',bank:'#d6a07a'};
+function face(mood){
+ const brows=mood==='nervous'?'<path d="M60 64 l20 6 M120 64 l-20 6" stroke="#2b1a10" stroke-width="5" stroke-linecap="round"/>':mood==='flat'?'<path d="M60 68 h20 M100 68 h20" stroke="#2b1a10" stroke-width="5" stroke-linecap="round"/>':'<path d="M60 66 q10 -8 20 0 M100 66 q10 -8 20 0" stroke="#2b1a10" stroke-width="5" fill="none" stroke-linecap="round"/>';
+ const eyes=`<g class="eyes"><ellipse cx="72" cy="84" rx="6" ry="7.5" fill="#1d1d1d"/><ellipse cx="108" cy="84" rx="6" ry="7.5" fill="#1d1d1d"/><circle cx="74" cy="81" r="2" fill="#fff"/><circle cx="110" cy="81" r="2" fill="#fff"/></g>`;
+ const cheeks='<circle cx="60" cy="102" r="9" fill="#ff6b6b" opacity=".22"/><circle cx="120" cy="102" r="9" fill="#ff6b6b" opacity=".22"/>';
+ const mouth={happy:'<path d="M72 106 Q90 122 108 106" stroke="#3b1f12" stroke-width="5" fill="none" stroke-linecap="round"/>',
+  big:'<path d="M70 104 Q90 134 110 104 Z" fill="#7a2e1f"/><path d="M76 106 h28 v5 h-28z" fill="#fff"/>',
+  nervous:'<path d="M72 114 l6 -5 l6 5 l6 -5 l6 5 l6 -5" stroke="#3b1f12" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M142 50 q9 15 0 22 q-9 -7 0 -22z" fill="#7cc7f2"/>',
+  flat:'<path d="M76 112 h28" stroke="#3b1f12" stroke-width="5" stroke-linecap="round"/>'}[mood||'happy'];
+ return brows+eyes+cheeks+mouth;
+}
+function person(o){
+ const s=o.skin,sh=o.shirt,p=o.pants||'#33415c';let hair='',back='';
+ if(o.hair==='bun'){back=`<circle cx="90" cy="20" r="26" fill="#2a1a12"/>`;hair=`<path d="M32 86 Q30 22 90 24 Q150 22 148 86 Q142 52 104 44 Q70 56 40 60 Q34 70 32 86Z" fill="#2a1a12"/><rect x="74" y="0" width="32" height="10" rx="5" fill="#e76f51"/>`;}
+ if(o.hair==='short')hair=`<path d="M34 78 Q34 22 90 24 Q146 22 146 78 Q138 46 92 42 Q50 44 34 78Z" fill="#3a2a1e"/>`;
+ if(o.hair==='cap')hair=`<path d="M34 72 Q36 20 90 20 Q144 20 146 72Z" fill="${o.cap}"/><path d="M118 62 h62 q6 0 6 6 v2 q0 6 -6 6 h-62z" fill="${o.cap}"/><circle cx="90" cy="22" r="6" fill="#fff8"/>`;
+ if(o.hair==='straw')hair=`<ellipse cx="90" cy="46" rx="90" ry="17" fill="#e9c46a"/><path d="M46 46 Q50 2 90 2 Q130 2 134 46Z" fill="#f2d07a"/><rect x="48" y="30" width="84" height="11" fill="#a0522d"/><path d="M10 46 Q90 66 170 46" stroke="#d4a94e" stroke-width="3" fill="none"/>`;
+ if(o.hair==='bald')hair=`<path d="M36 84 Q30 58 46 52 M144 84 Q150 58 134 52" stroke="#8a8a8a" stroke-width="10" fill="none" stroke-linecap="round"/><rect x="50" y="76" width="34" height="22" rx="10" fill="none" stroke="#333" stroke-width="3"/><rect x="96" y="76" width="34" height="22" rx="10" fill="none" stroke="#333" stroke-width="3"/><path d="M84 86 h12" stroke="#333" stroke-width="3"/>`;
+ const apron=o.apron?`<path d="M56 188 h68 v112 q-34 14 -68 0z" fill="${o.apron}"/><path d="M56 188 L42 158 M124 188 L138 158" stroke="${o.apron}" stroke-width="7" stroke-linecap="round"/><rect x="72" y="226" width="36" height="26" rx="5" fill="#0002"/>`:'';
+ const tie=o.tie?`<path d="M90 152 l-11 16 l11 66 l11 -66z" fill="${o.tie}"/><path d="M70 150 l20 14 l20 -14" stroke="#fff" stroke-width="7" fill="none"/>`:'';
+ const must=o.mustache?`<path d="M64 102 Q78 90 90 98 Q102 90 116 102 Q102 100 90 104 Q78 100 64 102Z" fill="#3a2a1e"/>`:'';
+ const phone=o.phone?`<g transform="rotate(-12 166 250)"><rect x="150" y="226" width="34" height="58" rx="6" fill="#1c1c1c"/><rect x="154" y="232" width="26" height="44" rx="3" fill="#9be3bd"/></g>`:'';
+ return `<g>
+  <ellipse cx="90" cy="384" rx="74" ry="12" fill="#000" opacity=".12"/>
+  ${back}
+  <rect x="56" y="282" width="30" height="94" rx="13" fill="${p}"/><rect x="94" y="282" width="30" height="94" rx="13" fill="${p}"/>
+  <path d="M46 378 q0 -14 22 -14 q22 0 22 14z" fill="#2b2b2b"/><path d="M90 378 q0 -14 22 -14 q22 0 22 14z" fill="#2b2b2b"/>
+  <g transform="rotate(7 29 166)"><rect x="14" y="160" width="30" height="120" rx="15" fill="${sh}"/><circle cx="29" cy="284" r="14" fill="${s}"/></g>
+  <g transform="rotate(-7 151 166)"><rect x="136" y="160" width="30" height="120" rx="15" fill="${sh}"/><circle cx="151" cy="284" r="14" fill="${s}"/></g>
+  <rect x="32" y="146" width="116" height="150" rx="44" fill="${sh}"/><path d="M104 148 h0 q44 0 44 44 v60 q0 44 -44 44z" fill="#000" opacity=".08"/>${apron}${tie}
+  <rect x="78" y="124" width="24" height="30" rx="6" fill="${s}"/><rect x="78" y="140" width="24" height="10" fill="#000" opacity=".1"/>
+  <circle cx="34" cy="90" r="11" fill="${s}"/><circle cx="146" cy="90" r="11" fill="${s}"/>
+  <circle cx="90" cy="86" r="56" fill="${s}"/><path d="M120 44 a56 56 0 0 1 0 84 a60 60 0 0 0 0 -84z" fill="#000" opacity=".06"/>
+  ${hair}${face(o.mood)}${must}${phone}
+ </g>`;
+}
+const P={
+ maria:m=>person({skin:SK.maria,shirt:'#f4a261',apron:'#2a9d8f',hair:'bun',mood:m}),
+ joao:m=>person({skin:SK.joao,shirt:'#457b9d',hair:'straw',mustache:1,mood:m,pants:'#5b4636'}),
+ pedro:m=>person({skin:SK.pedro,shirt:'#e76f51',hair:'cap',cap:'#d62828',mood:m,pants:'#264653'}),
+ cli:m=>person({skin:SK.cli,shirt:'#7b2cbf',hair:'short',mood:m,phone:1}),
+ bank:m=>person({skin:SK.bank,shirt:'#4a4e69',hair:'bald',tie:'#c1121f',mood:m,pants:'#22223b'}),
+};
+const who=(k,x,y=G,s=1,step=0,cls='',mood)=>`<g transform="translate(${x-90*s},${y-384*s}) scale(${s})"><g class="el ${cls}" data-s="${step}"><g class="${k==='maria'||k==='cli'?'bob':'bob2'}">${P[k](mood)}</g></g></g>`;
+const cheese=(x,y,s=1)=>`<g transform="translate(${x},${y}) scale(${s})"><path d="M0 60 L92 0 L124 60Z" fill="#ffd166"/><path d="M92 0 L124 60 L112 60Z" fill="#f4b942"/><path d="M0 60 h124 v14 h-124z" fill="#f4b942"/><circle cx="60" cy="40" r="7" fill="#e9a93a"/><circle cx="88" cy="48" r="5" fill="#e9a93a"/><circle cx="38" cy="52" r="4" fill="#e9a93a"/></g>`;
+const stall=(x,y,s=1,muted)=>`<g transform="translate(${x},${y}) scale(${s})" ${muted?'opacity=".45"':''}>
+ <rect x="0" y="0" width="520" height="18" rx="4" fill="#7b5e57"/>${[0,1,2,3,4,5,6,7].map(i=>`<path d="M${i*65} 18 h65 v46 q-32 24 -65 0z" fill="${i%2?'#fdfdfd':(muted?'#4ea8de':'#e63946')}"/>`).join('')}
+ <rect x="20" y="18" width="14" height="328" fill="#6d4c41"/><rect x="486" y="18" width="14" height="328" fill="#6d4c41"/>
+ <rect x="-10" y="226" width="540" height="28" rx="8" fill="#a1887f"/><rect x="10" y="254" width="500" height="92" fill="#c8b6ae"/><path d="M10 254 h500 v14 h-500z" fill="#0001"/>
+ ${muted?`<circle cx="150" cy="200" r="30" fill="#e76f51"/><circle cx="215" cy="205" r="28" fill="#f4a261"/><circle cx="330" cy="200" r="30" fill="#90be6d"/><circle cx="395" cy="206" r="26" fill="#e76f51"/>`:
+ `${cheese(36,168)}${cheese(166,168)}${cheese(296,168)}${cheese(100,118,.9)}${cheese(236,118,.9)}<g class="sway"><rect x="378" y="64" width="2" height="40" fill="#555"/><rect x="342" y="104" width="76" height="46" rx="8" fill="#fff" stroke="#e63946" stroke-width="3"/><text x="380" y="134" font-size="22" font-weight="800" text-anchor="middle" fill="#e63946">R$ 10</text></g>`}
+</g>`;
+const bunting=`<path d="M-20 70 Q400 150 800 80 Q1200 10 1620 90" stroke="#7b5e57" stroke-width="3" fill="none"/>${[...Array(17)].map((_,i)=>{const x=i*100+10;const y=i<8?70+Math.sin(i/8*Math.PI)*60:80-Math.sin((i-8)/8*Math.PI)*55;return `<path d="M${x} ${y} l36 0 l-18 36z" fill="${['#e63946','#f4a261','#2a9d8f','#457b9d','#ffd166'][i%5]}"/>`;}).join('')}`;
+const skyline=`${[[0,250,120],[130,300,90],[230,220,140],[380,280,110],[1100,240,130],[1240,300,100],[1350,210,150],[1510,270,100]].map(([x,h,w])=>`<rect x="${x}" y="${G-h-40}" width="${w}" height="${h+40}" rx="6" fill="#efd9b8"/>${[...Array(Math.floor(h/60))].map((_,r)=>`<rect x="${x+18}" y="${G-h-20+r*60}" width="${w-36}" height="20" rx="3" fill="#f7e8d0"/>`).join('')}`).join('')}`;
+const sun=(x=1450,y=140)=>`<g transform="translate(${x},${y})"><g class="spin">${[...Array(12)].map((_,i)=>`<rect x="-5" y="-96" width="10" height="28" rx="5" fill="#ffd166" transform="rotate(${i*30})"/>`).join('')}</g><circle r="56" fill="#ffd166"/><circle r="56" fill="url(#sunG)"/></g>`;
+const cloud=(x,y,s=1)=>`<g transform="translate(${x},${y}) scale(${s})" class="float"><path d="M0 40 q0 -30 34 -30 q10 -26 46 -18 q30 -12 46 16 q34 0 34 32z" fill="#fff" opacity=".9"/></g>`;
+const defs=`<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe7c2"/><stop offset="1" stop-color="#fff8ec"/></linearGradient>
+ <radialGradient id="sunG"><stop offset="0" stop-color="#fff3" /><stop offset="1" stop-color="#fff0"/></radialGradient>
+ <linearGradient id="sol" x1="0" x2="1"><stop offset="0" stop-color="#9945ff"/><stop offset="1" stop-color="#14f195"/></linearGradient>
+ <linearGradient id="greenG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b7a4b"/><stop offset="1" stop-color="#064c3c"/></linearGradient>
+ <filter id="shadow" x="-20%" y="-20%" width="140%" height="160%"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-opacity=".18"/></filter></defs>`;
+const market=()=>`<rect width="1600" height="900" fill="url(#sky)"/>${sun()}${cloud(260,120,1.2)}${cloud(900,70,.9)}${skyline}${stall(40,G-330,.62,1)}${stall(1240,G-330,.62,1)}${bunting}<rect y="${G}" width="1600" height="${900-G}" fill="#dcc6a2"/><rect y="${G}" width="1600" height="8" fill="#c9b08a"/>`;
+const plain=(c1,c2)=>`<rect width="1600" height="900" fill="${c1}"/><circle cx="1400" cy="160" r="260" fill="${c2}" opacity=".5"/><circle cx="150" cy="820" r="300" fill="${c2}" opacity=".45"/><rect y="${G}" width="1600" height="${900-G}" fill="${c2}" opacity=".55"/>`;
+const coin=(x,y,label,step,cls='',dx=0,dy=0,r=46)=>`<g transform="translate(${x},${y})"><g class="el ${cls}" data-s="${step}" data-sfx="${cls==='fly'?'coin':''}" style="--dx:${dx}px;--dy:${dy}px"><circle r="${r}" fill="#f2b705"/><circle r="${r}" fill="none" stroke="#c99400" stroke-width="5"/><circle r="${r-11}" fill="none" stroke="#fff5" stroke-width="3"/><text y="${r*.23}" font-size="${r*.6}" font-weight="800" text-anchor="middle" fill="#5a3d00">${label}</text></g></g>`;
+const bubble=(x,y,w,text,step,size=36,tail='left')=>{const h=size*2.3,tx=tail==='left'?50:w-80;return `<g transform="translate(${x},${y})"><g class="el" data-s="${step}" filter="url(#shadow)"><path d="M${tx} ${h-4} l18 36 l22 -38z" fill="#fff"/><rect width="${w}" height="${h}" rx="${h/2}" fill="#fff"/><text x="${w/2}" y="${h/2+size*.36}" font-size="${size}" font-weight="800" text-anchor="middle" fill="#1d2b26">${text}</text></g></g>`;};
+const label=(x,y,text,step,size=44,fill='#1d2b26',cls='up',weight=800)=>`<text class="el ${cls}" data-s="${step}" x="${x}" y="${y}" font-size="${size}" font-weight="${weight}" text-anchor="middle" fill="${fill}">${text}</text>`;
+const tag=(x,y,text,step,bg='#064c3c',fg='#fff',size=32,cls='')=>{const w=text.length*size*.55+56;return `<g transform="translate(${x-w/2},${y})"><g class="el ${cls}" data-s="${step}" ${cls==='stamp'?'data-sfx="stamp"':''} filter="url(#shadow)"><rect width="${w}" height="${size*1.8}" rx="${size*.9}" fill="${bg}"/><text x="${w/2}" y="${size*1.22}" font-size="${size}" font-weight="800" text-anchor="middle" fill="${fg}">${text}</text></g></g>`;};
+const dash=(x1,y1,x2,y2,step,color='#0b7a4b')=>`<g class="el fade" data-s="${step}"><path d="M${x1} ${y1} Q${(x1+x2)/2} ${Math.min(y1,y2)-90} ${x2} ${y2}" stroke="${color}" stroke-width="8" fill="none" stroke-dasharray="20 14" stroke-linecap="round"/><path d="M${x2} ${y2} l-26 -10 l8 22z" fill="${color}"/></g>`;
+const crate=(x,y,step,dx)=>`<g transform="translate(${x},${y})"><g class="el travel" data-s="${step}" style="--dx:${dx}px"><rect width="150" height="96" rx="8" fill="#b07d4f"/><path d="M0 30 h150 M0 64 h150" stroke="#8c5f37" stroke-width="5"/>${cheese(12,-38,.7)}${cheese(68,-34,.65)}</g></g>`;
+const notebook=(x,y,step,wet)=>`<g transform="translate(${x},${y}) rotate(-5)"><g class="el" data-s="${step}" filter="url(#shadow)"><rect width="380" height="460" rx="16" fill="#fffdf5"/><rect width="34" height="460" rx="10" fill="#e76f51"/>${[...Array(9)].map((_,i)=>`<line x1="54" y1="${76+i*42}" x2="356" y2="${76+i*42}" stroke="#bfe0e6" stroke-width="3"/>`).join('')}
+ <g font-family="Comic Sans MS,Segoe Print,cursive" font-size="27"><text x="58" y="66" fill="#1d3557">João: 20%... até 300?</text><text x="58" y="150" fill="#1d3557">Pedro 8% = 0,80</text>
+ <text x="58" y="234" fill="#e63946">já paguei?? acho q sim</text><text x="58" y="318" fill="#1d3557">10 - 2 - 0,8 = ???</text></g>
+ <path d="M58 360 q40 -30 80 0 t80 0 t80 0" stroke="#1d3557" stroke-width="4" fill="none"/><path d="M220 120 l90 90 M310 120 l-90 90" stroke="#e63946" stroke-width="4" opacity=".7"/></g>
+ ${wet?`<g class="el drop" data-s="${wet}">${[[80,40],[230,110],[150,250],[300,320],[70,390],[330,60]].map(([a,b])=>`<path d="M${a} ${b} q24 38 0 54 q-24 -16 0 -54z" fill="#4ea8de" opacity=".9"/>`).join('')}<rect width="380" height="460" rx="16" fill="#4ea8de" opacity=".22"/></g>`:''}</g>`;
+const bankB=(x,y,step,s=1)=>`<g transform="translate(${x},${y}) scale(${s})"><g class="el" data-s="${step}"><path d="M0 110 L210 16 L420 110Z" fill="#adb5bd"/><rect x="10" y="110" width="400" height="26" fill="#ced4da"/>${[0,1,2,3,4].map(i=>`<rect x="${34+i*76}" y="136" width="38" height="208" fill="#eef0f2"/><rect x="${34+i*76}" y="136" width="10" height="208" fill="#0001"/>`).join('')}<rect x="0" y="344" width="420" height="32" fill="#adb5bd"/><text x="210" y="94" font-size="40" font-weight="900" text-anchor="middle" fill="#343a40">BANK</text></g></g>`;
+function qrSquares(n=15){let r='',v=11;for(let i=0;i<n;i++)for(let j=0;j<n;j++){v=(v*1103515245+12345)&0x7fffffff;const f=(a,b)=>a<5&&b<5;const c=f(i,j)||f(i,n-1-j)||f(n-1-i,j);const on=c?((i%4===0||j%4===0||i===4||j===4||(n-1-i)%4===0||(n-1-j)%4===0)&&!((i===2||n-1-i===2)&&(j===2||n-1-j===2)))||((i===2||n-1-i===2)&&(j===2||n-1-j===2)):v%3!==0;if(on)r+=`<rect x="${j*9}" y="${i*9}" width="9" height="9" fill="#111"/>`;}return r;}
+const phone=(x,y,s,step,screen,cls='')=>`<g transform="translate(${x},${y}) scale(${s})"><g class="el ${cls}" data-s="${step}" filter="url(#shadow)"><rect width="250" height="500" rx="38" fill="#1b1b1b"/><rect x="12" y="14" width="226" height="472" rx="28" fill="#fff"/><rect x="95" y="24" width="60" height="10" rx="5" fill="#1b1b1b"/>${screen}</g></g>`;
+const scrQR=`<text x="125" y="78" font-size="17" font-weight="800" text-anchor="middle" fill="#064c3c">Solana Pay</text><text x="125" y="104" font-size="28" font-weight="900" text-anchor="middle" fill="#1d2b26">R$ 10,00</text><g transform="translate(57,126)">${qrSquares()}</g><text x="125" y="292" font-size="15" text-anchor="middle" fill="#666">scan with any wallet</text><rect x="36" y="320" width="178" height="48" rx="24" fill="#0b7a4b"/><text x="125" y="351" font-size="17" font-weight="800" text-anchor="middle" fill="#fff">Pay now</text>`;
+const scrSign=`<image href="logo_giro.png" x="60" y="48" width="130" height="43"/><rect x="24" y="112" width="202" height="104" rx="16" fill="#064c3c"/><text x="125" y="146" font-size="17" font-weight="800" text-anchor="middle" fill="#fff">3 signatures pending</text><rect x="54" y="164" width="142" height="38" rx="19" fill="#fff"/><text x="125" y="190" font-size="17" font-weight="800" text-anchor="middle" fill="#064c3c">Sign all</text>
+ <rect x="24" y="234" width="202" height="60" rx="12" fill="#eef6f1"/><text x="40" y="262" font-size="14" font-weight="700" fill="#1d2b26">Agreement · João</text><text x="40" y="282" font-size="13" fill="#5c6f66">20% until R$ 300</text>
+ <rect x="24" y="304" width="202" height="60" rx="12" fill="#eef6f1"/><text x="40" y="332" font-size="14" font-weight="700" fill="#1d2b26">Cash payment</text><text x="40" y="352" font-size="13" fill="#5c6f66">R$ 50 · confirm</text>`;
+const scrJoin=`<image href="logo_giro.png" x="60" y="48" width="130" height="43"/><text x="125" y="128" font-size="16" font-weight="800" text-anchor="middle" fill="#1d2b26">You're invited!</text><text x="125" y="150" font-size="13" text-anchor="middle" fill="#5c6f66">Maria's stall · supplier</text>
+ ${['Your name','Username','Password'].map((t,i)=>`<rect x="30" y="${172+i*52}" width="190" height="40" rx="10" fill="#f3f5f4" stroke="#dfe6e2"/><text x="44" y="${197+i*52}" font-size="13" fill="#8a9a92">${t}</text>`).join('')}
+ <rect x="30" y="340" width="190" height="44" rx="22" fill="#0b7a4b"/><text x="125" y="368" font-size="15" font-weight="800" text-anchor="middle" fill="#fff">Create account</text><text x="125" y="410" font-size="13" text-anchor="middle" fill="#0b7a4b">+ connect wallet</text>`;
+const wallet=(x,y,step)=>`<g transform="translate(${x},${y})"><g class="el stamp" data-s="${step}" data-sfx="stamp" filter="url(#shadow)"><rect width="230" height="150" rx="22" fill="#ab9ff2"/><circle cx="115" cy="58" r="30" fill="#fff"/><path d="M98 58 q0 -18 17 -18 q17 0 17 18 v14 l-6 -5 l-5 5 l-6 -5 l-6 5 l-5 -5 l-6 5z" fill="#ab9ff2"/><rect x="40" y="102" width="150" height="32" rx="16" fill="#fff"/><text x="115" y="124" font-size="17" font-weight="800" text-anchor="middle" fill="#4b3cc9">Approve ✓</text></g></g>`;
+const solLogo=(x,y,s,step)=>`<g transform="translate(${x},${y}) scale(${s})"><g class="el" data-s="${step}"><path d="M30 0 h150 l-30 30 h-150z" fill="url(#sol)"/><path d="M0 44 h150 l30 30 h-150z" fill="url(#sol)"/><path d="M30 88 h150 l-30 30 h-150z" fill="url(#sol)"/></g></g>`;
+const check=(x,y,step,r=44)=>`<g transform="translate(${x},${y})"><g class="el stamp" data-s="${step}" data-sfx="stamp"><circle r="${r}" fill="#0b7a4b"/><path d="M${-r*.45} 0 l${r*.32} ${r*.36} l${r*.6} ${-r*.68}" stroke="#fff" stroke-width="${r*.22}" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g></g>`;
+const card=(x,y,w,h,step,inner,cls='')=>`<g transform="translate(${x},${y})"><g class="el ${cls}" data-s="${step}" filter="url(#shadow)"><rect width="${w}" height="${h}" rx="26" fill="#fff"/>${inner}</g></g>`;
+const svg=(inner)=>`<svg class="scene enter" viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">${defs}<g class="cam">${inner}</g></svg>`;
+
+// ======================= roteiro =======================
+// cada fala revela os elementos com data-s igual ao índice da fala
+const SCENES=[
+ {art:()=>market()+stall(560,G-346)+who('maria',400,G,1,0),lines:[
+  'Meet <b>Maria</b>.',
+  'She sells cheese at a street market in Brazil.']},
+ {art:()=>plain('#eef6fb','#d6e9f5')+sun(1460,130)+who('joao',300,G,1,0)+crate(400,G-96,1,620)+who('maria',1300,G,1,1)+tag(800,150,'Pay me back a little from every sale',1,'#457b9d'),lines:[
+  'This is <b>João</b>. He makes the cheese.',
+  'He gives Maria cheese today, and she pays him back a little from every sale.']},
+ {art:()=>market()+who('pedro',420,G,1,0)+who('maria',820,G,1,0)+tag(420,170,'8% of every sale',1,'#e76f51'),lines:[
+  'This is <b>Pedro</b>. He helps Maria sell.',
+  'For that, he gets eight percent of every sale.']},
+ {art:()=>plain('#fff8ec','#f6e6c8')+who('joao',260,G,.85,1)+who('pedro',800,G,.85,2)+who('maria',1340,G,.85,3)+
+   coin(800,200,'R$ 10',0,'',0,0,60)+coin(800,200,'R$ 2',1,'fly',-540,90,44)+coin(800,200,'0,80',2,'fly',0,122,38)+coin(800,200,'7,20',3,'fly',540,90,48),lines:[
+  'So, out of every ten reais Maria sells…',
+  'two reais belong to João…',
+  'eighty cents belong to Pedro…',
+  'and seven reais and twenty cents are hers.']},
+ {art:()=>plain('#f3efe6','#e7dfcd')+notebook(640,150,0,2)+who('maria',380,G+40,.9,0,'','nervous'),lines:[
+  'Today, all of this lives in a paper notebook.',
+  'Who got paid? How much is left? Nobody is really sure.',
+  'And sometimes… the notebook gets wet.']},
+ {art:()=>plain('#fdecec','#f7d4d4')+who('joao',230,G,.95,0,'shake','nervous')+who('pedro',520,G,.95,0,'shake','nervous')+bankB(1000,G-376,1,1)+who('bank',900,G,.9,1,'','flat')+bubble(760,140,520,'No history? No loan.',2,40,'left'),lines:[
+  'João gets worried. Pedro gets worried.',
+  'And when Maria asks the bank for a loan…',
+  '“No history? No loan.”']},
+ {art:()=>plain('#e6f5eb','#cdebd6')+`<image class="el stamp" data-s="0" href="logo_giro.png" x="390" y="230" width="820" height="273"/>`+label(800,610,'Your business rules, running by themselves',1,46,'#064c3c'),lines:[
+  'That’s why we built <b>GIRO</b>.',
+  'GIRO turns a handshake into rules that run by themselves.']},
+ {art:()=>plain('#eef6fb','#d6e9f5')+who('maria',250,G,.95,0)+who('joao',1350,G,.95,0)+
+   card(520,120,560,280,0,`<text x="280" y="66" font-size="36" font-weight="900" text-anchor="middle" fill="#064c3c">Agreement</text><rect x="40" y="96" width="480" height="2" fill="#e3ece7"/><text x="280" y="152" font-size="32" text-anchor="middle" fill="#1d2b26">20% of each sale</text><text x="280" y="200" font-size="32" text-anchor="middle" fill="#1d2b26">until R$ 300 is paid</text><text x="280" y="248" font-size="22" text-anchor="middle" fill="#6b7d74">priority 1 · never more than what’s owed</text>`)+
+   wallet(520,440,1)+wallet(850,440,1)+check(735,450,1,30)+check(1065,450,1,30)+tag(800,630,'Changes only if BOTH say yes',2,'#064c3c','#fff',30,'stamp'),lines:[
+  'Maria and João agree once: twenty percent of each sale, until three hundred reais are paid.',
+  'Each one signs with their own digital wallet. One tap.',
+  'And if anything changes, both have to say yes again.']},
+ {art:()=>plain('#f4effb','#e3d8f5')+who('cli',330,G,1,0)+phone(640,150,1,0,scrQR)+solLogo(1110,250,1,1)+label(1200,470,'~1 second',1,48,'#4b3cc9')+label(1200,540,'fee: less than 1 cent',2,40,'#7b2cbf'),lines:[
+  'Now a customer pays ten reais by scanning a QR code.',
+  'It’s one payment, confirmed in about a second…',
+  '…and the fee is less than one cent.']},
+ {art:()=>plain('#fff8ec','#f6e6c8')+who('joao',260,G,.85,0,'','big')+who('pedro',800,G,.85,0,'','big')+who('maria',1340,G,.85,0,'','big')+
+   coin(800,226,'R$ 10',0,'',0,0,48)+coin(800,226,'R$ 2',1,'fly',-540,70,44)+coin(800,226,'0,80',1,'fly',0,94,38)+coin(800,226,'7,20',1,'fly',540,70,48)+tag(800,24,'One transaction · automatic split',0,'#064c3c','#fff',32)+tag(800,104,'In the agreed order · never more than what’s owed',2,'#0b7a4b','#fff',28,'stamp'),lines:[
+  'And in that same second, the money splits by itself.',
+  'Two reais to João. Eighty cents to Pedro. Seven twenty to Maria.',
+  'It follows the agreed order, and never pays more than what’s owed.']},
+ {art:()=>market()+who('maria',380,G,1,0)+coin(560,330,'R$ 50',0,'',0,0,50)+who('joao',1220,G,1,1)+phone(830,160,.8,1,scrSign,'right')+check(1290,250,1,40)+tag(800,130,'Cash counts too · confirmed by both',1,'#2a9d8f','#fff',30),lines:[
+  'Paid in cash? That works too.',
+  'Maria records it, and João confirms it with one tap. Both sides agree on what happened.']},
+ {art:()=>plain('#e6f5eb','#cdebd6')+card(400,90,800,150,0,`<rect x="40" y="86" width="720" height="34" rx="17" fill="#e3f1e8"/><text x="400" y="62" font-size="34" font-weight="800" text-anchor="middle" fill="#064c3c">R$ 300 of R$ 300 paid</text>`)+`<rect class="el grow" data-s="0" x="440" y="176" width="720" height="34" rx="17" fill="#0b7a4b"/>`+check(1200,165,0,40)+
+   tag(800,290,'Proof recorded on Solana · no names, no phone numbers',1,'#064c3c','#fff',28,'stamp')+who('maria',360,G+60,.85,2,'','big')+bankB(1110,G-300,2,.8)+who('bank',930,G+60,.8,2,'','happy')+bubble(720,410,330,'Let’s talk.',3,38,'right'),lines:[
+  'When the debt is fully paid, GIRO records a proof on Solana.',
+  'No names, no phone numbers. Just the proof that Maria kept her word.',
+  'And now, when Maria goes back to the bank…',
+  '“Let’s talk.”']},
+ {art:()=>plain('#eef6fb','#d6e9f5')+who('joao',330,G,1,0)+phone(560,120,.95,0,scrJoin,'up')+phone(980,120,.95,1,scrSign,'up')+tag(1400,240,'1 tap',1,'#0b7a4b','#fff',34,'stamp'),lines:[
+  'And nobody needs to understand crypto.',
+  'João joins with an invite link on WhatsApp, and signs everything at once.']},
+ {art:()=>`<rect width="1600" height="900" fill="url(#greenG)"/><circle cx="1400" cy="150" r="300" fill="#fff" opacity=".04"/><circle cx="120" cy="800" r="320" fill="#fff" opacity=".04"/>`+
+   [['15M+','small business owners in Brazil'],['0.5%','of each sale GIRO splits'],['Suppliers','bring their sellers'],['Lenders','get real payment history']].map(([a,b],i)=>`<g class="el up" data-s="${i}"><rect x="${110+i*350}" y="270" width="320" height="300" rx="28" fill="#fff" opacity=".08"/><text x="${270+i*350}" y="400" font-size="${a.length>5?54:76}" font-weight="900" text-anchor="middle" fill="#9be3bd">${a}</text><text x="${270+i*350}" y="470" font-size="26" font-weight="600" text-anchor="middle" fill="#fff">${b.split(' ').slice(0,3).join(' ')}</text><text x="${270+i*350}" y="505" font-size="26" font-weight="600" text-anchor="middle" fill="#fff">${b.split(' ').slice(3).join(' ')}</text></g>`).join(''),lines:[
+  'There are over fifteen million small business owners in Brazil.',
+  'GIRO earns half a percent of each sale it splits.',
+  'Suppliers bring their sellers, because they want to get paid automatically.',
+  'And lenders finally get real payment history.']},
+ {art:()=>plain('#e6f5eb','#cdebd6')+`<image class="el stamp" data-s="0" href="logo_giro.png" x="430" y="110" width="740" height="247"/>`+label(800,470,'Every sale, already split.',1,58,'#064c3c')+label(800,550,'Every promise, kept on-chain.',1,58,'#0b7a4b')+solLogo(500,640,.42,2)+label(860,672,'Open source · built on Solana',2,36,'#064c3c','fade',700)+label(800,760,'github.com/vaz-123ale/giro',2,28,'#3d5a50','fade',600),lines:[
+  'This is <b>GIRO</b>.',
+  'Every sale, already split. Every promise, kept on-chain.',
+  'Open source, and built on Solana.']},
+];
+
+// ======================= motor =======================
+const stage=document.getElementById('stage'),cap=document.getElementById('caption'),bar=document.getElementById('progress'),brand=document.getElementById('brand');
+const total=SCENES.reduce((a,s)=>a+s.lines.length,0);
+let voice=null,useVoice=true,paused=false,run=0,done=0,sfxOn=true,ac;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const plainText=h=>h.replace(/<[^>]+>/g,'').replace(/[“”]/g,'"').replace(/’/g,"'").replace(/…/g,'...');
+function sfx(kind){if(!sfxOn)return;try{ac=ac||new AudioContext();const t=ac.currentTime,g=ac.createGain();g.connect(ac.destination);
+ if(kind==='coin'){[1320,1760].forEach((f,i)=>{const o=ac.createOscillator();o.type='triangle';o.frequency.value=f;const gg=ac.createGain();gg.gain.setValueAtTime(0,t+i*.08);gg.gain.linearRampToValueAtTime(.08,t+i*.08+.01);gg.gain.exponentialRampToValueAtTime(.0001,t+i*.08+.35);o.connect(gg).connect(ac.destination);o.start(t+i*.08);o.stop(t+i*.08+.4);});}
+ else{const o=ac.createOscillator();o.type='sine';o.frequency.setValueAtTime(220,t);o.frequency.exponentialRampToValueAtTime(70,t+.18);g.gain.setValueAtTime(.18,t);g.gain.exponentialRampToValueAtTime(.0001,t+.25);o.connect(g);o.start(t);o.stop(t+.3);}}catch{}}
+function speak(text){
+ const ms=Math.max(1600,plainText(text).split(/\s+/).length*360);
+ if(!useVoice||!voice)return sleep(ms);
+ return new Promise(res=>{const u=new SpeechSynthesisUtterance(plainText(text));u.voice=voice;u.lang=voice.lang;u.rate=voice.name.includes('Natural')?1:.95;
+  let ok=false;const end=()=>{if(!ok){ok=true;res();}};u.onend=end;u.onerror=end;speechSynthesis.speak(u);setTimeout(end,ms*3+4000);});
+}
+async function waitIfPaused(id){while(paused&&id===run)await sleep(100);}
+async function play(){
+ const id=++run;done=0;speechSynthesis.cancel();stage.querySelectorAll('svg.scene').forEach(s=>s.remove());bar.style.width=0;cap.classList.remove('on');brand.classList.remove('on');
+ document.body.classList.add('playing');document.getElementById('hint').textContent='';const t0=performance.now();await sleep(600);
+ for(const [n,sc] of SCENES.entries()){
+  if(id!==run)return;
+  stage.insertAdjacentHTML('afterbegin','');const holder=document.createElement('div');holder.innerHTML=svg(sc.art());const el=holder.firstElementChild;
+  stage.insertBefore(el,cap);setTimeout(()=>stage.querySelectorAll('svg.scene').forEach(s=>{if(s!==el)s.remove();}),950);
+  brand.classList.toggle('on',n>6&&n<SCENES.length-1&&n!==13);
+  await sleep(450);
+  for(let i=0;i<sc.lines.length;i++){
+   await waitIfPaused(id);if(id!==run)return;
+   el.querySelectorAll(`.el[data-s="${i}"]`).forEach((e,k)=>{e.classList.add('on');const s=e.dataset.sfx;if(s)setTimeout(()=>sfx(s),s==='coin'?1050+k*60:120);});
+   cap.innerHTML=sc.lines[i];cap.classList.add('on');
+   await speak(sc.lines[i]);done++;bar.style.width=(done/total*100)+'%';
+   await sleep(150);
+  }
+  await sleep(250);if(n<SCENES.length-1)cap.classList.remove('on');
+ }
+ await sleep(2800);cap.classList.remove('on');document.body.classList.remove('playing');
+ const secs=Math.round((performance.now()-t0)/1000);
+ document.getElementById('hint').textContent=`Fim · duração ${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')} · Win + Alt + R para parar a gravação · R para repetir`;
+}
+const sel=document.getElementById('voice');
+function loadVoices(){
+ const vs=speechSynthesis.getVoices().filter(v=>v.lang.startsWith('en'));
+ vs.sort((a,b)=>(b.name.includes('Natural')-a.name.includes('Natural'))||((b.lang==='en-US')-(a.lang==='en-US')));
+ sel.innerHTML=vs.map((v,i)=>`<option value="${i}">${v.name} (${v.lang})</option>`).join('')||'<option>Nenhuma voz em inglês encontrada — use "Sem voz"</option>';
+ const pref=vs.findIndex(v=>/Andrew|Guy|Christopher|Brian/.test(v.name)&&v.name.includes('Natural'));if(pref>=0)sel.value=pref;sel._voices=vs;
+}
+loadVoices();speechSynthesis.onvoiceschanged=loadVoices;
+const start=withVoice=>{useVoice=withVoice;sfxOn=document.getElementById('sfx').checked;voice=sel._voices?.[+sel.value]??null;document.getElementById('panel').style.display='none';paused=false;play();};
+// ?cena=N mostra a cena N pronta (para conferir o desenho)
+const pv=new URLSearchParams(location.search).get('cena');
+if(pv!==null){const sc=SCENES[+pv];document.getElementById('panel').style.display='none';const h=document.createElement('div');h.innerHTML=svg(sc.art());const el=h.firstElementChild;el.classList.remove('enter');stage.insertBefore(el,cap);
+ el.querySelector('.cam').style.animation='none';
+ el.querySelectorAll('.el').forEach(e=>{e.style.animation='none';e.style.opacity=1;if(e.classList.contains('fly'))e.style.transform=`translate(${e.style.getPropertyValue('--dx')},${e.style.getPropertyValue('--dy')})`;if(e.classList.contains('travel'))e.style.transform=`translate(${e.style.getPropertyValue('--dx')},0)`;});
+ brand.classList.toggle('on',+pv>6&&+pv<SCENES.length-1&&+pv!==13);brand.style.transition='none';cap.innerHTML=sc.lines.at(-1);cap.classList.add('on');cap.style.transition='none';}
+document.getElementById('go').onclick=()=>start(true);
+document.getElementById('silent').onclick=()=>start(false);
+addEventListener('keydown',e=>{
+ if(e.code==='Space'){paused=!paused;paused?speechSynthesis.pause():speechSynthesis.resume();e.preventDefault();}
+ if(e.key==='r'||e.key==='R'){paused=false;play();}
+ if(e.key==='Escape'){run++;speechSynthesis.cancel();document.body.classList.remove('playing');document.getElementById('panel').style.display='flex';}
+});
+</script>
+</body>
+</html>
