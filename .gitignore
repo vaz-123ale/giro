@@ -36,3 +36,7 @@ apresentacao/video-ideia/montagem/cenas/
 *.mp4
 __pycache__/
 ~$*
+apresentacao/video-ideia/montagem/audio/
+apresentacao/video-ideia/montagem/ia/
+*.wav
+/ferramentas/
