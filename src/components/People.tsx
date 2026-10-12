@@ -5,6 +5,7 @@ import {connect,discoverWallets,signMessage} from './wallet';
 import {InviteAdmin,ShareInvite,SignAllBanner} from './Onboarding';
 import {ConfiancaCard,NegocioConfianca} from './Confianca';
 import {toast} from './toast';
+import {LangSwitch} from './LangSwitch';
 import {BuscoTrabalho,QuemBuscaTrabalho} from './Trabalho';
 import {ProcuroAjudante,VagasAbertas} from './Vagas';
 
@@ -72,65 +73,83 @@ function WorkerHero({name,shift,received}:{name:string;shift:{link:string;active
   {shift&&<a className="primary buyer-pay" href={shift.link}>{shift.active?'Encerrar turno':'Iniciar turno'}</a>}</section>;
 }
 
-/** Painel próprio do fornecedor: o que tem a receber, o andamento de cada acordo e a confiança de quem compra dele. */
-function SupplierPanel({name,rows,receipts}:{name:string;rows:Row[];receipts:{amount:number;paidAt:string;link:string}[]}){
- const aReceber=rows.reduce((a,r)=>a+r.remaining,0),recebido=rows.reduce((a,r)=>a+r.paid,0),ativos=rows.filter(r=>r.remaining>0&&!r.waiting).length,aceitar=rows.filter(r=>r.waiting).length;
- return <>
-  <section className="supplier-hero"><div><small>Painel do fornecedor</small><h2>Olá, {name.split(' ')[0]}!</h2><p>Acompanhe o que você tem a receber. O pagamento vem das vendas da barraca, na regra que vocês combinaram.</p></div>
-   <dl><div><dt>A receber</dt><dd>{money(aReceber)}</dd></div><div><dt>Já recebido</dt><dd>{money(recebido)}</dd></div><div><dt>Acordos ativos</dt><dd>{ativos}</dd></div></dl></section>
-  {(aceitar>0||receipts.length>0)&&<section className="panel supplier-todo"><h2>Precisa de você</h2><ul>
-   {rows.filter(r=>r.waiting&&r.link).map(r=><li key={r.id}><span>Novo acordo <b>{r.id}</b>: {r.rateBps/100}% das vendas até {money(r.original)}</span><a className="primary" href={r.link!}>Ver e aceitar</a></li>)}
-   {receipts.map(r=><li key={r.link}><span>Pagamento em dinheiro de <b>{money(r.amount)}</b> em {new Date(r.paidAt).toLocaleDateString('pt-BR')}</span><a className="primary" href={r.link}>Confirmar</a></li>)}</ul></section>}
-  <section className="panel"><h2>Meus acordos</h2>{rows.length?<ul className="supplier-agreements">{rows.map(r=>{const pct=r.original?Math.round(r.paid/r.original*100):0;return <li key={r.id}>
-   <div className="sa-top"><strong>{r.id}</strong><span className={`sa-status ${r.remaining===0?'done':r.waiting?'wait':''}`}>{r.remaining===0?'Quitado':r.waiting?'Aguardando seu aceite':r.situation}</span></div>
-   <div className="sa-bar"><i style={{width:`${pct}%`}}/></div>
-   <small>{money(r.paid)} de {money(r.original)} · {r.rateBps/100}% das vendas · vence {r.due.split('-').reverse().join('/')}{r.chain?.registered?' · registrado na Solana ✓':''}</small>
-   {r.link&&!r.waiting&&<a className="secondary" href={r.link}>Abrir acordo</a>}</li>;})}</ul>:<p className="empty">Nenhum acordo ainda. Quando a barraca propuser um, ele aparece aqui para você aceitar.</p>}</section>
-  <section className="panel"><h2><ShieldCheck size={20} aria-hidden="true"/> Minha confiança como fornecedor</h2><p className="muted">Os acordos que você cumpriu com as barracas. Compartilhe pelo seu perfil público.</p>
-   <ConfiancaCard name={name} stats={{total:rows.length,active:rows.filter(r=>r.remaining>0&&!r.waiting).length,completed:rows.filter(r=>r.remaining===0).length,onTime:rows.filter(r=>r.onTime).length,settled:recebido}} rows={rows.map(r=>({...r,with:r.id}))} attested={rows.filter(r=>r.chain?.attested).length}/></section>
-  <section className="panel"><h2>Confiança de quem compra de você</h2><p className="muted">O histórico de compromissos da barraca, confirmado pelos dois lados.</p><NegocioConfianca anon/></section>
-  <ProcuroAjudante/>
-  <QuemBuscaTrabalho/>
-  <PeopleList title="Perfis de confiança" hint="Veja o histórico de compromissos das pessoas antes de fazer um acordo."/>
- </>;
-}
+/** Seções de cada tipo de conta: cada uma tem seu próprio app, com só o que faz sentido para ela. */
+type Me={job:{note:string;contact:string;since:string}|null;purchases:{date:string;amount:number;paid:boolean;link:string}[];person:{name:string;login:string;role:string;roleLabel:string;slug:string;photo:string|null;mustChange:boolean};agreements:Row[];receipts:{amount:number;paidAt:string;link:string}[];shift:{link:string;active:boolean;commissionBps:number}|null;commissionsReceived:number;wallet?:{walletMode:boolean;token:string;cluster:string};myWallet:string|null;balance:{sol:number;reais:number}|null;invite:{code:string};referrals:{name:string;roleLabel:string;slug:string}[]};
+const SUPPLIER_TABS=[['painel','Painel','/icons/nav-inicio.png'],['acordos','Acordos','/icons/nav-compromissos.png'],['confianca','Minha confiança','/icons/nav-confianca.png'],['barracas','Barracas','/icons/nav-receber.png'],['ajudantes','Ajudantes','/icons/nav-equipe.png'],['conta','Conta','/icons/nav-organizar.png']] as const;
+const PEOPLE_TABS=[['vagas','Vagas','/icons/nav-equipe.png'],['trabalho','Meu trabalho','/icons/nav-compromissos.png'],['compras','Minhas compras','/icons/nav-receber.png'],['conta','Conta','/icons/nav-organizar.png']] as const;
 
-/** "Minha conta" de cada colega: foto, senha, carteira, acordos, confirmações e perfis das outras. */
 export function MyPage(){
- const [me,setMe]=useState<{job:{note:string;contact:string;since:string}|null;purchases:{date:string;amount:number;paid:boolean;link:string}[];person:{name:string;login:string;role:string;roleLabel:string;slug:string;photo:string|null;mustChange:boolean};agreements:Row[];receipts:{amount:number;paidAt:string;link:string}[];shift:{link:string;active:boolean;commissionBps:number}|null;commissionsReceived:number;wallet?:{walletMode:boolean;token:string;cluster:string};myWallet:string|null;balance:{sol:number;reais:number}|null;invite:{code:string};referrals:{name:string;roleLabel:string;slug:string}[]}>();
- const [msg,setMsg]=useState('');const [error,setError]=useState('');const [atual,setAtual]=useState('');const [nova,setNova]=useState('');
- const [area,setAreaState]=useState<'equipe'|'compras'|null>(()=>{try{return localStorage.getItem('giro-area') as 'equipe'|'compras'|null;}catch{return null;}});
- const load=useCallback(()=>api<typeof me>('/api/eu').then(setMe).catch(e=>setError((e as Error).message)),[]);useEffect(()=>{void load();},[load]);
- const run=async(fn:()=>Promise<string>)=>{setError('');setMsg('');try{const m=await fn();setMsg(m);toast(m);await load();}catch(e){setError((e as Error).message);}};
+ const [me,setMe]=useState<Me>();
+ const [error,setError]=useState('');const [atual,setAtual]=useState('');const [nova,setNova]=useState('');
+ const [tab,setTabState]=useState(()=>location.hash.slice(1));
+ const load=useCallback(()=>api<Me>('/api/eu').then(setMe).catch(e=>setError((e as Error).message)),[]);useEffect(()=>{void load();},[load]);
+ useEffect(()=>{const f=()=>setTabState(location.hash.slice(1));addEventListener('hashchange',f);return()=>removeEventListener('hashchange',f);},[]);
+ const run=async(fn:()=>Promise<string>)=>{setError('');try{const m=await fn();toast(m);await load();}catch(e){setError((e as Error).message);}};
  if(!me)return <Page>{error?<p className="error">{error}</p>:<p>Carregando…</p>}</Page>;
- const p=me.person;
- const setArea=(a:'equipe'|'compras')=>{setAreaState(a);try{localStorage.setItem('giro-area',a);}catch{/* sem storage */}};
- const areaAtual=area??(p.role==='cliente'?'compras':'equipe');
- const roleInfo={fornecedor:{badge:'Conta de fornecedor',icon:'/icons/nav-compromissos.png'},ajudante:{badge:'Conta da equipe',icon:'/icons/nav-equipe.png'},cliente:{badge:'Conta de comprador',icon:'/icons/nav-receber.png'}}[p.role as 'fornecedor'|'ajudante'|'cliente']??{badge:p.roleLabel,icon:'/icons/nav-inicio.png'};
- return <Page><section className={`panel profile-head role-${p.role}`}><Avatar photo={p.photo} name={p.name}/><div><span className="role-badge"><img src={roleInfo.icon} alt=""/>{roleInfo.badge}</span><h1>{p.name}</h1><p className="muted">{p.roleLabel} · usuário <b>{p.login}</b></p>
-   <label className="secondary photo-button"><Camera size={18} aria-hidden="true"/> Trocar foto<input type="file" accept="image/*" hidden onChange={e=>{const f=e.target.files?.[0];if(f)void run(async()=>{await api('/api/eu/foto',{photo:await resizePhoto(f)});return 'Foto atualizada.';});}}/></label>
-   <a className="primary" href={`/p/${p.slug}`}><ExternalLink size={16} aria-hidden="true"/> Meu perfil público (compartilhar / NFC)</a> <button className="text-button" onClick={sair}><LogOut size={16} aria-hidden="true"/> Sair</button></div></section>
-  <SignAllBanner scope="eu"/>
-  {msg&&<p className="success" role="status">{msg}</p>}{error&&<p className="error" role="alert">{error}</p>}
-  {p.mustChange&&<section className="panel note"><h2>Troque a senha provisória</h2><form onSubmit={e=>{e.preventDefault();void run(async()=>{await api('/api/eu/senha',{atual,nova});setAtual('');setNova('');return 'Senha trocada.';});}}>
-   <label>Senha provisória<input type="password" value={atual} onChange={e=>setAtual(e.target.value)} autoComplete="current-password" required/></label>
-   <label>Nova senha (mín. 10 caracteres)<input type="password" value={nova} onChange={e=>setNova(e.target.value)} autoComplete="new-password" minLength={10} required/></label><button className="primary">Trocar senha</button></form></section>}
+ const p=me.person;const supplier=p.role==='fornecedor';
+ const tabs=supplier?SUPPLIER_TABS:PEOPLE_TABS;const current=tabs.some(t=>t[0]===tab)?tab:tabs[0][0];
+ const go=(t:string)=>{location.hash=t;setTabState(t);scrollTo(0,0);};
+ const first=p.name.split(' ')[0];
+ const conta=<>
+  <section className={`panel profile-head role-${p.role}`}><Avatar photo={p.photo} name={p.name}/><div><h2>{p.name}</h2><p className="muted">{p.roleLabel} · usuário <b>{p.login}</b></p>
+   <div className="form-actions"><label className="secondary photo-button"><Camera size={18} aria-hidden="true"/> Trocar foto<input type="file" accept="image/*" hidden onChange={e=>{const f=e.target.files?.[0];if(f)void run(async()=>{await api('/api/eu/foto',{photo:await resizePhoto(f)});return 'Foto atualizada!';});}}/></label>
+   <a className="primary" href={`/p/${p.slug}`}><ExternalLink size={16} aria-hidden="true"/> Meu perfil público</a><button className="secondary" onClick={sair}><LogOut size={16} aria-hidden="true"/> Sair</button></div></div></section>
+  <section className="panel"><h2>Trocar senha</h2><form onSubmit={e=>{e.preventDefault();void run(async()=>{await api('/api/eu/senha',{atual,nova});setAtual('');setNova('');return 'Senha trocada!';});}}>
+   <label>Senha atual<input type="password" value={atual} onChange={e=>setAtual(e.target.value)} autoComplete="current-password" required/></label>
+   <label>Nova senha (mín. 10 caracteres)<input type="password" value={nova} onChange={e=>setNova(e.target.value)} autoComplete="new-password" minLength={10} required/></label><button className="primary">Trocar senha</button></form></section>
   {me.wallet?.walletMode&&<section className="panel"><h2>Minha carteira</h2><p className="muted">Rede {me.wallet.cluster==='mainnet'?'Solana (dinheiro REAL)':'Solana Devnet (TESTE, sem valor)'} · token {me.wallet.token}</p>
    {me.myWallet?<p>Carteira vinculada: <code>{me.myWallet.slice(0,4)}…{me.myWallet.slice(-4)}</code></p>:<button className="primary" onClick={()=>run(async()=>{
     const w=discoverWallets()[0];if(!w)throw Error('Instale a carteira Phantom ou Solflare neste navegador e recarregue a página.');const a=await connect(w);
-    const {message}=await api<{message:string}>(`/api/eu/carteira/mensagem?endereco=${a.address}`);await api('/api/eu/carteira',{address:a.address,message,signature:await signMessage(w,a,message)});return 'Carteira vinculada.';})}>Conectar minha carteira</button>}
+    const {message}=await api<{message:string}>(`/api/eu/carteira/mensagem?endereco=${a.address}`);await api('/api/eu/carteira',{address:a.address,message,signature:await signMessage(w,a,message)});return 'Carteira vinculada!';})}>Conectar minha carteira</button>}
    {me.balance&&<p className="wallet-balance"><strong>{money(Math.round(me.balance.reais*100))}</strong> <small>na carteira · {me.balance.sol.toFixed(3)} SOL para taxas</small></p>}</section>}
-  {p.role==='fornecedor'&&<SupplierPanel name={p.name} rows={me.agreements} receipts={me.receipts}/>}
-  {p.role!=='fornecedor'&&<div className="tabs area-switch" role="tablist" aria-label="Minha área">{(['equipe','compras'] as const).map(a=><button key={a} role="tab" aria-selected={areaAtual===a} className={areaAtual===a?'active':''} onClick={()=>setArea(a)}>{a==='equipe'?'Equipe e trabalho':'Minhas compras'}</button>)}</div>}
-  {p.role!=='fornecedor'&&areaAtual==='compras'&&<BuyerPanel name={p.name} purchases={me.purchases}/>}
-  {p.role!=='fornecedor'&&areaAtual==='equipe'&&<>{p.role==='ajudante'&&<WorkerHero name={p.name} shift={me.shift} received={me.commissionsReceived}/>}
-   <VagasAbertas/><BuscoTrabalho job={me.job} onSaved={()=>void load()}/>
-   {me.agreements.length>0&&<section className="panel"><h2>Meus acordos</h2><AgreementList rows={me.agreements}/></section>}</>}
-  {p.role!=='fornecedor'&&me.receipts.length>0&&<section className="panel"><h2>Confirmar pagamentos em dinheiro</h2><ul>{me.receipts.map(r=><li key={r.link}>{money(r.amount)} em {new Date(r.paidAt).toLocaleDateString('pt-BR')} — <a href={r.link}>confirmar</a></li>)}</ul></section>}
-  <section className="panel"><h2>Meu código de convite</h2><p className="muted">Convide quem você conhece. Cada pessoa cria a própria conta pelo link.</p>
+  <section className="panel"><h2>Meu código de convite</h2><p className="muted">{supplier?'Convide outras barracas que compram de você.':'Convide amigos para o GIRO.'}</p>
    <ShareInvite code={me.invite.code} title="GIRO" text={`${p.name} te convidou para o GIRO. Crie sua conta:`}/>
    {me.referrals.length>0&&<><h3>Quem entrou pelo meu convite</h3><ul className="people-cards">{me.referrals.map(r=><li key={r.slug}><a href={`/p/${r.slug}`}><span><strong>{r.name}</strong><small>{r.roleLabel}</small></span></a></li>)}</ul></>}</section>
-  {p.role!=='fornecedor'&&<PeopleList/>}</Page>;
+ </>;
+ // ---------- Fornecedor ----------
+ const rows=me.agreements;const aReceber=rows.reduce((a,r)=>a+r.remaining,0),recebido=rows.reduce((a,r)=>a+r.paid,0),ativos=rows.filter(r=>r.remaining>0&&!r.waiting).length;
+ const lista=(rs:Row[])=>rs.length?<ul className="supplier-agreements">{rs.map(r=>{const pct=r.original?Math.round(r.paid/r.original*100):0;return <li key={r.id}>
+   <div className="sa-top"><strong>{r.id}</strong><span className={`sa-status ${r.remaining===0?'done':r.waiting?'wait':''}`}>{r.remaining===0?'Quitado':r.waiting?'Aguardando seu aceite':r.situation}</span></div>
+   <div className="sa-bar"><i style={{width:`${pct}%`}}/></div>
+   <small>{money(r.paid)} de {money(r.original)} · {r.rateBps/100}% das vendas · vence {r.due.split('-').reverse().join('/')}{r.chain?.registered?' · registrado na Solana ✓':''}</small>
+   {r.link&&<a className={r.waiting?'primary':'secondary'} href={r.link}>{r.waiting?'Ver e aceitar':'Abrir acordo'}</a>}</li>;})}</ul>:<p className="empty">Nenhum acordo ainda. Quando a barraca propuser um, ele aparece aqui para você aceitar.</p>;
+ const pendencias=(rows.some(r=>r.waiting)||me.receipts.length>0)&&<section className="panel supplier-todo"><h2>Precisa de você</h2><ul>
+   {rows.filter(r=>r.waiting&&r.link).map(r=><li key={r.id}><span>Novo acordo <b>{r.id}</b>: {r.rateBps/100}% das vendas até {money(r.original)}</span><a className="primary" href={r.link!}>Ver e aceitar</a></li>)}
+   {me.receipts.map(r=><li key={r.link}><span>Pagamento em dinheiro de <b>{money(r.amount)}</b> em {new Date(r.paidAt).toLocaleDateString('pt-BR')}</span><a className="primary" href={r.link}>Confirmar</a></li>)}</ul></section>;
+ const supplierView:Record<string,React.ReactNode>={
+  painel:<><section className="supplier-hero"><div><small>Painel do fornecedor</small><h2>Olá, {first}!</h2><p>O que você tem a receber das barracas. O pagamento vem das vendas delas, na regra que vocês combinaram.</p></div>
+    <dl><div><dt>A receber</dt><dd>{money(aReceber)}</dd></div><div><dt>Já recebido</dt><dd>{money(recebido)}</dd></div><div><dt>Acordos ativos</dt><dd>{ativos}</dd></div></dl></section>
+   <SignAllBanner scope="eu"/>{pendencias}
+   <section className="panel"><div className="section-title"><h2>Acordos recentes</h2><button className="text-button" onClick={()=>go('acordos')}>Ver todos →</button></div>{lista(rows.slice(0,3))}</section></>,
+  acordos:<><SignAllBanner scope="eu"/>{pendencias}<section className="panel"><h2>Meus acordos com barracas</h2>{lista(rows)}</section></>,
+  confianca:<section className="panel"><h2><ShieldCheck size={20} aria-hidden="true"/> Minha confiança como fornecedor</h2><p className="muted">Os acordos que você cumpriu com as barracas, confirmados pelos dois lados. Mostre para uma barraca nova.</p>
+    <ConfiancaCard name={p.name} stats={{total:rows.length,active:ativos,completed:rows.filter(r=>r.remaining===0).length,onTime:rows.filter(r=>r.onTime).length,settled:recebido}} rows={rows.map(r=>({...r,with:r.id}))} attested={rows.filter(r=>r.chain?.attested).length}/>
+    <div className="form-actions"><a className="primary" href={`/p/${p.slug}`}><ExternalLink size={16} aria-hidden="true"/> Compartilhar meu perfil de confiança</a></div></section>,
+  barracas:<><section className="panel"><h2>Confiança das barracas</h2><p className="muted">Antes de vender a prazo, veja como a barraca cumpre os compromissos.</p><NegocioConfianca anon/></section>
+   <PeopleList title="Perfis de confiança" hint="Veja o histórico de compromissos das pessoas antes de fazer um acordo."/></>,
+  ajudantes:<><ProcuroAjudante/><QuemBuscaTrabalho/></>,
+  conta,
+ };
+ // ---------- Equipe ou comprador ----------
+ const peopleView:Record<string,React.ReactNode>={
+  vagas:<><section className="supplier-hero people-hero"><div><small>Trabalho na feira</small><h2>Olá, {first}!</h2><p>Encontre vagas de ajudante em barracas e fornecedores. Seu histórico no GIRO mostra sua experiência de verdade.</p></div>
+    <dl><div><dt>Recebido em comissões</dt><dd>{money(me.commissionsReceived)}</dd></div><div><dt>Candidatura</dt><dd>{me.job?'Ativa':'—'}</dd></div></dl></section>
+   <VagasAbertas/><BuscoTrabalho job={me.job} onSaved={()=>void load()}/></>,
+  trabalho:p.role==='ajudante'||me.agreements.length||me.shift?<><WorkerHero name={p.name} shift={me.shift} received={me.commissionsReceived}/><SignAllBanner scope="eu"/>
+    {me.receipts.length>0&&<section className="panel supplier-todo"><h2>Confirmar pagamentos em dinheiro</h2><ul>{me.receipts.map(r=><li key={r.link}><span>{money(r.amount)} em {new Date(r.paidAt).toLocaleDateString('pt-BR')}</span><a className="primary" href={r.link}>Confirmar</a></li>)}</ul></section>}
+    {me.agreements.length>0&&<section className="panel"><h2>Meus acordos</h2><AgreementList rows={me.agreements}/></section>}</>
+   :<section className="panel empty-state"><h2>Você ainda não trabalha em nenhuma barraca</h2><p className="muted">Quando uma barraca te contratar pelo GIRO, seus turnos, comissões e pagamentos aparecem aqui.</p><button className="primary" onClick={()=>go('vagas')}>Ver vagas</button></section>,
+  compras:<BuyerPanel name={p.name} purchases={me.purchases}/>,
+  conta,
+ };
+ const view=(supplier?supplierView:peopleView)[current];
+ return <div className={`role-app role-app-${supplier?'fornecedor':'pessoas'}`}>
+  <header className="role-top"><img src="/logo_giro.png" alt="GIRO" className="role-logo"/><span className="role-name">{supplier?'Fornecedor':'Trabalho e compras'}</span><span className="role-spacer"/><LangSwitch/>
+   <button className="role-me" onClick={()=>go('conta')} aria-label="Minha conta"><Avatar photo={p.photo} name={p.name}/><span>{first}</span></button></header>
+  <nav className="role-nav" aria-label="Menu da conta">{tabs.map(([id,label,icon])=><button key={id} className={current===id?'on':''} aria-current={current===id?'page':undefined} onClick={()=>go(id)}><img src={icon} alt=""/><span>{label}</span></button>)}</nav>
+  <main className="role-main">{p.mustChange&&current!=='conta'&&<section className="panel note"><h2>Troque a senha provisória</h2><p>Por segurança, crie sua própria senha.</p><button className="primary" onClick={()=>go('conta')}>Trocar agora</button></section>}
+   {error&&<p className="error" role="alert">{error}</p>}{view}</main>
+ </div>;
 }
 
 /** Painel da dona: criar contas das colegas, senhas provisórias, foto/nome do negócio, abastecer carteiras de teste. */
