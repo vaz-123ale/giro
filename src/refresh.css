@@ -1,0 +1,119 @@
+/* ================================================================
+   GIRO — padrão visual 2026-10 (carregado por último)
+   Cartões delimitados, letras legíveis, botões e "voltar" visíveis,
+   no estilo do GIRO Confiança (fundo claro, cartões brancos com sombra).
+   ================================================================ */
+:root{--g-ink:#13261f;--g-muted:#4b5b53;--g-green:#0b7a4b;--g-deep:#064c3c;--g-mint:#e9f6ef;--g-line:#d9e7df;--g-card:#ffffff;
+ --g-shadow:0 1px 2px rgba(6,76,60,.06),0 10px 28px rgba(6,76,60,.08);--g-radius:22px}
+
+/* ---------- fundo e tipografia ---------- */
+body{background:linear-gradient(180deg,#f3f9f5 0%,#f7faf8 320px,#f7faf8 100%)!important;color:var(--g-ink);font-size:16px}
+main[data-page]{max-width:1320px}
+main[data-page] header h1{font-size:30px!important;letter-spacing:-.6px}
+main[data-page] header p{font-size:15px!important;color:var(--g-muted)!important}
+.muted,small,.stat-caption,.balance-caption,label small{font-size:14px!important;color:var(--g-muted)!important;line-height:1.5}
+label{font-size:15px!important;color:var(--g-ink)!important;font-weight:600}
+input,select,textarea{font-size:16px!important;min-height:48px;border:1.5px solid #cfdcd5!important;border-radius:12px!important}
+input:focus,select:focus,textarea:focus{border-color:var(--g-green)!important;box-shadow:0 0 0 3px rgba(11,122,75,.14)}
+h2{font-size:21px!important;color:var(--g-ink)}h3{font-size:18px!important}
+
+/* ---------- cartões delimitados ---------- */
+.panel,.home-actions,.next-commitment,.recent-panel,.money-overview,.growth-banner,.risk-note,.history-item,.commitment-card,.task,
+.employee-card,.member-card,.sale-detail-card{background:var(--g-card)!important;border:1px solid var(--g-line)!important;border-radius:var(--g-radius)!important;box-shadow:var(--g-shadow)!important}
+.panel{padding:26px!important;margin-bottom:22px!important}
+.panel>h2:first-child,.panel .section-title h2{display:flex;align-items:center;gap:10px}
+.home-actions{padding:22px!important}
+.home-actions>h2,.home-actions .section-title h2{margin-top:0!important}
+.balance{border-radius:var(--g-radius)!important;box-shadow:var(--g-shadow);border:1px solid #cfe9da}
+.stat{border-radius:18px!important;border:1px solid var(--g-line);box-shadow:var(--g-shadow)}
+.stat strong{font-size:24px!important}
+.quick{border:1px solid var(--g-line)!important;box-shadow:0 4px 12px rgba(6,76,60,.06)}
+.quick strong{font-size:16px!important}.quick small,.quick span{font-size:13.5px!important}
+.risk-note{background:#fffaf0!important;border-color:#f3dca0!important;padding:18px 20px!important}
+.growth-banner{padding:22px!important}
+.home-cash-shortcut{border:1px solid #cfe9da!important;border-radius:18px!important;box-shadow:var(--g-shadow)}
+
+/* cartões internos (sub-blocos) */
+.employee-stat-grid>div,.detail-grid>div,.money-cards>div,.commitment-card .metric,.metric-box{border-radius:14px!important}
+
+/* ---------- botões e links ---------- */
+button,.primary,.secondary,a.primary,a.secondary{font-size:15.5px!important}
+.primary,.secondary{min-height:46px!important;padding:12px 20px!important;border-radius:12px!important}
+.secondary{background:#eaf6ef!important;color:#0b5e3a!important;border:1px solid #cfe5d8!important}
+.secondary:hover{background:#dff1e7!important}
+.text-button{font-size:15px!important;color:var(--g-green)!important;font-weight:600;min-height:40px;padding:8px 10px!important;border-radius:10px}
+.text-button:hover{background:var(--g-mint)}
+details:not(.balance-help):not(.card-menu):not(.stat):not(.balance-explanation)>summary{font-size:15px!important;font-weight:600;color:var(--g-deep);cursor:pointer;padding:10px 12px;border-radius:12px;background:#f2f8f4;border:1px solid var(--g-line);margin:8px 0;list-style:none}
+details:not(.balance-help):not(.card-menu):not(.stat):not(.balance-explanation)>summary::-webkit-details-marker{display:none}
+details:not(.balance-help):not(.card-menu):not(.stat):not(.balance-explanation)>summary::before{content:"▸";display:inline-block;margin-right:8px;transition:transform .15s}
+details[open]:not(.balance-help):not(.card-menu):not(.stat):not(.balance-explanation)>summary::before{transform:rotate(90deg)}
+
+/* ---------- abas ---------- */
+.tabs{gap:10px!important;flex-wrap:wrap}
+.tabs button{min-height:48px!important;padding:12px 18px!important;font-size:15.5px!important;font-weight:600;border-radius:14px!important;border:1.5px solid var(--g-line)!important;background:#fff!important;color:var(--g-muted)!important}
+.tabs button.active{background:var(--g-deep)!important;color:#fff!important;border-color:var(--g-deep)!important;box-shadow:0 6px 16px rgba(6,76,60,.25)}
+.tabs button.active .area-icon,.tabs button.active svg{color:#fff!important}
+
+/* ---------- menu lateral com os ícones novos ---------- */
+aside nav button{font-size:16px!important;font-weight:600;min-height:52px;gap:14px!important;color:#3b4d45!important;border-radius:14px!important}
+aside nav button .nav-png{width:30px;height:30px;object-fit:contain;flex:none}
+aside nav button.active,aside nav button[aria-current="page"]{background:linear-gradient(90deg,#e3f5ea,#f2faf5)!important;color:var(--g-deep)!important;box-shadow:inset 3px 0 0 var(--g-green)}
+
+/* ---------- botão "voltar" padrão ---------- */
+.back-link{display:inline-flex;align-items:center;gap:8px;font-size:16px;font-weight:700;color:var(--g-deep);background:#fff;border:1.5px solid var(--g-line);border-radius:999px;padding:10px 18px;margin:0 0 18px;box-shadow:var(--g-shadow);text-decoration:none;cursor:pointer}
+.back-link:hover{background:var(--g-mint)}
+
+/* ---------- confirmações bem visíveis ---------- */
+.success,.success[role=status]{font-size:16px!important;font-weight:700;padding:16px 18px!important;border-radius:16px!important;background:#e3f6ea!important;color:#0b5e3a!important;border:1.5px solid #9bd9b5!important;display:flex;align-items:center;gap:10px}
+.success::before{content:"✓";display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:#0b7a4b;color:#fff;font-weight:900;flex:none}
+.giro-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:999;background:#064c3c;color:#fff;padding:16px 22px;border-radius:16px;font-size:16px;font-weight:700;box-shadow:0 18px 40px rgba(0,0,0,.25);display:flex;gap:10px;align-items:center;animation:toast-in .25s ease-out}
+@keyframes toast-in{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* ---------- Organizar: legível ---------- */
+main[data-page="organizar"] .panel h3,main[data-page="organizar"] .plan-name{font-size:19px!important}
+main[data-page="organizar"] .plan-values strong,main[data-page="organizar"] strong{font-size:inherit}
+main[data-page="organizar"] .plan-card,main[data-page="organizar"] article{border-radius:18px}
+main[data-page="organizar"] p,main[data-page="organizar"] li{font-size:15px}
+
+/* ---------- Equipe: alinhamento ---------- */
+main[data-page="equipe"] .employee-stat-grid{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))!important;gap:12px!important}
+main[data-page="equipe"] .form-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+main[data-page="equipe"] h3{font-size:20px!important}
+
+/* ---------- Compromissos: filtros ---------- */
+.filter-summary{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 0;font-size:15px;color:var(--g-ink)}
+.filter-chip{display:inline-flex;align-items:center;gap:6px;background:var(--g-mint);color:var(--g-deep);border:1px solid #cfe5d8;border-radius:999px;padding:6px 12px;font-weight:600;font-size:14px}
+.filter-chip button{border:0;background:none;color:var(--g-deep);font-weight:900;cursor:pointer;padding:0 2px;min-height:auto!important;font-size:15px!important}
+
+/* ---------- Confiança: lista de pessoas compacta ---------- */
+.trust-section-title{display:flex;align-items:center;gap:10px;margin:6px 0 14px}
+.trust-section-title .star{color:#e0a100}
+.trust-people{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.trust-person{background:#fff;border:1px solid var(--g-line);border-radius:18px;padding:16px;box-shadow:var(--g-shadow);display:grid;gap:10px}
+.trust-person-head{display:flex;align-items:center;gap:12px}
+.trust-person-head .initial{width:44px;height:44px;border-radius:50%;background:var(--g-deep);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;flex:none}
+.trust-person-head strong{font-size:17px}.trust-person-head small{display:block}
+.trust-nums{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.trust-nums div{background:#f4faf6;border-radius:12px;padding:8px;text-align:center}
+.trust-nums span{display:block;font-size:12px;color:var(--g-muted)}.trust-nums strong{font-size:20px;color:var(--g-deep)}
+.trust-nums .bad strong{color:#c2410c}
+.trust-person .paid{font-size:13.5px;color:var(--g-muted)}
+
+/* ---------- Entrar: escolher o tipo de conta ---------- */
+.login-choice{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:8px 0 18px}
+.login-choice button{display:grid;gap:6px;justify-items:center;text-align:center;padding:16px 10px;border-radius:18px;border:2px solid var(--g-line);background:#fff;min-height:auto!important;cursor:pointer}
+.login-choice button img{width:44px;height:44px}
+.login-choice button strong{font-size:16px}.login-choice button small{font-size:13px!important}
+.login-choice button.on{border-color:var(--g-green);background:var(--g-mint);box-shadow:0 0 0 3px rgba(11,122,75,.15)}
+.login-hero{background:linear-gradient(135deg,#064c3c,#0b7a4b);color:#fff;border-radius:24px;padding:24px;margin-bottom:18px}
+.login-hero h1{color:#fff!important;margin:0 0 6px}.login-hero p{margin:0;color:#dff3e8}
+
+/* ---------- Meu perfil (dona) ---------- */
+.my-profile{display:flex;flex-wrap:wrap;align-items:center;gap:20px}
+.my-profile .avatar{width:96px!important;height:96px!important;font-size:38px!important}
+.my-profile h2{margin:0 0 4px}
+.my-profile .form-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+@media (max-width:700px){.login-choice{grid-template-columns:1fr}.trust-nums{grid-template-columns:repeat(2,1fr)}main[data-page] header h1{font-size:24px!important}}
+
+.my-profile .avatar-fallback{width:96px;height:96px;border-radius:50%;background:var(--g-deep);color:#fff;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;flex:none}

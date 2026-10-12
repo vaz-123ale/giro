@@ -4,6 +4,7 @@ import {money} from '../domain/finance';
 import {connect,discoverWallets,signMessage} from './wallet';
 import {InviteAdmin,ShareInvite,SignAllBanner} from './Onboarding';
 import {ConfiancaCard,NegocioConfianca} from './Confianca';
+import {toast} from './toast';
 
 /** Pessoas com login, perfis (contratos + confiança) e "Minha conta" de cada colega. */
 async function api<T>(url:string,body?:unknown):Promise<T>{
@@ -18,7 +19,7 @@ async function resizePhoto(file:File){
  return c.toDataURL('image/jpeg',0.85);
 }
 const Avatar=({photo,name}:{photo?:string|null;name:string})=>photo?<img className="avatar" src={photo} alt={`Foto de ${name}`}/>:<span className="avatar avatar-empty" aria-hidden="true">{name.slice(0,1).toUpperCase()}</span>;
-const Page=({children}:{children:React.ReactNode})=><main className="standalone people-page"><img className="logo" src="/logo_giro.png" alt="GIRO"/>{children}</main>;
+const Page=({children,back}:{children:React.ReactNode;back?:boolean})=><main className="standalone people-page">{back&&<button className="back-link" onClick={()=>history.length>1?history.back():location.assign('/eu')}>← Voltar</button>}<img className="logo" src="/logo_giro.png" alt="GIRO"/>{children}</main>;
 const sair=async()=>{await fetch('/api/sair',{method:'POST'});location.replace('/entrar');};
 
 interface Row {id:string;original:number;paid:number;remaining:number;rateBps:number;due:string;situation:string;onTime:boolean|null;chain:{registered:boolean;state:string;attested:boolean}|null;link?:string|null;waiting?:boolean;with?:string}
@@ -43,7 +44,7 @@ function PeopleList(){
 export function ProfilePage({slug}:{slug:string}){
  const [p,setP]=useState<Card&{stats:{total:number;active:number;completed:number;onTime:number;settled:number};trust:{registered:number;attested:number};commissionsReceived?:number;agreements:Row[]}>();const [error,setError]=useState('');
  useEffect(()=>{api<typeof p>(`/api/perfis/${slug}`).then(setP).catch(e=>setError((e as Error).message));},[slug]);
- return <Page>{error&&<p className="error" role="alert">{error}</p>}{p&&<><section className="panel profile-head"><Avatar photo={p.photo} name={p.name}/><div><h1>{p.name}</h1><p className="muted">{p.roleLabel}</p></div></section>
+ return <Page back>{error&&<p className="error" role="alert">{error}</p>}{p&&<><section className="panel profile-head"><Avatar photo={p.photo} name={p.name}/><div><h1>{p.name}</h1><p className="muted">{p.roleLabel}</p></div></section>
   <ConfiancaCard name={p.name} stats={p.stats} rows={p.agreements} attested={p.trust.attested}/>{p.commissionsReceived!==undefined&&p.commissionsReceived>0&&<p className="muted">Comissões recebidas: {money(p.commissionsReceived)}</p>}
   <section className="panel"><h2>Contratos</h2><AgreementList rows={p.agreements}/></section></>}
   <p><a href="/eu">← Minha conta</a> · <a href="/">Painel do negócio</a></p></Page>;
@@ -72,7 +73,7 @@ export function MyPage(){
  const [me,setMe]=useState<{person:{name:string;login:string;role:string;roleLabel:string;slug:string;photo:string|null;mustChange:boolean};agreements:Row[];receipts:{amount:number;paidAt:string;link:string}[];shift:{link:string;active:boolean;commissionBps:number}|null;commissionsReceived:number;wallet?:{walletMode:boolean;token:string;cluster:string};myWallet:string|null;balance:{sol:number;reais:number}|null;invite:{code:string};referrals:{name:string;roleLabel:string;slug:string}[]}>();
  const [msg,setMsg]=useState('');const [error,setError]=useState('');const [atual,setAtual]=useState('');const [nova,setNova]=useState('');
  const load=useCallback(()=>api<typeof me>('/api/eu').then(setMe).catch(e=>setError((e as Error).message)),[]);useEffect(()=>{void load();},[load]);
- const run=async(fn:()=>Promise<string>)=>{setError('');setMsg('');try{setMsg(await fn());await load();}catch(e){setError((e as Error).message);}};
+ const run=async(fn:()=>Promise<string>)=>{setError('');setMsg('');try{const m=await fn();setMsg(m);toast(m);await load();}catch(e){setError((e as Error).message);}};
  if(!me)return <Page>{error?<p className="error">{error}</p>:<p>Carregando…</p>}</Page>;
  const p=me.person;
  return <Page><section className="panel profile-head"><Avatar photo={p.photo} name={p.name}/><div><h1>{p.name}</h1><p className="muted">{p.roleLabel} · usuário <b>{p.login}</b></p>
