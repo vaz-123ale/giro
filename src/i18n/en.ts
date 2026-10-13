@@ -116,6 +116,9 @@ export const EN:Record<string,string>={
 
 /** Textos que mudam conforme os dados (padrão em português → inglês). */
 export const EN_PATTERNS:[RegExp,string|((...m:string[])=>string)][]=[
+ [/^(\d+(?:[.,]\d+)?)% das vendas$/,'$1% of sales'],[/^Comissão de (\d+)%$/,'$1% commission'],[/^Setor (\d+), corredor (\d+)$/,'Sector $1, aisle $2'],
+ [/^(.+) - Aguardando resposta$/,'$1 - Awaiting response'],[/^(\d+) com prova na Solana\.$/,'$1 with proof on Solana.'],
+ [/^(\d+)% dos acordos quitados$/,'$1% of agreements paid off'],[/^(\d+) quitado\(s\)$/,'$1 paid off'],[/^(\d+) ativo\(s\)$/,'$1 active'],[/^(\d+) comprovante\(s\) atestado\(s\)$/,'$1 attested receipt(s)'],
  [/^(⚠\s*)?(.+) vence em (\d+) dias?\.$/,(_,w,n,d)=>`${w??''}${n} is due in ${d} day${d==='1'?'':'s'}.`],
  [/^No ritmo atual, pode faltar (.+)\.$/,'At the current pace, $1 may be missing.'],
  [/^(.+) de (R\$.+) coberto$/,'$1 of $2 covered'],[/^(R\$[^ ]+) de (R\$[^ ]+)$/,'$1 of $2'],
