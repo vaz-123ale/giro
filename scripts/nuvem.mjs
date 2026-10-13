@@ -1,6 +1,7 @@
 // Demonstração PÚBLICA na nuvem (ex.: Render), para quem avalia o projeto abrir a qualquer hora.
-// - Dados FICTÍCIOS recriados a cada início. GIRO_DEMO_CENARIO=gravacao (padrão, temporário para o vídeo do Colosseum):
-//   cenário rico de preparar-gravacao.mjs; GIRO_DEMO_CENARIO=historia: base curta do documento (Maria, João, Pedro).
+// - Dados FICTÍCIOS recriados a cada início. Padrão (GIRO_DEMO_CENARIO=historia): base curta do documento
+//   (Maria, João, Pedro), para cadastrar acordos e valores como faria uma barraca.
+//   GIRO_DEMO_CENARIO=gravacao: cenário rico usado só no vídeo de demonstração do Colosseum (preparar-gravacao.mjs).
 // - Rede Solana SIMULADA (modelo do programa): nenhuma chave, nenhum dinheiro, nada de dados reais.
 // - O GIRO continua escutando só em 127.0.0.1; um proxy mínimo recebe a porta pública da plataforma.
 // Uso: node --experimental-strip-types --no-warnings scripts/nuvem.mjs   (PORT e RENDER_EXTERNAL_URL vêm da plataforma)
@@ -9,7 +10,7 @@ import {writeFileSync} from 'node:fs';
 import {request,createServer} from 'node:http';
 import {setPassword} from '../server/auth.ts';
 
-const cenario=process.env.GIRO_DEMO_CENARIO??'gravacao';
+const cenario=process.env.GIRO_DEMO_CENARIO??'historia';
 const dir=cenario==='gravacao'?'apresentacao/dados-demo/nuvem-gravacao':'apresentacao/dados-demo',inner=process.env.GIRO_DEMO_INTERNA??'3001',port=Number(process.env.PORT??10000);
 const url=process.env.RENDER_EXTERNAL_URL??process.env.GIRO_PUBLIC_URL;if(!url)throw Error('Defina GIRO_PUBLIC_URL (https) do serviço.');
 const senha=process.env.GIRO_DEMO_SENHA??'giro-demo-2026';

@@ -4,7 +4,7 @@ Gravação na demonstração pública do Render. Dados fictícios, pagamentos si
 
 ## Preparar
 
-O Render recria o cenário fictício de `apresentacao/ferramentas/preparar-gravacao.mjs` a cada início (`scripts/nuvem.mjs`, `GIRO_DEMO_CENARIO=gravacao`, padrão temporário). Abrir `https://giro-demo-oyy1.onrender.com/entrar?lang=en` e esperar o primeiro carregamento antes de gravar. Contas `dona`, `joao` e `lia`, senha de demonstração `giro-demo-2026`, cada uma com seu tipo correspondente. Para voltar à base curta do documento, usar `GIRO_DEMO_CENARIO=historia`.
+O Render recria o cenário fictício de `apresentacao/ferramentas/preparar-gravacao.mjs` a cada início quando iniciado com `GIRO_DEMO_CENARIO=gravacao` em `scripts/nuvem.mjs`; o padrão do Render continua sendo a base curta (`historia`). Abrir `https://giro-demo-oyy1.onrender.com/entrar?lang=en` e esperar o primeiro carregamento antes de gravar. Contas `dona`, `joao` e `lia`, senha de demonstração `giro-demo-2026`, cada uma com seu tipo correspondente.
 
 Gravar apenas a aba da demonstração, em inglês, sem abas pessoais ou notificações. Mostrar digitação nos três logins, com cortes curtos. Não gravar tempo de espera. Usar a narração local Kokoro (`apresentacao/ferramentas/narrar-gravacao.py`), as legendas e os tempos abaixo. Uma faixa discreta deve identificar “Simulated demonstration · fictional data”.
 
