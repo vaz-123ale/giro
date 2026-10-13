@@ -26,7 +26,7 @@ Versão compilada: `npm run build` e depois `npm start` → http://127.0.0.1:300
 
 | Comando | O que faz |
 |---|---|
-| `npm test` | 288 testes automáticos (alguns só rodam com o validador local ligado) |
+| `npm test` | 289 testes automáticos (alguns só rodam com o validador local ligado) |
 | `npm run verificar` | tipos + testes + build + 34 telas no navegador, numa cópia dos dados → `auditoria/verificacao-local.md` |
 | `npm run relatorio:integracao` | o que um dia iria para a rede (sem dados pessoais) → `auditoria/PRONTIDAO_INTEGRACAO.md` |
 | `npm run dev:rede` | igual ao `dev`, com a rede Solana **simulada** ligada (modelo do programa, neste PC) |

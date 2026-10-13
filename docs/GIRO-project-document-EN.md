@@ -104,7 +104,7 @@ GIRO has two sides, and each gets something different.
 - One supplier serves dozens of vendors. Convincing one supplier brings many users at once, and the supplier invites them: "use GIRO with me".
 - Vendors stay because the organization features are useful without the supplier.
 - The supplier offers a concrete perk to vendors who use GIRO, such as a few extra days to pay, a higher limit or a small discount.
-- **The supplier pays** (a subscription or a fee per tracked agreement), because the supplier is the one who cuts late payments and collection costs. **GIRO is free for vendors.** Later: a fee on payments split on Solana, and paid access for lenders and cooperatives to vendor-shared, verified repayment histories.
+- **The supplier pays most** (a subscription or a fee per tracked agreement), because the supplier is the one who cuts late payments and collection costs. **GIRO starts free for everyone**; later, vendors and helpers pay a very low, affordable fee that weighs almost nothing on their income. Also later: a fee on payments split on Solana, and paid access for lenders and cooperatives to vendor-shared, verified repayment histories.
 
 ## 8. Pilot (next step)
 
@@ -117,7 +117,7 @@ The pilot **has not happened yet**; it is our next step.
 - What we will measure with vendors: weekly use without the supplier asking, whether they can say how much they can spend, whether they got better terms, and referrals.
 - **Key hypothesis:** a supplier improves commercial terms based on a GIRO history. If it holds, the model sustains itself: the supplier pays for the value it gets, and the vendor gains access to better terms.
 
-So far, the team tested the system with **colleagues playing the roles** of vendor, suppliers, helper and customer, using **fictitious business IDs (CNPJs)** created for the test and their own wallets on Solana Devnet. **No real money was used.**
+So far, the system was tested only with **3 colleagues acting as suppliers**, who connected their own **Phantom** wallets on Solana Devnet, plus team members in the other roles, using **fictitious business IDs (CNPJs)**. **No real money was used, and it has not been tested with a real supplier yet.**
 
 ## 9. Why now
 
@@ -145,9 +145,10 @@ Working prototype, pre-revenue. **GIRO won 1st place at WoHackathon**, where the
 - Solana Attestation Service attestations for completed agreements;
 - onboarding by WhatsApp invite link, with test wallets funded automatically on Devnet;
 - document import (PDF, CSV and text), always reviewed before saving;
-- 288 automated tests and 1,165 parity vectors that guarantee the app's split rule and the on-chain program agree to the cent.
+- 289 automated tests and 1,165 parity vectors that guarantee the app's split rule and the on-chain program agree to the cent.
 
 **Live demo:** <https://giro-demo-oyy1.onrender.com> (fictional data, simulated chain; test accounts in section 12).
+**Demo video (3 min):** screen capture of the real app running locally with a larger fictional dataset (`apresentacao/ferramentas/preparar-gravacao.mjs`); payments are simulated and only the narration is AI-generated (Kokoro TTS).
 **Open source (MIT):** <https://github.com/vaz-123ale/giro>
 
 ## 12. October 2026 updates
@@ -246,7 +247,7 @@ Four Brazilian women:
 - **Ana Clara Teixeira** — system review and testing.
 - **Melissa Gameleira** — pitch, slides and marketing.
 
-We currently work on GIRO part-time, alongside our studies and jobs, and plan to go full-time if funded.
+We all live in Rio de Janeiro and the Baixada Fluminense. Alessandra and Ana Clara study at the same institution and meet daily; Talita and Melissa live in nearby neighborhoods. We currently work on GIRO part-time, alongside our studies and jobs, and plan to go full-time if funded.
 
 ## 16. Prior work disclosure
 
