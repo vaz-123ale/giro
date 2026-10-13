@@ -1,4 +1,4 @@
-# GIRO — Programmable revenue and verifiable trust for small businesses
+# GIRO — Smart revenue sharing and verifiable trust for small businesses
 
 *Português: [LEIAME.md](LEIAME.md)* · **Full project document (English): [docs/GIRO-project-document-EN.md](docs/GIRO-project-document-EN.md)**
 
@@ -70,6 +70,7 @@ solana/         Anchor program giro_acordos, Codama client, build scripts
 tests/          automated tests (domain, API, chain parity, wallet-signing flow on Devnet)
 colosseum/      hackathon submission material (English)
 apresentacao/   pitch, demo script and the tools that record the demo video
+docs/           project document (English) and media (early mobile prototype video)
 ```
 
 ## Safety
