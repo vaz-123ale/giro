@@ -8,14 +8,14 @@ GIRO lets small businesses split every sale automatically among suppliers, helpe
 
 ## Short description (≤ 280 characters)
 
-Street-market sellers owe part of each sale to suppliers and helpers. GIRO lets them agree once on the split, and then every Solana Pay sale settles atomically to each party in a BRL stablecoin, with on-chain attestations as their credit history.
+Street-market sellers owe part of each sale to suppliers and helpers. GIRO lets them agree once on the split, and then every Solana Pay sale settles atomically to each party in a BRL stablecoin, with on-chain attestations of every agreement kept.
 
 ## Problem
 
 Brazil has more than 15 million registered micro-entrepreneurs (MEIs), plus millions of informal street-market sellers. Many of them buy goods on credit from suppliers and pay helpers on commission. Who gets what from each sale is tracked in notebooks and WhatsApp messages. That causes three problems:
 
 1. **Disputes.** Nobody can show what was agreed or what was already paid.
-2. **No credit history.** A seller who always pays their supplier has nothing to prove it, so credit stays expensive or unavailable.
+2. **No portable history.** A seller who always pays their supplier has nothing to prove it to a new supplier, and an informal helper has no record of the work they did.
 3. **Cash-flow blindness.** The seller sees R$ 100 come in but doesn't know how much of it is really hers.
 
 ## Solution
@@ -35,7 +35,8 @@ Per-sale splits of R$ 5–50 only work with sub-cent fees and sub-second finalit
 - **Join by invite link:** the person sets their own username, password and photo, then connects a wallet on the same screen. On Devnet the wallet is auto-funded with test SOL and test BRZ.
 - **"Sign everything" banner:** all pending signatures are batched into one wallet approval.
 - **Balances, personal invite codes with referrals, and a public trust profile** (link, QR, WhatsApp, NFC).
-- **Fully in Portuguese**, with large text and high-contrast modes. Personal data never goes on-chain.
+- **Portuguese and English** (PT/EN switch), with large text and high-contrast modes. Personal data never goes on-chain.
+- **Helper jobs with verified experience:** shifts confirmed by the vendor and commissions from real sales become a work history; job posts set rules and GIRO checks applicants against it.
 
 ## Technical highlights
 
@@ -43,13 +44,13 @@ Per-sale splits of R$ 5–50 only work with sub-cent fees and sub-second finalit
 - 1,165 parity vectors generated from the TypeScript split engine and checked in `cargo test`, so the app's preview and the chain always agree to the cent.
 - Transactional outbox: every change in the app's SQLite is mirrored to the chain with per-agreement ordering, retries and signature batching (up to 4 instructions per transaction).
 - Codama-generated client, @solana/kit, sas-lib, Wallet Standard and a Solana Pay transaction-request endpoint.
-- 288 automated tests, including the full wallet-signing flow run against real Devnet.
+- 289 automated tests, including the full wallet-signing flow run against real Devnet.
 
 ## Business model and go-to-market
 
 - **Two sides, different value.** The supplier gets the most direct benefit: paid on time without chasing, plus evidence of who honors commitments. The vendor gets value on day one, even alone: knowing what money is really available. Over time, the vendor's history can turn into better terms: longer payment periods, higher limits, better prices, or the trust of a new supplier.
 - **Suppliers distribute, vendors build the habit.** One supplier serves dozens of vendors, so convincing one supplier brings many users at once, and the supplier is the one who invites ("use GIRO with me"). Vendors stay because the money-organization features are useful without the supplier.
-- **Who pays:** the supplier (subscription or a fee per tracked agreement), because the supplier is the one who cuts late payments and collection costs. GIRO is free for vendors. Suppliers offer a concrete perk to vendors who use GIRO, such as a few extra days to pay, a higher limit or a small discount.
+- **Who pays:** the supplier (subscription or a fee per tracked agreement), because the supplier is the one who cuts late payments and collection costs. GIRO starts free for everyone; later, vendors and helpers pay a very low, affordable fee. Suppliers offer a concrete perk to vendors who use GIRO, such as a few extra days to pay, a higher limit or a small discount.
 - **Planned pilot (next step, not yet run; 2 months, 3 markets):** 3 suppliers and 12 of the vendors they serve (4 each), free during the pilot, with hands-on support. We will measure, for suppliers: average delay before and after, time spent collecting, whether they would extend better terms based on GIRO history, and what they would pay. For vendors: weekly use without the supplier asking, whether they can say what they can spend, whether they got better terms, and referrals.
 - **Key hypothesis:** a supplier improves commercial terms based on a GIRO history. If that holds, the model sustains itself: the supplier pays for the value it gets, and the vendor gains access to better terms.
 - **Later:** partnerships with street-market associations and microcredit cooperatives; attestations as an entry point for lenders who value verified repayment history.
@@ -62,8 +63,11 @@ Per-sale splits of R$ 5–50 only work with sub-cent fees and sub-second finalit
 
 ## Team
 
-| Name | Role | Registered on colosseum.com |
-|---|---|---|
-| *[name]* | Founder, product and development | ☐ |
+| Name | Role |
+|---|---|
+| Alessandra Vaz | Founder, product and engineering |
+| Talita | Design |
+| Ana Clara Teixeira | Review and testing |
+| Melissa Gameleira | Pitch and marketing |
 
-*(Every team member must register individually on colosseum.com before Oct 12, 2026, 11:59pm PT.)*
+Based in Rio de Janeiro and the Baixada Fluminense, Brazil. Tested so far only with 3 colleagues acting as suppliers (own Phantom wallets on Devnet, no real money); not yet with a real supplier.

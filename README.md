@@ -1,4 +1,4 @@
-# GIRO — Programmable revenue and verifiable trust for small businesses
+# GIRO — Smart revenue sharing and verifiable trust for small businesses
 
 *Português: [LEIAME.md](LEIAME.md)* · **Full project document (English): [docs/GIRO-project-document-EN.md](docs/GIRO-project-document-EN.md)**
 
@@ -8,7 +8,18 @@
 
 GIRO turns a small business's revenue into **programmable rules** and every commitment kept into **verifiable trust**.
 
-A street-market seller in Brazil sells R$ 10 of cheese. Part of that money already belongs to the supplier who fronted the goods, part to the helper on commission, and the rest is hers. Today this split lives in a notebook and on trust. With GIRO, the seller and each partner agree once on the split (e.g. "20% of each sale until R$ 300 is paid"), both sign the agreement with their own wallet, and **every sale settles itself on Solana**: the customer pays with Solana Pay and, in the same transaction, the supplier, the helper and the seller each receive their share in a BRL stablecoin. Every agreement fulfilled becomes an on-chain attestation the seller can show to get more credit next time.
+A street-market seller in Brazil sells R$ 10 of cheese. Part of that money already belongs to the supplier who fronted the goods, part to the helper on commission, and the rest is hers. Today this split lives in a notebook and on trust. With GIRO, the seller and each partner agree once on the split (e.g. "20% of each sale until R$ 300 is paid"), both sign the agreement with their own wallet, and **every sale settles itself on Solana**: the customer pays with Solana Pay and, in the same transaction, the supplier, the helper and the seller each receive their share in a BRL stablecoin. Every agreement fulfilled becomes an on-chain attestation the seller can show a new supplier: not a credit score, but evidence of commitments kept.
+
+## What the product does
+
+- **Three apps, one login screen:** *My stall* (vendor), *Supplier* and *Team or buyer*. Each person sees only their own data.
+- **Fixed stall QR:** printed once; the customer scans, types the amount and pays, and the agreed split applies without the vendor opening the app.
+- **Debt import:** PDF, Excel or CSV (or a downloadable template), always reviewed before agreements are proposed.
+- **Agreements** accepted by both sides; changes need the other side's acceptance. **Goals** (e.g. a family trip) stay separate and can be paused and resumed.
+- **GIRO Confiança:** history of agreements completed and on time, confirmed by both sides, shared through a public profile.
+- **Work history for informal helpers:** shifts confirmed by the vendor and commissions calculated from real sales become proof of experience. Stalls and suppliers post jobs with rules (minimum months or days worked) and GIRO checks applicants against that history.
+
+**Demo video (3 min):** screen capture of this code running locally with a larger fictional dataset (`apresentacao/ferramentas/preparar-gravacao.mjs`), simulated payments and AI narration (Kokoro TTS). The public demo above starts with a smaller dataset (accounts `dona`, `joao`, `lia`) so you can register your own sales and agreements.
 
 ## Why Solana
 
@@ -34,7 +45,7 @@ Program ID (Devnet): `CVAQPvyjepuDP9j5df22ipp9E7XWVxej1T26rb4NvEMV`
 - **Join by invite link** — the owner sends `…/participar/GIRO-XXXXXX` on WhatsApp; the person picks their own username, password and photo and connects a wallet in the same screen. Nobody types passwords for others.
 - **"Sign everything" banner** — all pending signatures (proposals, accepts, cash confirmations) batched into one wallet approval.
 - **Balances inside the app**, **personal invite code** with referrals, **public trust profile** shareable by link, QR, WhatsApp or NFC.
-- Portuguese interface, large text and high-contrast options.
+- Portuguese and English interface (PT/EN switch), large text and high-contrast options.
 
 ## Run it
 
@@ -43,7 +54,7 @@ Requirements: Node.js ≥ 24.15. Dependencies are vendored in `node_modules`.
 ```bash
 npm run dev            # app on http://127.0.0.1:5173 (API on 127.0.0.1:3001), chain disabled
 npm run dev:rede       # same, with the simulated chain (TypeScript model of the program)
-npm test               # 288 automated tests (6 need the local validator)
+npm test               # 289 automated tests (6 need the local validator)
 npm run demo           # fictional demo data on http://127.0.0.1:3019
 npm run publico        # Devnet + https tunnel for group testing (requires `npm run senha` and `npm run build`)
 ```
@@ -58,6 +69,8 @@ server/         Node API + SQLite; server/chain: outbox, Solana adapter, Solana 
 solana/         Anchor program giro_acordos, Codama client, build scripts
 tests/          automated tests (domain, API, chain parity, wallet-signing flow on Devnet)
 colosseum/      hackathon submission material (English)
+apresentacao/   pitch, demo script and the tools that record the demo video
+docs/           project document (English) and media (early mobile prototype video)
 ```
 
 ## Safety
